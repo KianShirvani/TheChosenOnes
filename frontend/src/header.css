@@ -1,0 +1,133 @@
+.header {
+    background-color: #282c34;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 5px; 
+}
+
+.navbar {
+    display: flex;
+    gap: 10px;        
+    margin-left: 20px;  
+    padding: 0;     
+    align-items: center;
+}
+
+
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.navbar a:hover {
+    color: #61dafb;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-input {
+    padding: 5px 30px 5px 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 0.9rem;
+}
+
+.sign-in {
+    background-color: transparent;
+    color: white;
+    border: 1px solid white;
+}
+
+.sign-in:hover {
+    background-color: #61dafb;
+    color: black;
+}
+
+.sign-up {
+    background-color: #61dafb;
+    color: black;
+}
+
+.sign-up:hover {
+    background-color: #4fa3d1;
+}
+
+.icon {
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.notification-icon:hover {
+    color: #61dafb;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        margin-left: 0; 
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+}
