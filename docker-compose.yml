@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   backend:
     container_name: backend-container
@@ -36,9 +38,10 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydatabase
     ports:
-      - "5432:5432"  # Expose PostgreSQL on port 5432
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data  # Persist data across restarts
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Mount init.sql to auto-execute
 
 volumes:
   pgdata:
