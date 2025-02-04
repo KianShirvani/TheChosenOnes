@@ -40,3 +40,6 @@ const loginUser = async(request, response) => {
         response.status(500).json({error: "Internal Server Error"}); // HTTP/1.1 500 Internal Server Error
     }
 }
+
+// export for use in other parts of the application
+module.exports = {loginUser};
