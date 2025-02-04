@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
+    <footer style={styles.footer}>  
       <div style={styles.container}>
         <div style={styles.section}>
           <h4>About Collabium</h4>
