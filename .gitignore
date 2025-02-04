@@ -1,0 +1,5 @@
+backend/.env
+frontend/.env
+backend/.env.docker
+init.sql
+**/node_modules/
