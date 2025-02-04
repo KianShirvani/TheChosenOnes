@@ -1,16 +1,14 @@
-version: "3.9"
-
 services:
   backend:
     container_name: backend-container
     build:
       context: ./backend
     ports:
-      - "5000:5000"
+      - "${BACKEND_HOST_PORT}:${BACKEND_CONTAINER_PORT}"
     depends_on:
       - db
     env_file:
-      - ./backend/.env  # Load environment variables from .env
+      - ./.env  # Load environment variables from .env
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -24,7 +22,7 @@ services:
     depends_on:
       - backend
     env_file:
-      - ./frontend/.env  # Load environment variables from .env
+      - ./.env  # Load environment variables from .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
