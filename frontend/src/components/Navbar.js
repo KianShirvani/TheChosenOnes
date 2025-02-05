@@ -56,6 +56,13 @@ const styles = {
     background: "#E0E0E0",
     color: "#333",
   },
+  heading: {
+    fontFamily: "Inter, sans-serif",
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#0A0A0A",
+    margin: 0,
+  },
 };
 
 export default Navbar;
