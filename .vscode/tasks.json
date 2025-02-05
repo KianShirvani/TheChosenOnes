@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "docker-compose up",
+            "type": "shell",
+            "command": "docker compose -f '/Users/yanshuyu/Desktop/TheChosenOnes/docker-compose.yml' up -d --build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
