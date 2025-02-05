@@ -10,7 +10,7 @@ const validateLogin = [
     body("password").notEmpty().withMessage("Password is required"),
     (req, res, next) => {
         const error = validationResult(req);
-        if(!error.isEmpty) {
+        if(!error.isEmpty()) {
             return res.status(400).json({error: error.array() }); // HTTP/1.1 400 Bad Request
         }
         next();

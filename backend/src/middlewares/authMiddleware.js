@@ -14,7 +14,7 @@ const authenticatedUser = (req, res, next) => {
     // verify the token
     try {
         // see if the token matches what is in the .env file
-        const decoded = jsonWebToken.verify(token.replace("Bearer ", ""), process.env.jsonWebToken_SECRET);
+        const decoded = jsonWebToken.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
         req.user = decoded;
         next();
     } catch (error) {
