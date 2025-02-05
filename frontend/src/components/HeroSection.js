@@ -21,7 +21,7 @@ const styles = {
   hero: {
     textAlign: "center",
     padding: "50px 20px",
-    background: "#007bff",
+    background: "linear-gradient(to bottom, #001F3F, #003366, #00509E, #87CEEB, white)", 
     color: "white",
   },
   button: {
