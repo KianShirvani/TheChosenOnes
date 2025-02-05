@@ -1,6 +1,7 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 const Navbar = () => {
+  const navigate = useNavigate();
   return (
     <nav style={styles.navbar}>
       <div style={styles.spacer}></div> {/* Left spacer for centering */}
@@ -8,12 +9,15 @@ const Navbar = () => {
       <h2 style={styles.heading}>Collabium</h2> {/* Centered heading */}
 
       <div style={styles.buttonContainer}>
-        <button style={styles.button} onClick={() => alert("Login Clicked")}>
+      <button
+          style={styles.button}
+          onClick={() => navigate("/login")} 
+        >
           Login
         </button>
         <button
           style={{ ...styles.button, background: "#007bff", color: "white" }}
-          onClick={() => alert("Signup Clicked")}
+          onClick={() => navigate("/signup")} 
         >
           Sign Up
         </button>
