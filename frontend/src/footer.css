@@ -1,0 +1,27 @@
+.footer {
+    background-color: #172B4D;
+    color: #f9f9f9;
+    padding: "20px 40px";
+    margin-top: "auto";
+}
+.container {
+    display: "flex";
+    justify-content: "space-between";
+    flex-wrap: "wrap";
+}
+.section {
+    flex: "1";
+    min-width: "150px";
+    margin: "10px 20px";
+}
+.divider {
+    margin: "20px 0";
+    border: "0.5px solid #ccc";
+}
+.bottomContainer {
+    display: "flex";
+    justify-content: "space-between";
+    flex-wrap: "wrap";
+    font-size: "14px";
+    color: "#5E6C84";
+}
