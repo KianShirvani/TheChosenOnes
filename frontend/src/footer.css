@@ -16,13 +16,11 @@
     width: 75px;
     margin: 10px 20px;
     padding: 0px 15px;
+    text-align: left;
 }
 .section:hover {
     background-color: #344563;
     
-}
-.section h4, p {
-    text-align: left;
 }
 .divider {
     margin: 20px 250px;
