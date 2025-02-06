@@ -17,6 +17,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// routes
+app.use("/auth", require("./src/routes/auth"));
+
 // Route to check database connection
 app.get("/db-version", async (req, res) => {
   try {
