@@ -9,7 +9,6 @@ import Navbar from "./components/Navbar";
 const MainPage = () => {
   return (
     <>
-      <Navbar />
       <HeroSection />
       <FeaturesSection />
       <Testimonials />
