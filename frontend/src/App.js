@@ -1,23 +1,20 @@
 import React from "react";
-import "./App.css";
-import Header from "./components/Header"; 
-import Navbar from "./components/Navbar"; 
-import HeroSection from "./components/HeroSection";
-import FeaturesSection from "./components/FeaturesSection"; 
-import Testimonials from "./components/Testimonials"; 
-import CallToAction from "./components/CallToAction";
-import Footer from "./components/Footer"; 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header";
+import MainPage from "./MainPage";
+import LoginPage from "./LoginPage";
+import SignupPage from "./SignupPage";
 
 function App() {
   return (
-    <div className="App">
-      <Header /> 
-      <HeroSection /> 
-      <FeaturesSection />
-      <Testimonials />
-      <CallToAction />
-      <Footer />
-    </div>
+    <Router>
+      <Header />  {/* ✅ This remains across all pages */}
+      <Routes>
+        <Route path="/" element={<MainPage />} />   {/* ✅ Home Page */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+      </Routes>
+    </Router>
   );
 }
 

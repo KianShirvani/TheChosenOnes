@@ -4,8 +4,12 @@
 import React from 'react';
 import '../header.css';
 import { FaBell, FaSearch } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+
+    const navigate = useNavigate();  
+
     return (
         <header className="header">
             <div className="header-left"> 
@@ -23,8 +27,8 @@ const Header = () => {
                     <FaSearch className="search-icon" />
                 </div>
                 <FaBell className="icon notification-icon" />
-                <button className="btn sign-in">Sign In</button>
-                <button className="btn sign-up">Sign Up</button>
+                <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
+                <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
             </div>
         </header>
     );
