@@ -3,22 +3,22 @@ const { check, validationResult } = require('express-validator');
 // Middleware to validate registration data
 const validateRegistration = [
   // Validate that first_name is not empty
-  check('first_name').notEmpty().withMessage('First name is required'),
+  check('firstName').notEmpty().withMessage('First name is required'),
 
   // Validate that last_name is not empty
-  check('last_name').notEmpty().withMessage('Last name is required'),
+  check('lastName').notEmpty().withMessage('Last name is required'),
 
   // Validate that email is in a proper email format
   check('email').isEmail().withMessage('Invalid email format'),
 
   // Validate that phone_num is not empty
-  check('phone_num').notEmpty().withMessage('Phone number is required'),
+  check('phoneNum').notEmpty().withMessage('Phone number is required'),
 
   // Validate that country is not empty
   check('country').notEmpty().withMessage('Country is required'),
 
   // Validate that display_name is not empty
-  check('display_name').notEmpty().withMessage('Display name is required'),
+  check('displayName').notEmpty().withMessage('Display name is required'),
 
   // Validate that password is at least 8 characters long
   check('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
