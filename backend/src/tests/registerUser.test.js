@@ -249,4 +249,50 @@ describe('POST /register', () => {
         );
     }); 
 
+    // Test case: Registration should fail if password does not contain at least one uppercase character
+    test('Should return error if password does not contain at least one number', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '1234567890',
+                displayName: 'user123',
+                country: 'USA',
+                password: 'password1',
+                confirmPassword: 'password1'
+            });
+    
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Password must contain an uppercase letter', path: 'password' }),
+            ])
+        );
+    }); 
+
+    // Test case: Registration should fail if password and confirmPassword do not match
+    test('Should return error if password and confirmPassword do not match', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '1234567890',
+                displayName: 'user123',
+                country: 'USA',
+                password: 'Password123',
+                confirmPassword: 'Password321'
+            });
+    
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Passwords do not match', path: 'confirmPassword' }),
+            ])
+        );
+    }); 
+
 });
