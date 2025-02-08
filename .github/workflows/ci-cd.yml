@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  ci:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.10.0
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: npm test
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      # Uncomment this once frontend tests are implemented
+      # - name: Run Frontend Tests
+      #   working-directory: ./frontend
+      #   run: npm test
+
+  merge-check:
+    name: Ensure Merge Success
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Check Merge Readiness
+        run: |
+          git fetch origin main
+          git fetch origin dev
+          git merge --no-commit --no-ff origin/${{ github.base_ref }} || exit 1
