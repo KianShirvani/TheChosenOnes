@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 const registerUser = async (req, res) => {
-  const { first_name, last_name, email, phone_num, country, display_name, password } = req.body;
+  const { firstName, lastName, email, phoneNum, country, displayName, password } = req.body;
 
   try {
     // Check if the email is already in the database
@@ -31,7 +31,7 @@ const registerUser = async (req, res) => {
     // Insert the new user into the database
     const insertUserQuery = await client.query(
       'INSERT INTO users (first_name, last_name, email, phone_num, country, display_name, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [first_name, last_name, email, phone_num, country, display_name, hashedPassword]
+      [firstName, lastName, email, phoneNum, country, displayName, hashedPassword]
     );
 
     const newUser = insertUserQuery.rows[0];
@@ -42,13 +42,12 @@ const registerUser = async (req, res) => {
       message: 'User registered successfully',
       user: {
         id: newUser.user_id,
-        first_name: newUser.first_name,
-        last_name: newUser.last_name,
+        firstName: newUser.first_name,
+        lastName: newUser.last_name,
         email: newUser.email,
-        phone_num: newUser.phone_num,
+        phoneNum: newUser.phone_num,
         country: newUser.country,
-        display_name: newUser.display_name,
-        created_at: newUser.created_at
+        displayName: newUser.display_name
       }
     });
   } catch (error) {

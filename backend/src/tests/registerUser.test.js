@@ -49,14 +49,13 @@ beforeEach(() => {
             return Promise.resolve({
                 rows: [
                     {
-                        user_id: 1,
-                        first_name: values[0],
-                        last_name: values[1],
+                        userId: 1,
+                        firstName: values[0],
+                        lastName: values[1],
                         email: values[2],
-                        phone_num: values[3],
+                        phoneNum: values[3],
                         country: values[4],
-                        display_name: values[5],
-                        created_at: '2025-02-07T14:10:45Z',
+                        displayName: values[5]
                     },
                 ],
             });
@@ -76,11 +75,11 @@ describe('POST /register', () => {
         const res = await request(app)
             .post('/register')
             .send({
-                last_name: 'Doe',
+                lastName: 'Doe',
                 email: 'user@email.com',
-                phone_num: '1234567890',
+                phoneNum: '1234567890',
                 country: 'USA',
-                display_name: 'user123',
+                displayName: 'user123',
                 password: 'Password123',
                 confirmPassword: 'Password123',
             });
@@ -88,7 +87,7 @@ describe('POST /register', () => {
         expect(res.statusCode).toBe(400);
         expect(res.body.errors).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ msg: 'First name is required', path: 'first_name' }),
+                expect.objectContaining({ msg: 'First name is required', path: 'firstName' }),
             ])
         );
     });    
@@ -98,11 +97,11 @@ describe('POST /register', () => {
         const res = await request(app)
             .post('/register')
             .send({
-                first_name: 'Jane',
+                firstName: 'Jane',
                 email: 'user@email.com',
-                phone_num: '1234567890',
+                phoneNum: '1234567890',
                 country: 'USA',
-                display_name: 'user123',
+                displayName: 'user123',
                 password: 'Password123',
                 confirmPassword: 'Password123',
             });
@@ -110,7 +109,7 @@ describe('POST /register', () => {
         expect(res.statusCode).toBe(400);
         expect(res.body.errors).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ msg: 'Last name is required', path: 'last_name' }),
+                expect.objectContaining({ msg: 'Last name is required', path: 'lastName' }),
             ])
         );
     }); 
@@ -120,12 +119,12 @@ describe('POST /register', () => {
         const res = await request(app)
             .post('/register')
             .send({
-                first_name: 'Jane',
-                last_name: 'Doe',
+                firstName: 'Jane',
+                lastName: 'Doe',
                 email: 'user@notanemail',
-                phone_num: '1234567890',
+                phoneNum: '1234567890',
                 country: 'USA',
-                display_name: 'user123',
+                displayName: 'user123',
                 password: 'Password123',
                 confirmPassword: 'Password123',
             });
@@ -143,11 +142,11 @@ describe('POST /register', () => {
         const res = await request(app)
             .post('/register')
             .send({
-                first_name: 'Jane',
-                last_name: 'Doe',
+                firstName: 'Jane',
+                lastName: 'Doe',
                 email: 'user@notanemail',
                 country: 'USA',
-                display_name: 'user123',
+                displayName: 'user123',
                 password: 'Password123',
                 confirmPassword: 'Password123',
             });
@@ -155,7 +154,7 @@ describe('POST /register', () => {
         expect(res.statusCode).toBe(400);
         expect(res.body.errors).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ msg: 'Phone number is required', path: 'phone_num' }),
+                expect.objectContaining({ msg: 'Phone number is required', path: 'phoneNum' }),
             ])
         );
     }); 
@@ -165,11 +164,11 @@ describe('POST /register', () => {
         const res = await request(app)
             .post('/register')
             .send({
-                first_name: 'Jane',
-                last_name: 'Doe',
+                firstName: 'Jane',
+                lastName: 'Doe',
                 email: 'user@notanemail',
-                phone_num: '1234567890',
-                display_name: 'user123',
+                phoneNum: '1234567890',
+                displayName: 'user123',
                 password: 'Password123',
                 confirmPassword: 'Password123',
             });
@@ -182,6 +181,72 @@ describe('POST /register', () => {
         );
     }); 
 
+    // Test case: Registration should fail if display name is missing
+    test('Should return error if country is missing', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '1234567890',
+                country: 'USA',
+                password: 'Password123',
+                confirmPassword: 'Password123',
+            });
     
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Display name is required', path: 'displayName' }),
+            ])
+        );
+    }); 
+
+    // Test case: Registration should fail if password is less than 8 characters
+    test('Should return error if country is missing', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '1234567890',
+                displayName: 'user123',
+                country: 'USA',
+                password: 'Pass1',
+                confirmPassword: 'Pass1'
+            });
+    
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Password must be at least 8 characters long', path: 'password' }),
+            ])
+        );
+    }); 
+
+    // Test case: Registration should fail if password does not contain at least one number
+    test('Should return error if password does not contain at least one number', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '1234567890',
+                displayName: 'user123',
+                country: 'USA',
+                password: 'Password',
+                confirmPassword: 'Password'
+            });
+    
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Password must contain a number', path: 'password' }),
+            ])
+        );
+    }); 
 
 });
