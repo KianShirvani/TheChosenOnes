@@ -48,7 +48,11 @@ jobs:
         run: |
           git fetch origin dev
 
+      - name: Checkout PR branch
+        run: |
+          git checkout ${{ github.head_ref }}
+
       - name: Check Merge Readiness for dev
         run: |
           git checkout dev
-          git merge --no-commit --no-ff origin/${{ github.head_ref }} || exit 1
+          git merge --no-commit --no-ff ${{ github.head_ref }} || exit 1
