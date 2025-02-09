@@ -2,7 +2,7 @@ name: Move Linked Issue to "In Review"
 
 on:
   pull_request:
-    types: [linked] # run when PR is linked
+    types: [opened, synchronize] # Runs when PR is created or updated
 
 jobs:
   move_issue_to_review:
@@ -11,27 +11,41 @@ jobs:
       issues: write
       pull-requests: read
       contents: read
-      project: write
+      projects: write
+
     steps:
-      - name: Extract Linked Issue Number
+      - name: Extract Linked Issue Number from PR Description
         id: get_issue
         run: |
-          ISSUE_NUMBER=$(jq -r '.issue.number' "$GITHUB_EVENT_PATH")
+          ISSUE_NUMBER=$(curl -s -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" | \
+            jq -r '.body' | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "No linked issue found. Exiting."
+            exit 1
+          fi
+
+          echo "Found issue #$ISSUE_NUMBER"
           echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
 
       - name: Get Issue Node ID
         id: get_issue_id
         run: |
-          ISSUE_NODE_ID=$(curl -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+          ISSUE_NODE_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}" | jq -r .node_id)
+
+          if [ "$ISSUE_NODE_ID" == "null" ]; then
+            echo "Failed to get issue node ID"
+            exit 1
+          fi
+
           echo "ISSUE_NODE_ID=$ISSUE_NODE_ID" >> $GITHUB_ENV
 
       - name: Move Issue to "In Review" Column
-      # replace YOUR_COLUMN_ID with the project column ID (line 37)
         run: |
           curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+            -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             -d '{"content_id": "'"$ISSUE_NODE_ID"'", "content_type": "Issue"}' \
-            "https://api.github.com/projects/columns/YOUR_COLUMN_ID/cards"
-            
+            "https://api.github.com/projects/columns/PVTSSF_lAHOCIUjhs4Av0rMzgmMOkA/cards"
