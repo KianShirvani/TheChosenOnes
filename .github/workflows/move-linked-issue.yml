@@ -49,3 +49,22 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -d '{"content_id": "'"$ISSUE_NODE_ID"'", "content_type": "Issue"}' \
             "https://api.github.com/projects/columns/PVTSSF_lAHOCIUjhs4Av0rMzgmMOkA/cards"
+
+            - name: Move Issue to "In Review" Column
+            run: |
+              # Fetch the column ID for "In Review" column
+              COLUMN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                "https://api.github.com/repos/${{ github.repository }}/projects/columns" | \
+                jq -r '.[] | select(.name == "In Review") | .id')
+          
+              if [ -z "$COLUMN_ID" ]; then
+                echo "Column 'In Review' not found. Exiting."
+                exit 1
+              fi
+          
+              # Move the issue to the "In Review" column
+              curl -X POST \
+                -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -d '{"content_id": "'"$ISSUE_NODE_ID"'", "content_type": "Issue", "column_id": "'"$COLUMN_ID"'"}' \
+                "https://api.github.com/projects/columns/cards"          
