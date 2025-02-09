@@ -2,17 +2,20 @@ const { check, validationResult } = require('express-validator');
 
 // Middleware to validate registration data
 const validateRegistration = [
-  // Validate that first_name is not empty
+  // Validate that firstN is not empty
   check('firstName').notEmpty().withMessage('First name is required'),
 
-  // Validate that last_name is not empty
+  // Validate that lastN is not empty
   check('lastName').notEmpty().withMessage('Last name is required'),
 
   // Validate that email is in a proper email format
   check('email').isEmail().withMessage('Invalid email format'),
 
-  // Validate that phone_num is not empty
+  // Validate that phoneNum is not empty
   check('phoneNum').notEmpty().withMessage('Phone number is required'),
+
+  // Validate the phoneNum is valid
+  check('phoneNum').isMobilePhone().withMessage('Invalid phone number format'),
 
   // Validate that country is not empty
   check('country').notEmpty().withMessage('Country is required'),
@@ -29,7 +32,7 @@ const validateRegistration = [
   // Check that password contains at least one uppercase letter
   check('password').matches(/[A-Z]/).withMessage('Password must contain an uppercase letter'),
 
-  // Custom validation: Ensure that password and confirmPassword match (optional)
+  // Custom validation: Ensure that password and confirmPassword match
   check('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Passwords do not match'),
