@@ -39,16 +39,31 @@ const TaskBoard = () => {
     setIsModalOpen(true);
   };
 
-  // ✅ allow users to delete tasks from **any** column
   const handleDeleteTask = (taskId) => {
     setTasks((prevTasks) => {
       const updatedTasks = { ...prevTasks };
-
-      // remove task from whichever column it belongs to
       Object.keys(updatedTasks).forEach((status) => {
         updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== taskId);
       });
+      return updatedTasks;
+    });
+  };
 
+  const handleMoveTask = (task, direction) => {
+    const columnOrder = ["todo", "inProgress", "done"];
+    const currentIndex = columnOrder.indexOf(
+      Object.keys(tasks).find((status) => tasks[status].some((t) => t.id === task.id))
+    );
+
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= columnOrder.length) return;
+
+    setTasks((prevTasks) => {
+      const updatedTasks = { ...prevTasks };
+      updatedTasks[columnOrder[currentIndex]] = updatedTasks[columnOrder[currentIndex]].filter((t) => t.id !== task.id);
+      updatedTasks[columnOrder[newIndex]] = [...updatedTasks[columnOrder[newIndex]], task];
       return updatedTasks;
     });
   };
@@ -61,9 +76,9 @@ const TaskBoard = () => {
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
 
       <div style={styles.board}>
-        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} />
-        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} />
-        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} />
+        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
+        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
+        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
       </div>
     </div>
   );
