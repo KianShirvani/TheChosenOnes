@@ -20,7 +20,7 @@ jobs:
           echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
 
       - name: Close the Issue
-        if: env.ISSUE_NUMBER != ''
+        if: ${{ steps.get_issue.outputs.ISSUE_NUMBER != '' }}
         run: |
           curl -X PATCH \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
