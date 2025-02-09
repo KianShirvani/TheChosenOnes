@@ -52,7 +52,10 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in registerUser:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred while processing your request. Please try again later.'
+     });
   }
 };
 
