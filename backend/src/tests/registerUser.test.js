@@ -295,4 +295,27 @@ describe('POST /register', () => {
         );
     }); 
 
+    // Test case: Registration should fail if phone number is invalid
+    test('Should return error if phone number is invalid', async () => {
+        const res = await request(app)
+            .post('/register')
+            .send({
+                firstName: 'Jane',
+                lastName: 'Doe',
+                email: 'user@notanemail',
+                phoneNum: '12',
+                displayName: 'user123',
+                country: 'USA',
+                password: 'Password123',
+                confirmPassword: 'Password123'
+            });
+    
+        expect(res.statusCode).toBe(400);
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ msg: 'Invalid phone number format', path: 'phoneNum' }),
+            ])
+        );
+    }); 
+
 });
