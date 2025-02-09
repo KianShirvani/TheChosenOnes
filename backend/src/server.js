@@ -19,6 +19,7 @@ app.use(express.json());
 
 // routes
 app.use("/auth", require("./src/routes/auth"));
+app.use("/register", require("./src/routes/userRoutes"));
 
 // Route to check database connection
 app.get("/db-version", async (req, res) => {
