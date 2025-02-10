@@ -49,45 +49,51 @@ const SignupPage = () => {
             style={styles.input}
             required
           />
-          <Input
-            type="text"
-            name="firstName"
-            placeholder="First name"
-            value={formData.firstName}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <Input
-            type="text"
-            name="lastName"
-            placeholder="Last name"
-            value={formData.lastName}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <Input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <Input
-            type="tel"
-            name="phoneNum"
-            placeholder="Phone number"
-            value={formData.phoneNum}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
+          <div style={styles.row}>
+            <Input
+              type="text"
+              name="firstName"
+              placeholder="First name"
+              value={formData.firstName}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <Input
+              type="text"
+              name="lastName"
+              placeholder="Last name"
+              value={formData.lastName}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+          </div>
+          <div style={styles.row}>
+            <Input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <Input
+              type="tel"
+              name="phoneNum"
+              placeholder="Phone number"
+              value={formData.phoneNum}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+          </div>
+          
           <select
+            class="country-select"
             onChange={handleChange}
-            style={styles.input}
+            style={styles.select}
             required
           >
             {/* these countries can change. We can also add or remove more */}
@@ -159,27 +165,42 @@ const styles = {
     flexDirection: "column",
     gap: "1rem",
   },
+  row: {
+    display: "flex",
+    gap: "1rem",
+  },
   input: {
+    width: "95%",
+    padding: "0.5rem",
+    border: "none",
+    borderRadius: 0,
+    borderBottom: "2px solid #7000da",
+    transition: "all 0.3s ease-in-out",
+    outline: "none",
+  },
+  select: {
     width: "100%",
     padding: "0.5rem",
-    border: "1px solid #ccc",
+    border: "2px solid #7000da",
     borderRadius: "0.5rem",
   },
   button: {
     width: "100%",
-    backgroundColor: "#007bff",
+    backgroundColor: "#7000da",
     color: "white",
     padding: "0.75rem",
     border: "none",
     borderRadius: "0.5rem",
     cursor: "pointer",
+    transition: "0.3s",
+    boxShadow: "0 0 10px rgba(112, 0, 218, 1)",
   },
   link: {
     marginTop: "1rem",
     fontSize: "0.9rem",
   },
   loginLink: {
-    color: "#007bff",
+    color: "#8d15fd",
     cursor: "pointer",
     textDecoration: "underline",
   },
