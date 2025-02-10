@@ -3,6 +3,7 @@ import '../footer.css';
 
 const Footer = () => {
   return (
+    <footer data-testid="footer">
     <footer className="footer">  
       <div className="container">
         <div className="section">
@@ -29,6 +30,7 @@ const Footer = () => {
         <p>Terms</p>
         <p>Copyright © 2024 TheChosenOnes</p>
       </div>
+    </footer>
     </footer>
   );
 };

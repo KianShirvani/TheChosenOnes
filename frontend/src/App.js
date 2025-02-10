@@ -8,12 +8,14 @@ import SignupPage from "./SignupPage";
 function App() {
   return (
     <Router>
-      <Header />  {/* ✅ This remains across all pages */}
+      <Header />
       <Routes>
-        <Route path="/" element={<MainPage />} />   {/* ✅ Home Page */}
+        <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Routes>
+      {/* Add the "Learn React" text here for testing */}
+      <div>Learn React</div>
     </Router>
   );
 }
