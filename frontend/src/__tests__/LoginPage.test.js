@@ -18,7 +18,7 @@ describe("LoginBody", () => {
     expect(screen.getByPlaceholderText(/username or email/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
-  });
+  }); 
 
   test("does not submit if fields are empty", async () => {
     render(
