@@ -40,56 +40,80 @@ const SignupPage = () => {
       <div style={styles.container}>
         <h2 style={styles.title}>Create Account</h2>
         <form style={styles.form} onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <div style={styles.row}>
+          <label style={styles.label}>
             <Input
               type="text"
-              name="firstName"
-              placeholder="First name"
-              value={formData.firstName}
+              name="username"
+              placeholder=""
+              value={formData.username}
               onChange={handleChange}
               style={styles.input}
               required
             />
-            <Input
-              type="text"
-              name="lastName"
-              placeholder="Last name"
-              value={formData.lastName}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
+            <span style={formData.username ? styles.floatingLabel : styles.spanLabel}>
+                Username
+              </span>
+          </label>
+          <div style={styles.row}>
+            <label style={styles.label}>
+              <Input
+                type="text"
+                name="firstName"
+                placeholder=""
+                value={formData.firstName}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+              <span style={formData.firstName ? styles.floatingLabel : styles.spanLabel}>
+                First name
+              </span>
+            </label>
+            <label style={styles.label}>
+              <Input
+                type="text"
+                name="lastName"
+                placeholder=""
+                value={formData.lastName}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+              <span style={formData.lastName ? styles.floatingLabel : styles.spanLabel}>
+                Last name
+              </span>
+            </label>
           </div>
           <div style={styles.row}>
-            <Input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
-            <Input
-              type="tel"
-              name="phoneNum"
-              placeholder="Phone number"
-              value={formData.phoneNum}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
+            <label style={styles.label}>
+              <Input
+                type="email"
+                name="email"
+                placeholder=""
+                value={formData.email}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+              <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>
+                Email
+              </span>
+            </label>
+            <label style={styles.label}>
+              <Input
+                type="tel"
+                name="phoneNum"
+                placeholder=""
+                value={formData.phoneNum}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+              <span style={formData.phoneNum ? styles.floatingLabel : styles.spanLabel}>
+                Phone number
+              </span>
+            </label>
           </div>
-          
           <select
             class="country-select"
             onChange={handleChange}
@@ -113,24 +137,36 @@ const SignupPage = () => {
             <option value="Switzerland">Switzerland</option>
             <option value="United States">United States</option>
           </select>
-          <Input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <Input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
+          <label style={styles.label}>
+            <Input
+              type="password"
+              name="password"
+              placeholder=""
+              value={formData.password}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <span style={formData.password ? styles.floatingLabel : styles.spanLabel}>
+              Password
+            </span>
+          </label>
+          <label style={styles.label}>
+            <Input
+              type="password"
+              name="confirmPassword"
+              placeholder=""
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <span style={formData.confirmPassword ? styles.floatingLabel : styles.spanLabel}>
+              Confirm password
+            </span>
+          </label>
+          
+          
           <Button type="submit" style={styles.button}>
             Sign Up
           </Button>
@@ -166,12 +202,38 @@ const styles = {
     gap: "1rem",
   },
   row: {
+    width: "97.5%",
     display: "flex",
     gap: "1rem",
+  },
+  label: {
+    position: "relative",
+    display: "block",
+    width: "100%",
+  },
+  spanLabel: {
+    position: "absolute",
+    left: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#000",
+    fontSize: "16px",
+    transition: "all 0.3s ease",
+    pointerEvents: "none",
+  },
+  floatingLabel: {
+    position: "absolute",
+    left: "10px",
+    top: "-10px",
+    fontSize: "12px",
+    color: "#7000da",
+    transition: "all 0.3s ease",
+    pointerEvents: "none",
   },
   input: {
     width: "95%",
     padding: "0.5rem",
+    background: "transparent",
     border: "none",
     borderRadius: 0,
     borderBottom: "2px solid #7000da",
@@ -188,6 +250,7 @@ const styles = {
     width: "100%",
     backgroundColor: "#7000da",
     color: "white",
+    marginTop: "10px",
     padding: "0.75rem",
     border: "none",
     borderRadius: "0.5rem",
