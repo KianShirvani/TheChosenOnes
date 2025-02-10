@@ -6,9 +6,7 @@ const LoginBody = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
+  const handleLogin = () => {
     if (!username || !password) {
       alert("All fields must be filled!");
     } else {
@@ -17,28 +15,26 @@ const LoginBody = () => {
   };
 
   return (
-    <div data-testid="login-body">
-      <div style={styles.container}>
-        <h2>User Login</h2>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <Input
-            type="text"
-            placeholder="Username or Email"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={styles.input}
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-          />
-          <Button type="submit" style={styles.button}>
-            Login
-          </Button>
-        </form>
+    <div style={styles.container} data-testid="login-body">
+      <h2 style={styles.title}>User Login</h2>
+      <div style={styles.form}>
+        <Input
+          type="text"
+          placeholder="Username or Email"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={styles.input}
+        />
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={styles.input}
+        />
+        <Button style={styles.button} onClick={handleLogin}>
+          Login
+        </Button>
       </div>
     </div>
   );
