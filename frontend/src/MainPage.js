@@ -13,7 +13,6 @@ const MainPage = () => {
       <FeaturesSection />
       <Testimonials />
       <CallToAction />
-      <Footer />
     </>
   );
 };
