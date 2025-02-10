@@ -26,11 +26,16 @@ const SignupPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
+      alert("All fields must be filled!");
+      return;
+    }
+  
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    // 模拟注册逻辑
+  
     alert("Sign up successful!");
     navigate("/login");
   };
