@@ -120,7 +120,7 @@ const SignupPage = () => {
             </label>
           </div>
           <select
-            class="country-select"
+            className="country-select"
             onChange={handleChange}
             style={styles.select}
             required
