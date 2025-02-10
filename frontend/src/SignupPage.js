@@ -2,12 +2,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "./components/ui/input";
 import { Button } from "./components/ui/button";
+import Footer from "./components/Footer";
 
 const SignupPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
+    username: "", // display_name in users table
+    firstName: "",
+    lastName: "",
     email: "",
+    phoneNum: "",
+    country: "",
     password: "",
     confirmPassword: "",
   });
@@ -31,53 +36,105 @@ const SignupPage = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Create Account</h2>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
-        <Input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
-        <Input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
-        <Input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
-        <Button type="submit" style={styles.button}>
-          Sign Up
-        </Button>
-      </form>
-      <p style={styles.link}>
-        Already have an account? <span onClick={() => navigate("/login")} style={styles.loginLink}>Login here</span>
-      </p>
-    </div>
+    <>
+      <div style={styles.container}>
+        <h2 style={styles.title}>Create Account</h2>
+        <form style={styles.form} onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Input
+            type="text"
+            name="firstName"
+            placeholder="First name"
+            value={formData.firstName}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Input
+            type="text"
+            name="lastName"
+            placeholder="Last name"
+            value={formData.lastName}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Input
+            type="tel"
+            name="phoneNum"
+            placeholder="Phone number"
+            value={formData.phoneNum}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <select
+            onChange={handleChange}
+            style={styles.input}
+            required
+          >
+            {/* these countries can change. We can also add or remove more */}
+            <option value="Afghanistan">Afghanistan</option>
+            <option value="Antarctica">Antarctica</option>
+            <option value="Australia">Australia</option>
+            <option value="Canada">Canada</option>
+            <option value="Christmas Island">Christmas Island</option>
+            <option value="Czech Republic">Czech Republic</option>
+            <option value="Greece">Greece</option> 
+            <option value="Greenland">Greenland</option>
+            <option value="Lithuania">Lithuania</option> 
+            <option value="Luxembourg">Luxembourg</option>
+            <option value="Panama">Panama</option> 
+            <option value="Papua New Guinea">Papua New Guinea</option>
+            <option value="Sweden">Sweden</option> 
+            <option value="Switzerland">Switzerland</option>
+            <option value="United States">United States</option>
+          </select>
+          <Input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          />
+          <Button type="submit" style={styles.button}>
+            Sign Up
+          </Button>
+        </form>
+        <p style={styles.link}>
+          Already have an account? <span onClick={() => navigate("/login")} style={styles.loginLink}>Login here</span>
+        </p>
+      </div>
+      <Footer />
+    </>
   );
 };
 
