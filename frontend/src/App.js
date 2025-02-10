@@ -3,9 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import MainPage from "./MainPage";
 import LoginPage from "./LoginPage";
-import Footer from "./components/Footer"; 
 import SignupPage from "./SignupPage";
-import TaskBoard from "./components/TaskBoard";  
 
 function App() {
   return (
@@ -15,9 +13,7 @@ function App() {
         <Route path="/" element={<MainPage />} />   {/* ✅ Home Page */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/tasks" element={<TaskBoard />} />  {/* ✅ Task Management Page */}
       </Routes>
-      <Footer />
     </Router>
   );
 }
