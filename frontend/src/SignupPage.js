@@ -26,8 +26,21 @@ const SignupPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+  
     if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
       alert("All fields must be filled!");
+      return;
+    }
+  
+    // ✅ Add email validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Invalid email format");
+      return;
+    }
+  
+    if (formData.password.length < 8) {
+      alert("Password must be at least 8 characters long");
       return;
     }
   
@@ -39,6 +52,8 @@ const SignupPage = () => {
     alert("Sign up successful!");
     navigate("/login");
   };
+  
+  
 
   return (
     <>

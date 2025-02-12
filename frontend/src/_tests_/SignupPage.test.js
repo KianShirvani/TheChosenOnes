@@ -9,6 +9,14 @@ jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
 }));
 
+const renderSignupPage = () => {
+  render(
+    <MemoryRouter>
+      <SignupPage />
+    </MemoryRouter>
+  );
+};
+
 describe("SignupPage", () => {
   let navigate;
 
@@ -16,14 +24,11 @@ describe("SignupPage", () => {
     navigate = jest.fn();
     useNavigate.mockReturnValue(navigate);
     jest.clearAllMocks();
+    jest.spyOn(window, "alert").mockImplementation(() => {}); // Mock alert globally
   });
 
   test("clicking 'Login here' navigates to login page", async () => {
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderSignupPage();
 
     const loginLink = screen.getByText(/login here/i);
     await userEvent.click(loginLink);
@@ -32,14 +37,12 @@ describe("SignupPage", () => {
   });
 
   test("submits form successfully and shows alert", async () => {
-    render(<MemoryRouter><SignupPage /></MemoryRouter>);
+    renderSignupPage();
 
     await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
     await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
     await userEvent.type(screen.getAllByLabelText(/password/i)[1], "password123");
-
-    jest.spyOn(window, "alert").mockImplementation(() => {});
 
     await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
@@ -48,35 +51,53 @@ describe("SignupPage", () => {
   });
 
   test("form submission fails if fields are empty", async () => {
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderSignupPage();
 
-    const submitButton = screen.getByRole("button", { name: /sign up/i });
-
-    jest.spyOn(window, "alert").mockImplementation(() => {});
-
-    await userEvent.click(submitButton);
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
     expect(window.alert).toHaveBeenCalledWith("All fields must be filled!");
     expect(navigate).not.toHaveBeenCalled();
   });
 
   test("form submission fails if passwords do not match", async () => {
-    render(<MemoryRouter><SignupPage /></MemoryRouter>);
+    renderSignupPage();
 
     await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
     await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
     await userEvent.type(screen.getAllByLabelText(/password/i)[1], "wrongpassword");
 
-    jest.spyOn(window, "alert").mockImplementation(() => {});
-
     await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
     expect(window.alert).toHaveBeenCalledWith("Passwords do not match");
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test("form submission fails if email is invalid", async () => {
+    renderSignupPage();
+
+    await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
+    await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "invalid-email");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[1], "password123");
+
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(window.alert).toHaveBeenCalledWith("Invalid email format");
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test("form submission fails if password is too short", async () => {
+    renderSignupPage();
+
+    await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
+    await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[0], "short");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[1], "short");
+
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(window.alert).toHaveBeenCalledWith("Password must be at least 8 characters long");
     expect(navigate).not.toHaveBeenCalled();
   });
 });
