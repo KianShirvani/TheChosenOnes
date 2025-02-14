@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TaskList from "./TaskList";
 import AddTask from "./AddTask";
+import SearchBar from "./SearchBar";
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState({
@@ -71,6 +72,7 @@ const TaskBoard = () => {
   return (
     <div style={styles.container}>
       <h2>Task Board</h2>
+      <SearchBar />
       <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
 
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
