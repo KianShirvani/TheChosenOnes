@@ -32,6 +32,9 @@
     align-items: center;
 }
 
+.navbar span, .header-logo {
+    cursor: pointer;
+  }
 
 
 .navbar a {

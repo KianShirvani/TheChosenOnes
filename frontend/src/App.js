@@ -6,16 +6,20 @@ import LoginPage from "./LoginPage";
 import Footer from "./components/Footer"; 
 import SignupPage from "./SignupPage";
 import TaskBoard from "./components/TaskBoard";  
+import AboutPage from "./AboutPage";
+import ContactPage from "./ContactPage";
 
 function App() {
   return (
     <Router>
-      <Header />  {/* ✅ This remains across all pages */}
+      <Header />  {/* This remains across all pages */}
       <Routes>
-        <Route path="/" element={<MainPage />} />   {/* ✅ Home Page */}
+        <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/tasks" element={<TaskBoard />} />  {/* ✅ Task Management Page */}
+        <Route path="/tasks" element={<TaskBoard />} />
+        <Route path="/about" element={<AboutPage />} />  
+        <Route path="/contact" element={<ContactPage />} />  
       </Routes>
       <Footer />
     </Router>
