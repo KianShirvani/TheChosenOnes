@@ -11,9 +11,7 @@ const { Client } = require("pg");
 // set up connection to the database
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: false
 });
 
 // to prevent connecting to the database during tests
