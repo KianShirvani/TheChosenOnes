@@ -21,7 +21,7 @@ if (process.env.NODE_ENV !== "test") {
 
 // Set up Mailgun
 const mailgun = new Mailgun(formData);
-const mg = mailgun.client({username: 'api', key: process.env.MAILGUN_API_KEY});
+const mg = mailgun.client({username: 'api', key: process.env.MAILGUN_API_KEY || 'key-yourkeyhere'});
 
 const loginUser = async(req, res) => {
     const {email, password} = req.body;
