@@ -4,7 +4,8 @@
 const bcrypt = require("bcryptjs");
 const crypto = require('crypto');
 const jsonWebToken = require("jsonwebtoken");
-const nodemailer = require('nodemailer');
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
 const { Client } = require("pg");
 
 // set up connection to the database
@@ -20,14 +21,9 @@ if (process.env.NODE_ENV !== "test") {
     client.connect();
 }
 
-// Set up Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: 'ProtonMail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Set up Mailgun
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({username: 'api', key: process.env.MAILGUN_API_KEY});
 
 const loginUser = async(req, res) => {
     const {email, password} = req.body;
@@ -79,8 +75,8 @@ const requestPasswordReset = async (req, res) => {
     );
 
     // Email options
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const data = {
+      from: `noreply@${process.env.MAILGUN_DOMAIN}`,
       to: email,
       subject: 'Password Reset',
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
@@ -90,12 +86,18 @@ const requestPasswordReset = async (req, res) => {
     };
 
     // Send email
-    await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ message: 'Password reset email sent' });
+    mg.messages.create(process.env.MAILGUN_DOMAIN, data)
+      .then(body => {
+        console.log(body);
+        res.status(200).json({ message: 'Password reset email sent' });
+      })
+      .catch(error => {
+        console.error('Error sending email:', error);
+        res.status(500).json({ error: 'Error sending email' });
+      });
   } catch (error) {
     console.error('Error in requestPasswordReset:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 };
 
@@ -122,7 +124,7 @@ const resetPassword = async (req, res) => {
     res.status(200).json({ message: 'Password has been reset' });
   } catch (error) {
     console.error('Error in resetPassword:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 };
 
