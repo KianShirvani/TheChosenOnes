@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
-import MainPage from "./MainPage";
-import LoginPage from "./LoginPage";
+import MainPage from "./pages/MainPage";
+import LoginPage from "./pages/LoginPage";
 import Footer from "./components/Footer"; 
-import SignupPage from "./SignupPage";
+import SignupPage from "./pages/SignupPage";
 import TaskBoard from "./components/TaskBoard";  
 
 function App() {

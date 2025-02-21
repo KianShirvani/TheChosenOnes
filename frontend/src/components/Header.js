@@ -2,7 +2,7 @@
 // after pull please run 'npm install' or 'npm install react-icons' to get icon thanks
 
 import React from 'react';
-import '../header.css';
+import '../css/header.css';
 import { FaBell, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 

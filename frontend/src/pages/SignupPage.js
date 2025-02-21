@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "./components/ui/input";
-import { Button } from "./components/ui/button";
-import Footer from "./components/Footer";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import Footer from "../components/Footer";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -195,7 +195,6 @@ const SignupPage = () => {
           Already have an account? <span onClick={() => navigate("/login")} style={styles.loginLink}>Login here</span>
         </p>
       </div>
-      <Footer />
     </>
   );
 };
