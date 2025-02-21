@@ -6,12 +6,14 @@ services:
     ports:
       - "${BACKEND_HOST_PORT}:${BACKEND_CONTAINER_PORT}"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - ./.env  # Load environment variables from .env
     volumes:
       - ./backend:/app
       - /app/node_modules
+    command: npm start
 
   frontend:
     container_name: frontend-container
@@ -40,6 +42,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data  # Persist data across restarts
       - ./backend/src/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Mount init.sql to auto-execute
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:
