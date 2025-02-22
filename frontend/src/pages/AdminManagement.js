@@ -21,28 +21,28 @@ const AdminManagement = () => {
     };
 
     return (
-        <div className="admin=management-container">
-            <h1>Admin Management</h1>
-            <table>
+        <div style={styles.container}>
+            <h1 style={styles.heading}>Admin Management</h1>
+            <table style={styles.table}>
                 <thead>
                     <tr>
-                        <th>Full Name</th>
-                        <th>Display Name</th>
-                        <th>Email</th>
-                        <th>Action</th>
+                        <th style={styles.th}>Full Name</th>
+                        <th style={styles.th}>Display Name</th>
+                        <th style={styles.th}>Email</th>
+                        <th style={{ ...styles.th, ...styles.actionTh }}>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {users.map((user) => (
                         <tr key={user.id}>
-                            <td>{user.fullName}</td>
-                            <td>{user.displayName}</td>
-                            <td>{user.email}</td>
-                            <td>
+                            <td style={styles.td}>{user.fullName}</td>
+                            <td style={styles.td}>{user.displayName}</td>
+                            <td style={styles.td}>{user.email}</td>
+                            <td style={{ ...styles.td, ...styles.actionTd }}>
                                 {user.isAdmin ? (
                                     "admin"
                                 ) : (
-                                    <Button onClick={() => promoteToAdmin(user.id)}>
+                                    <Button style={styles.button} onClick={() => promoteToAdmin(user.id)}>
                                         Promote to Admin
                                     </Button>
                                 )}
@@ -51,12 +51,67 @@ const AdminManagement = () => {
                     ))}
                 </tbody>
             </table>
+            <br />
+            <br />
+            <Button style={styles.navigateButton} onClick={() => navigate('/tasks')}>
+                Go to Dashboard
+            </Button>
         </div>
     );
 };
 
 const styles = {
-
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minHeight: "80vh",
+        padding: "20px",
+        boxSizing: "border-box",
+    },
+    heading: {
+        marginBottom: "20px",
+    },
+    table: {
+        width: "100%",
+        maxWidth: "800px",
+        borderCollapse: "collapse",
+        marginTop: "20px",
+    },
+    th: {
+        border: "1px solid #ddd",
+        padding: "8px",
+        textAlign: "left",
+        backgroundColor: "#f2f2f2",
+    },
+    actionTh: {
+        textAlign: "center",
+    },
+    td: {
+        border: "1px solid #ddd",
+        padding: "8px",
+        textAlign: "left",
+    },
+    actionTd: {
+        textAlign: "center",
+    },
+    button: {
+        backgroundColor: "#7000da",
+        color: "white",
+        padding: "0.75rem",
+        border: "none",
+        borderRadius: "0.5rem",
+        cursor: "pointer",
+    },
+    navigateButton: {
+        backgroundColor: "#7000da",
+        color: "white",
+        padding: "1rem",
+        border: "none",
+        borderRadius: "0.5rem",
+        cursor: "pointer",
+        fontSize: "1.1rem",
+    },
 };
 
 export default AdminManagement;
