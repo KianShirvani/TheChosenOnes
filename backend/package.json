@@ -18,7 +18,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
+    "form-data": "^4.0.2",
     "jsonwebtoken": "^9.0.2",
+    "mailgun.js": "^11.1.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
@@ -26,4 +28,4 @@
     "nodemon": "^3.1.9",
     "supertest": "^7.0.0"
   }
-} 
+}
