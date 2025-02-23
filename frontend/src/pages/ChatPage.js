@@ -1,13 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import { 
   db, storage, collection, addDoc, query, orderBy, where, onSnapshot, updateDoc, 
-  deleteDoc, doc, ref, uploadBytes, getDownloadURL, getDocs // ✅ 添加 getDocs
+  deleteDoc, doc, ref, uploadBytes, getDownloadURL, getDocs 
 } from "../components/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
 import { FaRegSmile, FaRegThumbsUp, FaImage, FaTrash, FaUsers } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import "../css/ChatPage.css";
+import { getDoc } from "firebase/firestore";
+
 
 
 const users = ["Rheiley", "Liz", "Ivy", "Kian", "Nade"];
@@ -23,6 +25,8 @@ export default function ChatPage() {
   const [groupChats, setGroupChats] = useState([]);
   const [groupName, setGroupName] = useState("");
   const fileInputRef = useRef(null);
+  const [editingGroupName, setEditingGroupName] = useState(false);
+
 
   useEffect(() => {
     localStorage.setItem("userId", userId);
@@ -58,9 +62,11 @@ export default function ChatPage() {
 
     const q = query(
       collection(db, "messages"),
-      where("participants", "array-contains", chatId),
+      where("participants", "array-contains", selectedChat.id), 
       orderBy("timestamp", "asc")
     );
+    
+    
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMessages = snapshot.docs.map((doc) => ({
@@ -77,26 +83,53 @@ export default function ChatPage() {
 
   const sendMessage = async (imageUrl = "") => {
     if (!newMessage.trim() && !imageUrl) return;
-
+  
     try {
       const isGroupChat = selectedChat?.participants?.length > 2;
-      const participants = isGroupChat ? [...selectedChat.participants] : [userId, selectedChat.id];
-
+      
+      const participants = isGroupChat ? [selectedChat.id] : [userId, selectedChat.id];
+  
       await addDoc(collection(db, "messages"), {
         text: newMessage.trim(),
         timestamp: new Date(),
         senderId: userId,
-        participants,
+        participants, 
         imageUrl: imageUrl || "",
         likes: 0,
         likedBy: [],
         isGroupChat,
       });
-
+  
       setNewMessage("");
     } catch (error) {
     }
   };
+
+  const handleLike = async (msgId) => {
+    const messageRef = doc(db, "messages", msgId);
+    const messageDoc = await getDoc(messageRef);
+  
+    if (!messageDoc.exists()) return;
+  
+    const messageData = messageDoc.data();
+    const userHasLiked = messageData.likedBy.includes(userId);
+  
+    if (userHasLiked) {
+      console.log("You already liked this message.");
+      return; 
+    }
+  
+    try {
+      await updateDoc(messageRef, {
+        likes: messageData.likes + 1,
+        likedBy: [...messageData.likedBy, userId], 
+      });
+    } catch (error) {
+      console.error("Error updating like:", error);
+    }
+  };
+  
+  
   const createGroupChat = async () => {
     if (selectedGroupUsers.length < 2) {
       return;
@@ -109,15 +142,54 @@ export default function ChatPage() {
       participants: [...selectedGroupUsers, userId],
     };
   
+    try {
+      await addDoc(collection(db, "groupChats"), group); 
+      setGroupChats((prevGroups) => [...prevGroups, group]); 
+      setSelectedChat(group); 
   
-    setGroupChats((prevGroups) => [...prevGroups, group]);
-  
-    setSelectedChat(group);
-  
-    setGroupName("");
-    setSelectedGroupUsers([]);
-    setCreatingGroup(false);
+      setGroupName("");
+      setSelectedGroupUsers([]);
+      setCreatingGroup(false);
+    } catch (error) {
+      console.error( error);
+    }
   };
+
+  const updateGroupName = async (newName) => {
+    if (!selectedChat || !selectedChat.id || !newName.trim()) return;
+  
+    try {
+    
+      const groupQuery = query(collection(db, "groupChats"), where("id", "==", selectedChat.id));
+      const querySnapshot = await getDocs(groupQuery);
+  
+      if (!querySnapshot.empty) {
+        const groupDoc = querySnapshot.docs[0].ref; 
+        await updateDoc(groupDoc, { name: newName }); 
+  
+
+        setGroupChats((prevGroups) =>
+          prevGroups.map((group) =>
+            group.id === selectedChat.id ? { ...group, name: newName } : group
+          )
+        );
+  
+      
+        setSelectedChat((prevChat) => ({
+          ...prevChat,
+          name: newName,
+        }));
+  
+        console.log(newName);
+      } else {
+        console.error("can not find");
+      }
+    } catch (error) {
+      console.error( error);
+    }
+  };
+  
+  
   
 
   const handleSelectChat = (chat) => {
@@ -135,7 +207,6 @@ export default function ChatPage() {
       <div className="chat-sidebar">
         <h2 className="chat-title">Chats</h2>
         <button className="group-button" onClick={() => {
-  console.log("🟢 Create Group 按钮被点击");
   setCreatingGroup(!creatingGroup);
 }}>
   <FaUsers /> Create Group
@@ -196,20 +267,49 @@ export default function ChatPage() {
         {selectedChat ? (
           <>
             <div className="chat-header">
-              {selectedChat?.name || `Chat with ${selectedChat.id}`}
-            </div>
+  {selectedChat?.name || `Chat with ${selectedChat.id}`}
+  {selectedChat?.participants?.length > 2 && (
+    <button onClick={() => setEditingGroupName(true)}>✏️ Rename</button>
+  )}
+    </div>
+    {editingGroupName && (
+  <div className="edit-group-name">
+    <input
+      type="text"
+      value={groupName}
+      onChange={(e) => setGroupName(e.target.value)}
+      placeholder="Enter new group name"
+    />
+    <button
+      onClick={() => {
+        updateGroupName(groupName); 
+        setEditingGroupName(false); 
+      }}
+    >
+      Save
+    </button>
+  </div>
+)}
 
-            <div className="chat-box">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`message ${msg.senderId === userId ? "self" : "other"}`}>
-                  {msg.imageUrl ? (
-                    <img src={msg.imageUrl} alt="Sent" className="chat-image" />
-                  ) : (
-                    <span>{msg.text}</span>
-                  )}
-                </div>
-              ))}
-            </div>
+<div className="chat-box">
+  {messages.map((msg) => (
+    <div key={msg.id} className={`message ${msg.senderId === userId ? "self" : "other"}`}>
+      {msg.imageUrl ? (
+        <img src={msg.imageUrl} alt="Sent" className="chat-image" />
+      ) : (
+        <span>{msg.text}</span>
+      )}
+
+      <button
+        className={`like-button ${msg.likedBy.includes(userId) ? "liked" : ""}`}  
+        onClick={() => handleLike(msg.id)} 
+      >
+        <FaRegThumbsUp /> {msg.likes} 
+      </button>
+    </div>
+  ))}
+</div>
+
 
             <div className="chat-input">
               <button className="emoji-button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
