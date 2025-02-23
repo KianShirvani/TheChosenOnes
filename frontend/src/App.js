@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import Footer from "./components/Footer"; 
 import SignupPage from "./pages/SignupPage";
 import TaskBoard from "./components/TaskBoard";  
+import AdminManagement from "./pages/AdminManagement";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/tasks" element={<TaskBoard />} />  {/* ✅ Task Management Page */}
+        <Route path="/adminManagement" element={<AdminManagement/>} /> {/* admin page to view users & promote them */}
       </Routes>
       <Footer />
     </Router>
