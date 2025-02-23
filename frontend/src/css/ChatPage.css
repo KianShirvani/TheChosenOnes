@@ -1,0 +1,275 @@
+.chat-container {
+    display: flex;
+    height: 90vh;
+    width: 80%;
+    margin: auto;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-sidebar {
+    width: 25%;
+    background: #f7f7f7;
+    padding: 20px;
+    border-right: 2px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.group-button {
+    background: #25d366;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.group-button:hover {
+    background: #1da851;
+}
+
+.group-selection {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.group-user {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.group-user input {
+    margin-right: 10px;
+}
+
+.group-name-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.confirm-group-button {
+    background: #25d366;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.confirm-group-button:hover {
+    background: #1da851;
+}
+
+.chat-users,
+.chat-groups {
+    margin-top: 10px;
+}
+
+.chat-user-button {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    border: none;
+    background: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.chat-user-button:hover,
+.chat-user-button.selected {
+    background: #25d366;
+    color: white;
+}
+
+.chat-main {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    background: #e5e5ea;
+    position: relative;
+}
+
+.chat-header {
+    background: #25d366;
+    color: white;
+    padding: 15px;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 60%;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 15px;
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.self {
+    background: #dcf8c6;
+    align-self: flex-end;
+    text-align: left;
+    border-radius: 15px 15px 0 15px;
+    padding: 10px 15px;
+    color: black;
+}
+
+.other {
+    background: white;
+    align-self: flex-start;
+    text-align: left;
+    border-radius: 15px 15px 15px 0;
+    padding: 10px 15px;
+    color: black;
+}
+
+.recalled {
+    color: gray;
+    font-style: italic;
+}
+
+.chat-image {
+    width: 150px;
+    border-radius: 10px;
+    display: block;
+}
+
+.chat-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: white;
+    border-top: 2px solid #ddd;
+    height: 55px;
+    gap: 10px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    background: #f7f7f7;
+    outline: none;
+    height: 20px;
+    line-height: 1.5;
+    min-width: 100px;
+}
+
+.emoji-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.8rem;
+    color: #666;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.emoji-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.upload-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #666;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.upload-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.send-button {
+    border: none;
+    background: #25d366;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: white;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.send-button:hover {
+    background: #1da851;
+}
+
+.like-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: gray;
+    font-size: 14px;
+    margin-top: 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+.like-button.liked {
+    color: #f39c12;
+}
