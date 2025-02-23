@@ -2,9 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { neon } = require("@neondatabase/serverless");
 
-const sql = neon(process.env.DATABASE_URL);
 const app = express();
 
 const corsOptions = {
@@ -18,20 +16,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // routes
-app.use("/auth", require("./src/routes/auth"));
-app.use("/register", require("./src/routes/userRoutes"));
-
-// Route to check database connection
-app.get("/db-version", async (req, res) => {
-  try {
-    const result = await sql`SELECT version()`;
-    const { version } = result[0];
-    res.status(200).json({ version });
-  } catch (error) {
-    console.error("Database connection error:", error);
-    res.status(500).json({ error: "Database connection failed" });
-  }
-});
+app.use("/auth", require("./routes/auth"));
+app.use("/register", require("./routes/userRoutes"));
 
 // Basic Route
 app.get("/", (req, res) => {
