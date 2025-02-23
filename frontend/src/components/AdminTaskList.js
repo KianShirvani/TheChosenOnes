@@ -18,13 +18,13 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
     <div style={styles.list}>
       <h3>{renderTitle(title)}</h3>
       {tasks.map((task) => (
-        <div key={task.id} style={styles.task}>
+        <div key={task.id} style={styles.task} data-testid="task-card">
           <strong>{task.title}</strong>
           <p>{task.description}</p>
           <p><strong>Priority:</strong> {task.priority}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
-          <div style={styles.progressBar}>
+          <div style={styles.progressBar} data-testid="progress-bar">
             <div
               style={{
                 ...styles.progressBarFilled,
@@ -39,7 +39,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
           </p>
 
           {task.dependencies && task.dependencies.length > 0 && (
-            <div style={styles.dependencies}>
+            <div style={styles.dependencies} data-testid="dependencies">
               <strong>Depends on:</strong>
               <ul>
                 {task.dependencies.map((dep) => (
@@ -50,14 +50,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
           )}
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit}>✏️</button>
+            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button">✏️</button>
             {title !== "To-Do" && (
-              <button onClick={() => onMoveTask(task, "left")} style={styles.arrow}>←</button>
+              <button onClick={() => onMoveTask(task, "left")} style={styles.arrow} data-testid="move-left-button">←</button>
             )}
             {title !== "Done" && (
-              <button onClick={() => onMoveTask(task, "right")} style={styles.arrow}>→</button>
+              <button onClick={() => onMoveTask(task, "right")} style={styles.arrow} data-testid="move-right-button">→</button>
             )}
-            <button onClick={() => onDeleteTask(task.id)} style={styles.delete}>🗑</button>
+            <button onClick={() => onDeleteTask(task.id)} style={styles.delete} data-testid="delete-button">🗑</button>
           </div>
         </div>
       ))}
@@ -66,7 +66,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
 };
 
 const styles = {
-  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px" },
+  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", marginBottom: "20px" },
   task: { background: "#fff", padding: "15px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
   actions: { display: "flex", justifyContent: "center", gap: "20px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
