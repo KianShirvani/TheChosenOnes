@@ -3,14 +3,15 @@ import { getFirestore, collection, addDoc, query, orderBy, where, onSnapshot, up
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAjZ7_7kE6e-ZtjVXZSK6vmryqLD9TT090",
-  authDomain: "chat-c447a.firebaseapp.com",
-  projectId: "chat-c447a",
-  storageBucket: "chat-c447a.appspot.com", 
-  messagingSenderId: "298256417284",
-  appId: "1:298256417284:web:f3fd997c585c94d7456b51",
-  measurementId: "G-H4GFDFM7MT"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
