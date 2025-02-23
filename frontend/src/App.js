@@ -8,7 +8,7 @@ import SignupPage from "./pages/SignupPage";
 import TaskBoard from "./components/TaskBoard";  
 import AdminDashboard from "./components/AdminDashboard";
 import AdminManagement from "./pages/AdminManagement";
-
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -21,7 +21,7 @@ function App() {
         <Route path="/tasks" element={<TaskBoard />} />  {/* ✅ Task Management Page */}
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
-
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
       <Footer />
     </Router>
