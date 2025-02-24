@@ -1,6 +1,6 @@
 import React from "react";
 
-const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) => {
+const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock }) => {
   const renderTitle = (status) => {
     switch (status) {
       case "todo":
@@ -13,7 +13,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
         return status;
     }
   };
-
+  
   return (
     <div style={styles.list}>
       <h3>{renderTitle(title)}</h3>
@@ -57,6 +57,16 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
             {title !== "Done" && (
               <button onClick={() => onMoveTask(task, "right")} style={styles.arrow} data-testid="move-right-button">→</button>
             )}
+
+           
+            <button 
+              onClick={() => onToggleLock(task.id)} 
+              style={task.locked ? styles.locked : styles.unlock} 
+              data-testid="lock-button"
+            >
+              {task.locked ? "🔒 Locked" : "🔓 Lock"}
+            </button>
+
             <button onClick={() => onDeleteTask(task.id)} style={styles.delete} data-testid="delete-button">🗑</button>
           </div>
         </div>
@@ -68,17 +78,19 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask }) =
 const styles = {
   list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", marginBottom: "20px" },
   task: { background: "#fff", padding: "15px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
-  actions: { display: "flex", justifyContent: "center", gap: "20px", marginTop: "10px" },
+  actions: { display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   delete: { background: "#dc3545", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   arrow: { background: "#6c757d", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
+  
+  locked: { background: "#343a40", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
+  unlock: { background: "#ffc107", color: "black", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
 
   progressBar: { width: "100%", height: "10px", backgroundColor: "#f0f0f0", borderRadius: "5px", marginTop: "10px" },
   progressBarFilled: { height: "100%", backgroundColor: "#28a745", borderRadius: "5px" },
   progressText: { fontSize: "0.875rem", marginTop: "5px" },
 
   timeInfo: { fontSize: "0.875rem", color: "#555", marginTop: "5px" },
-
   dependencies: { fontSize: "0.875rem", color: "#777", marginTop: "10px" },
 };
 
