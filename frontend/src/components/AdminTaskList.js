@@ -50,12 +50,26 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
           )}
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button">✏️</button>
-            {title !== "To-Do" && (
-              <button onClick={() => onMoveTask(task, "left")} style={styles.arrow} data-testid="move-left-button">←</button>
+            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button disabled={task.locked}">✏️</button>
+            
+            {title !== "To-Do" && !task.locked && (
+              <button 
+                onClick={() => onMoveTask(task, "left")} 
+                style={styles.arrow} 
+                data-testid="move-left-button"
+              >
+                ←
+              </button>
             )}
-            {title !== "Done" && (
-              <button onClick={() => onMoveTask(task, "right")} style={styles.arrow} data-testid="move-right-button">→</button>
+
+            {title !== "Done" && !task.locked && (
+              <button 
+                onClick={() => onMoveTask(task, "right")} 
+                style={styles.arrow} 
+                data-testid="move-right-button"
+              >
+                →
+              </button>
             )}
 
            

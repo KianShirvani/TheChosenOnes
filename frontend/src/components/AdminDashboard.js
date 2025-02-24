@@ -127,7 +127,7 @@ const AdminDashboard = () => {
     const task = Object.values(tasks).flat().find(task => task.id === taskId);
   
     // If task is locked, prevent deletion
-    if (task?.locked) return alert("This task is locked and cannot be deleted.");
+    if (task.locked) return alert("This task is locked and cannot be deleted.");
   
     // Proceed with deletion if not locked
     setTasks(prevTasks => {
