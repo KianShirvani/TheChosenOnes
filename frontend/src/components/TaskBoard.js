@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import TaskList from "./TaskList";
 import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
+import { useNavigate } from "react-router-dom";
 
 const TaskBoard = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState({
     todo: [{ id: "1", title: "Design UI", description: "Create homepage layout", priority: "High", dueDate: "2025-02-10" }],
     inProgress: [{ id: "2", title: "Fix login bug", description: "Debug authentication issue", priority: "Medium", dueDate: "2025-02-12" }],
@@ -74,7 +76,8 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-        <button style={styles.adminButton}>Admin Dashboard</button>
+          {/* Check the database to verify if the user is an admin before allowing access to the Admin Dashboard */}
+        <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
         <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
       </div>
 
