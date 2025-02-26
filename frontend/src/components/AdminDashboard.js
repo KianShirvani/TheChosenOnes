@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminTaskList from "../components/AdminTaskList";
 import SearchBar from "../components/SearchBar";
 import EditTaskModal from "../components/EditTaskModal";
@@ -6,6 +7,8 @@ import AddTask from "../components/AddTask";
 import "../css/AdminDashboard.css";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  
   const [tasks, setTasks] = useState({
     todo: [
       { 
@@ -85,7 +88,7 @@ const AdminDashboard = () => {
 
     setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
   };
-
+  
   const handleToggleLock = (taskId) => {
     setTasks((prevTasks) => {
       const updatedTasks = { ...prevTasks };
@@ -99,8 +102,6 @@ const AdminDashboard = () => {
       return updatedTasks;
     });
   };
-  
-  
 
   const handleMoveTask = (task, direction) => {
     //first check if task is locked before editing
@@ -121,7 +122,6 @@ const AdminDashboard = () => {
       return updatedTasks;
     });
   };
-
   const handleDeleteTask = (taskId) => {
     // Find the task in any of the task categories
     const task = Object.values(tasks).flat().find(task => task.id === taskId);
@@ -138,7 +138,6 @@ const AdminDashboard = () => {
       return updatedTasks;
     });
   };
-  
 
   const handleEditTask = (task) => {
     //first check if task is locked before editing
@@ -164,12 +163,10 @@ const AdminDashboard = () => {
   };
 
   const handleAddTask = (newTask) => {
-    setTasks(prevTasks => {
-      return {
-        ...prevTasks,
-        [newTask.status]: [...prevTasks[newTask.status], { ...newTask, id: Date.now().toString() }],
-      };
-    });
+    setTasks(prevTasks => ({
+      ...prevTasks,
+      [newTask.status]: [...prevTasks[newTask.status], { ...newTask, id: Date.now().toString() }],
+    }));
     setIsAddModalOpen(false);
   };
 
@@ -177,7 +174,23 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
 
-      <div className="add-task-container" style={{ position: "relative" }}>
+      <div className="add-task-container" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}>
+        <button
+          onClick={() => navigate("/adminManagement")}
+          className="admin-management-button"
+          style={{
+            background: "green",
+            color: "white",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontSize: "16px",
+          }}
+        >
+          Admin Management
+        </button>
+
         <button
           onClick={() => setIsAddModalOpen(true)}
           className="add-task-button"
@@ -189,9 +202,6 @@ const AdminDashboard = () => {
             borderRadius: "5px",
             cursor: "pointer",
             fontSize: "16px",
-            position: "absolute",
-            top: "-70px", 
-            right: "-5px",
           }}
         >
           + Add Task
@@ -208,7 +218,7 @@ const AdminDashboard = () => {
 
       <SearchBar />
 
-        <div className="task-board">
+      <div className="task-board">
         {Object.keys(tasks).map((status) => (
           <AdminTaskList
             key={status}
@@ -217,11 +227,10 @@ const AdminDashboard = () => {
             onMoveTask={handleMoveTask}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
-            onToggleLock={handleToggleLock} 
-            />
-          ))}
-        </div>
-
+            onToggleLock={handleToggleLock}
+          />
+        ))}
+      </div>
 
       {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} />}
       {isEditModalOpen && <EditTaskModal task={editingTask} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateTask} />}
