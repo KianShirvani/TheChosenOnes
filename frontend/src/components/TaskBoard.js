@@ -73,7 +73,10 @@ const TaskBoard = () => {
     <div style={styles.container}>
       <h2>Task Board</h2>
       <SearchBar />
-      <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
+      <div style={styles.buttonContainer}>
+        <button style={styles.adminButton}>Admin Dashboard</button>
+        <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
+      </div>
 
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
 
@@ -89,7 +92,9 @@ const TaskBoard = () => {
 const styles = {
   container: { textAlign: "center", padding: "20px", position: "relative" },
   board: { display: "flex", justifyContent: "space-around", padding: "20px", background: "#f4f5f7" },
-  addButton: { position: "absolute", right: "20px", top: "20px", padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }
+  buttonContainer: { position: "absolute", right: "20px", top: "20px", display: "flex", gap: "10px" },
+  adminButton: { padding: "10px 20px", fontSize: "16px", background: "green", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" },
+  addButton: { padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }
 };
 
 export default TaskBoard;
