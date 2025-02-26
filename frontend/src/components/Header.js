@@ -13,11 +13,11 @@ const Header = () => {
     return (
         <header className="header">
             <div className="header-left"> 
-                <div className="header-logo">Collabium</div>
+            <a onClick={() => navigate("/#")} className="header-logo" style={{ cursor: "pointer" }}>Collabium</a>
                 <nav className="navbar">
-                    <a href="#">Home</a>
-                    <a href="#">About us</a>
-                    <a href="#">Contact us</a>
+                    <a onClick={() => navigate("/#")} href="#">Home</a>
+                    <a onClick={() => navigate("/#")}href="#">About us</a>
+                    <a onClick={() => navigate("/#")}href="#">Contact us</a>
                 </nav>
             </div>
 
@@ -33,6 +33,7 @@ const Header = () => {
         </header>
     );
 };
+
 
 export default Header;
 
