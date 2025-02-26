@@ -18,7 +18,8 @@ const AdminDashboard = () => {
         endDate: "2025-03-10", 
         progress: 20, 
         status: "todo",
-        dependencies: ["2: Fix login bug"]
+        dependencies: ["2: Fix login bug"],
+        locked: false
       }
     ],
     inProgress: [
@@ -32,7 +33,8 @@ const AdminDashboard = () => {
         endDate: "2025-03-12", 
         progress: 70, 
         status: "inProgress", 
-        dependencies: [] 
+        dependencies: [] ,
+        locked: false
       }
     ],
     done: [
@@ -46,7 +48,8 @@ const AdminDashboard = () => {
         endDate: "2025-03-15", 
         progress: 100, 
         status: "done", 
-        dependencies: [] 
+        dependencies: [] ,
+        locked: false
       }
     ]
   });
@@ -83,7 +86,26 @@ const AdminDashboard = () => {
     setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
   };
 
+  const handleToggleLock = (taskId) => {
+    setTasks((prevTasks) => {
+      const updatedTasks = { ...prevTasks };
+  
+      Object.keys(updatedTasks).forEach((status) => {
+        updatedTasks[status] = updatedTasks[status].map((task) =>
+          task.id === taskId ? { ...task, locked: !task.locked } : task
+        );
+      });
+  
+      return updatedTasks;
+    });
+  };
+  
+  
+
   const handleMoveTask = (task, direction) => {
+    //first check if task is locked before editing
+    if (task.locked) return alert("This task is locked and cannot be edited.");
+    //task is NOT locked so allow move
     const columnOrder = ["todo", "inProgress", "done"];
     const currentIndex = columnOrder.findIndex(status => tasks[status].some(t => t.id === task.id));
 
@@ -101,6 +123,13 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteTask = (taskId) => {
+    // Find the task in any of the task categories
+    const task = Object.values(tasks).flat().find(task => task.id === taskId);
+  
+    // If task is locked, prevent deletion
+    if (task.locked) return alert("This task is locked and cannot be deleted.");
+  
+    // Proceed with deletion if not locked
     setTasks(prevTasks => {
       const updatedTasks = { ...prevTasks };
       Object.keys(updatedTasks).forEach(status => {
@@ -109,13 +138,20 @@ const AdminDashboard = () => {
       return updatedTasks;
     });
   };
+  
 
   const handleEditTask = (task) => {
+    //first check if task is locked before editing
+    if (task.locked) return alert("This task is locked and cannot be edited.");
+    //task is NOT locked so allow edits
     setEditingTask(task);
     setIsEditModalOpen(true);
   };
 
   const handleUpdateTask = (updatedTask) => {
+    //first check if task is locked before editing
+    if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
+    //task is NOT locked so allow update
     setTasks(prevTasks => {
       const updatedTasks = { ...prevTasks };
       Object.keys(updatedTasks).forEach(status => {
@@ -172,7 +208,7 @@ const AdminDashboard = () => {
 
       <SearchBar />
 
-      <div className="task-board">
+        <div className="task-board">
         {Object.keys(tasks).map((status) => (
           <AdminTaskList
             key={status}
@@ -181,9 +217,11 @@ const AdminDashboard = () => {
             onMoveTask={handleMoveTask}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
-          />
-        ))}
-      </div>
+            onToggleLock={handleToggleLock} 
+            />
+          ))}
+        </div>
+
 
       {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} />}
       {isEditModalOpen && <EditTaskModal task={editingTask} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateTask} />}
