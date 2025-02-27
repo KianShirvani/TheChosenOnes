@@ -12,6 +12,12 @@ const TaskBoard = () => {
     done: [{ id: "3", title: "Deploy backend", description: "Push backend to production", priority: "Low", dueDate: "2025-02-15" }],
   });
 
+  const [taskListColors, setTaskListColors] = useState({
+    todo: "#e0e0e0",
+    inProgress: "#e0e0e0",
+    done: "#e0e0e0",
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -71,6 +77,13 @@ const TaskBoard = () => {
     });
   };
 
+  const handleAssignColor = (status, color) => {
+    setTaskListColors((prevColors) => ({
+      ...prevColors,
+      [status]: color,
+    }));
+  };
+
   return (
     <div style={styles.container}>
       <h2>Task Board</h2>
@@ -84,9 +97,9 @@ const TaskBoard = () => {
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
 
       <div style={styles.board}>
-        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
-        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
-        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} />
+        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.todo} onAssignColor={(color) => handleAssignColor("todo", color)}/>
+        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.inProgress} onAssignColor={(color) => handleAssignColor("inProgress", color)}/>
+        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.done} onAssignColor={(color) => handleAssignColor("done", color)}/>
       </div>
     </div>
   );
