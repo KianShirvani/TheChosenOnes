@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -17,6 +18,8 @@ const SignupPage = () => {
     confirmPassword: "",
   });
 
+  const [message, setMessage] = useState("");
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -24,7 +27,7 @@ const SignupPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
   
     if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
@@ -49,8 +52,24 @@ const SignupPage = () => {
       return;
     }
   
-    alert("Sign up successful!");
-    navigate("/login");
+    try {
+      const response = await axios.post('/register', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNum: formData.phoneNum,
+        country: formData.country,
+        displayName: formData.username,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
+      setMessage(response.data.message);
+      alert("Sign up successful!");
+      navigate("/login");
+    } catch (error) {
+      setMessage(error.response.data.error || 'An error occurred');
+      alert("Sign up failed!");
+    }
   };
   
   
