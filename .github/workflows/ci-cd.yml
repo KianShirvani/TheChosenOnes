@@ -34,7 +34,6 @@ jobs:
           echo "BACKEND_CONTAINER_PORT=5000" >> .env
           echo "LOCALHOST=db-container" >> .env
           echo "DB_HOST=db" >> .env  # Ensure DB_HOST is set to 'db' for Docker Compose service
-          # Add more environment variables here as needed
 
       - name: Install Backend Dependencies
         working-directory: ./backend
@@ -50,7 +49,7 @@ jobs:
 
       - name: Wait for DB to be ready
         run: |
-          docker exec db-container bash -c "until pg_isready -U postgres; do sleep 1; done;"
+          docker exec -T db-container bash -c "until pg_isready -U postgres; do sleep 1; done;"
 
       - name: Run Backend Tests
         working-directory: ./backend
