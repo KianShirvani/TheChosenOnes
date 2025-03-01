@@ -4,6 +4,6 @@ const { validateRegistration } = require('../middlewares/validateRegistration');
 const router = express.Router();
 
 // Register route with validation middleware
-router.post('/register', validateRegistration, registerUser);
+router.post('/', validateRegistration, registerUser);
 
 module.exports = router;
