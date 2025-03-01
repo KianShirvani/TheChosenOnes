@@ -7,6 +7,6 @@ const router = express.Router();
 
 // Promote user to admin route with validation middleware
 router.post('/promote', validateAdmin, promoteToAdmin);
-router.get('/stats', getAdminStats);
+router.get('/stats', validateAdmin, getAdminStats);
 
 module.exports = router;
