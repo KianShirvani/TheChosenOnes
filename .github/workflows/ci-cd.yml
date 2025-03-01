@@ -23,28 +23,34 @@ jobs:
         run: |
           echo "BACKEND_HOST_PORT=5000" >> .env
           echo "BACKEND_CONTAINER_PORT=5000" >> .env
+          echo "LOCALHOST=db-container" >> .env
+          echo "DB_HOST=db" >> .env  # Ensure DB_HOST is set to 'db' for Docker Compose service
           # Add more environment variables here as needed
 
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm ci
 
-      - name: Run Backend Tests
-        working-directory: ./backend
-        run: npm test
-
       - name: Install Frontend Dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Run Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d
+
+      - name: Wait for DB to be ready
+        run: |
+          docker exec db-container bash -c "until pg_isready -U postgres; do sleep 1; done;"
+        
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: npm test
 
       # Uncomment this once frontend tests are implemented
       # - name: Run Frontend Tests
       #   working-directory: ./frontend
       #   run: npm test
-
-      - name: Run Docker Compose
-        run: |
-          docker-compose -f docker-compose.yml up -d
 
   merge-check:
     name: Ensure Merge Success into dev
