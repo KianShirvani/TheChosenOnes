@@ -7,7 +7,7 @@ describe('Database Initialization', () => {
   beforeAll(async () => {
     client = new Client({
       user: 'postgres',
-      host: 'localhost',
+      host: 'db-container',
       database: 'mydatabase',
       password: 'password',
       port: 5432,
