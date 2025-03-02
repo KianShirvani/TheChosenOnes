@@ -48,7 +48,7 @@ const AdminDashboard = () => {
       updateTaskStats(data);
   
     } catch (error) {
-      console.error("❌ Error fetching tasks:", error);
+      console.error(" Error fetching tasks:", error);
     }
   };
   
@@ -74,40 +74,43 @@ const AdminDashboard = () => {
     setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
   };
   
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) return alert("This task is locked and cannot be moved.");
   
-  const handleToggleLock = (taskId) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-  
-      Object.keys(updatedTasks).forEach((status) => {
-        updatedTasks[status] = updatedTasks[status].map((task) =>
-          task.id === taskId ? { ...task, locked: !task.locked } : task
-        );
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${task.id}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direction }),
       });
   
-      return updatedTasks;
-    });
+      if (!response.ok) {
+        throw new Error(`Failed to move task: ${response.statusText}`);
+      }
+  
+      fetchTasks();
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
+  }
+  
+  const handleToggleLock = async (taskId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}/lock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to toggle lock: ${response.statusText}`);
+      }
+  
+      fetchTasks();
+    } catch (error) {
+      console.error(" Error toggling lock:", error);
+    }
   };
-
-  const handleMoveTask = (task, direction) => {
-    //first check if task is locked before editing
-    if (task.locked) return alert("This task is locked and cannot be edited.");
-    //task is NOT locked so allow move
-    const columnOrder = ["todo", "inProgress", "done"];
-    const currentIndex = columnOrder.findIndex(status => tasks[status].some(t => t.id === task.id));
-
-    if (currentIndex === -1) return;
-
-    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= columnOrder.length) return;
-
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[columnOrder[currentIndex]] = updatedTasks[columnOrder[currentIndex]].filter(t => t.id !== task.id);
-      updatedTasks[columnOrder[newIndex]] = [...updatedTasks[columnOrder[newIndex]], { ...task, status: columnOrder[newIndex] }];
-      return updatedTasks;
-    });
-  };
+  
   const handleDeleteTask = async (taskId) => {
     try {
       const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}`, {
@@ -122,7 +125,7 @@ const AdminDashboard = () => {
       const updatedData = await fetchTasks(); 
       updateTaskStats(updatedData); 
     } catch (error) {
-      console.error("❌ Error deleting task:", error);
+      console.error(" Error deleting task:", error);
     }
   };
   
@@ -152,7 +155,7 @@ const AdminDashboard = () => {
       
       fetchTasks();
     } catch (error) {
-      console.error("❌ Error updating task:", error);
+      console.error(" Error updating task:", error);
     }
     setIsEditModalOpen(false);
   };
@@ -176,7 +179,7 @@ const AdminDashboard = () => {
       updateTaskStats(updatedData);
   
     } catch (error) {
-      console.error("❌ Error adding task:", error);
+      console.error(" Error adding task:", error);
     }
   };
   

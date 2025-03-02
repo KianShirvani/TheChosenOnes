@@ -44,56 +44,49 @@ const TaskBoard = () => {
   // Create or update task in the backend
   const handleSaveTask = async (taskData) => {
     if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
-      console.error("❌ Missing fields:", taskData);
+      console.error(" Missing fields:", taskData);
       return;
     }
-
+  
     const updatedTaskData = { ...taskData, id: editingTask ? editingTask.id : undefined };
-
+  
     try {
-      let response;
-      if (editingTask) {
-        // PUT request to update task
-        response = await fetch(`http://localhost:5001/api/tasks/${updatedTaskData.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(updatedTaskData),
-        });
-      } else {
-        // POST request to create task
-        response = await fetch("http://localhost:5001/api/tasks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(updatedTaskData),
-        });
-      }
-
-      const result = await response.json();
+      const url = editingTask
+        ? `http://localhost:5001/api/tasks/${updatedTaskData.id}`
+        : "http://localhost:5001/api/tasks";
+      const method = editingTask ? "PUT" : "POST";
+  
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updatedTaskData),
+      });
+  
       if (response.ok) {
         setIsModalOpen(false);
-        setEditingTask(null);
-        fetchTasks(); // Refresh task list after create/update
+        setEditingTask(null);  // Reset editingTask after save 
+        fetchTasks(); // Refresh UI after update
       } else {
-        console.error("❌ Error saving task:", result.message);
+        console.error(" Error saving task:", await response.json());
       }
     } catch (error) {
-      console.error("❌ Fetch error:", error);
+      console.error("Fetch error:", error);
     }
   };
+  
+  
 
   // Edit task
   const handleEditTask = (task) => {
+    if (task.locked) {
+      alert("This task is locked and cannot be edited.");
+      return;
+    }
     setEditingTask(task);
     setIsModalOpen(true);
   };
+  
 
   // Delete task from the backend
   const handleDeleteTask = async (taskId) => {
@@ -108,33 +101,35 @@ const TaskBoard = () => {
         fetchTasks(); // Refresh task list after delete
       } else {
         const result = await response.json();
-        console.error("❌ Error deleting task:", result.message);
+        console.error("Error deleting task:", result.message);
       }
     } catch (error) {
-      console.error("❌ Fetch error:", error);
+      console.error(" Fetch error:", error);
     }
   };
 
   // Move task between columns (todo, inProgress, done)
-  const handleMoveTask = (task, direction) => {
-    const columnOrder = ["todo", "inProgress", "done"];
-    const currentIndex = columnOrder.indexOf(
-      Object.keys(tasks).find((status) => tasks[status].some((t) => t.id === task.id))
-    );
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) {
+      alert("This task is locked and cannot be moved.");
+      return;
+    }
 
-    if (currentIndex === -1) return;
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${task.id}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ direction }),
+      });
 
-    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= columnOrder.length) return;
+      if (!response.ok) throw new Error("Failed to move task");
 
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[columnOrder[currentIndex]] = updatedTasks[columnOrder[currentIndex]].filter((t) => t.id !== task.id);
-      updatedTasks[columnOrder[newIndex]] = [...updatedTasks[columnOrder[newIndex]], task];
-      return updatedTasks;
-    });
+      fetchTasks(); // Refresh UI
+    } catch (error) {
+      console.error(" Error moving task:", error);
+    }
   };
-
   const handleAssignColor = (status, color) => {
     setTaskListColors((prevColors) => ({
       ...prevColors,
@@ -148,7 +143,7 @@ const TaskBoard = () => {
       <SearchBar />
       <div style={styles.buttonContainer}>
         <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
-        <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
+        <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
