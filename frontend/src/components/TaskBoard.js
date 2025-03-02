@@ -6,8 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 const TaskBoard = () => {
   const navigate = useNavigate();
+  const [tasks, setTasks] = useState({
+    todo: [],
+    inProgress: [],
+    done: [],
+  });
 
-  const [tasks, setTasks] = useState({ todo: [], inProgress: [], done: [] });
   const [taskListColors, setTaskListColors] = useState({
     todo: "#e0e0e0",
     inProgress: "#e0e0e0",
@@ -17,14 +21,12 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  
+  // Fetch tasks from the backend
   const fetchTasks = async () => {
     try {
-      console.log("Fetching tasks...");
       const response = await fetch("http://localhost:5001/api/tasks");
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      console.log("Fetched tasks:", data);
       setTasks({
         todo: data.todo || [],
         inProgress: data.inProgress || [],
@@ -36,60 +38,49 @@ const TaskBoard = () => {
   };
 
   useEffect(() => {
-    fetchTasks();
+    fetchTasks(); // Fetch tasks on initial load
   }, []);
 
+  // Create or update task in the backend
   const handleSaveTask = async (taskData) => {
-    console.log("🔍 Sending Task Data:", JSON.stringify(taskData));
-  
-  
     if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
       console.error("❌ Missing fields:", taskData);
-      console.log("🔍 Sending Task Data:", JSON.stringify(updatedTaskData));
       return;
     }
-  
 
-    const updatedTaskData = {
-      ...taskData,
-      id: editingTask ? editingTask.id : undefined, 
-    };
-  
+    const updatedTaskData = { ...taskData, id: editingTask ? editingTask.id : undefined };
+
     try {
       let response;
-  
       if (editingTask) {
-        console.log("Updating task with ID:", editingTask.id);
+        // PUT request to update task
         response = await fetch(`http://localhost:5001/api/tasks/${updatedTaskData.id}`, {
           method: "PUT",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json" 
+            "Accept": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify(updatedTaskData)
-          
+          body: JSON.stringify(updatedTaskData),
         });
       } else {
+        // POST request to create task
         response = await fetch("http://localhost:5001/api/tasks", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json" 
+            "Accept": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify(updatedTaskData)
+          body: JSON.stringify(updatedTaskData),
         });
       }
-  
+
       const result = await response.json();
-      console.log("📩 Response from server:", result);
-      
       if (response.ok) {
-        console.log("✅ Task saved successfully:", result.task);
         setIsModalOpen(false);
         setEditingTask(null);
-        fetchTasks(); 
+        fetchTasks(); // Refresh task list after create/update
       } else {
         console.error("❌ Error saving task:", result.message);
       }
@@ -97,47 +88,34 @@ const TaskBoard = () => {
       console.error("❌ Fetch error:", error);
     }
   };
-  
+
+  // Edit task
   const handleEditTask = (task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
 
+  // Delete task from the backend
   const handleDeleteTask = async (taskId) => {
-    console.log("Trying to delete task with ID:", taskId); 
-    if (!taskId) {
-      console.error("Error: taskId is undefined or null!");
-      return;
-    }
-
     try {
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
-      console.log("Response status:", response.status);
-
       if (response.ok) {
-        console.log("Task deleted successfully");
-
-        setTasks((prevTasks) => {
-          const updatedTasks = { ...prevTasks };
-          Object.keys(updatedTasks).forEach((status) => {
-            updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== taskId);
-          });
-          console.log("Updated tasks:", updatedTasks);
-          return updatedTasks;
-        });
+        fetchTasks(); // Refresh task list after delete
       } else {
         const result = await response.json();
-        console.error("Error deleting task:", result.message);
+        console.error("❌ Error deleting task:", result.message);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error("❌ Fetch error:", error);
     }
   };
 
+  // Move task between columns (todo, inProgress, done)
   const handleMoveTask = (task, direction) => {
     const columnOrder = ["todo", "inProgress", "done"];
     const currentIndex = columnOrder.indexOf(
