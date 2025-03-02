@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TaskList from "./TaskList";
 import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
@@ -6,12 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 const TaskBoard = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState({
-    todo: [{ id: "1", title: "Design UI", description: "Create homepage layout", priority: "High", dueDate: "2025-02-10" }],
-    inProgress: [{ id: "2", title: "Fix login bug", description: "Debug authentication issue", priority: "Medium", dueDate: "2025-02-12" }],
-    done: [{ id: "3", title: "Deploy backend", description: "Push backend to production", priority: "Low", dueDate: "2025-02-15" }],
-  });
 
+  const [tasks, setTasks] = useState({ todo: [], inProgress: [], done: [] });
   const [taskListColors, setTaskListColors] = useState({
     todo: "#e0e0e0",
     inProgress: "#e0e0e0",
@@ -21,41 +17,125 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  const handleSaveTask = (taskData) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-
-      if (editingTask) {
-        Object.keys(updatedTasks).forEach((status) => {
-          updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== editingTask.id);
-        });
-        const newStatus = taskData.status || "todo";
-        updatedTasks[newStatus] = [...(updatedTasks[newStatus] || []), { ...taskData, id: editingTask.id }];
-      } else {
-        const newStatus = taskData.status || "todo";
-        updatedTasks[newStatus] = [...(updatedTasks[newStatus] || []), { ...taskData, id: Date.now().toString() }];
-      }
-
-      return updatedTasks;
-    });
-
-    setIsModalOpen(false);
-    setEditingTask(null);
+  
+  const fetchTasks = async () => {
+    try {
+      console.log("Fetching tasks...");
+      const response = await fetch("http://localhost:5001/api/tasks");
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      console.log("Fetched tasks:", data);
+      setTasks({
+        todo: data.todo || [],
+        inProgress: data.inProgress || [],
+        done: data.done || [],
+      });
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
   };
 
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const handleSaveTask = async (taskData) => {
+    console.log("🔍 Sending Task Data:", JSON.stringify(taskData));
+  
+  
+    if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
+      console.error("❌ Missing fields:", taskData);
+      console.log("🔍 Sending Task Data:", JSON.stringify(updatedTaskData));
+      return;
+    }
+  
+
+    const updatedTaskData = {
+      ...taskData,
+      id: editingTask ? editingTask.id : undefined, 
+    };
+  
+    try {
+      let response;
+  
+      if (editingTask) {
+        console.log("Updating task with ID:", editingTask.id);
+        response = await fetch(`http://localhost:5001/api/tasks/${updatedTaskData.id}`, {
+          method: "PUT",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json" 
+          },
+          credentials: "include",
+          body: JSON.stringify(updatedTaskData)
+          
+        });
+      } else {
+        response = await fetch("http://localhost:5001/api/tasks", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json" 
+          },
+          credentials: "include",
+          body: JSON.stringify(updatedTaskData)
+        });
+      }
+  
+      const result = await response.json();
+      console.log("📩 Response from server:", result);
+      
+      if (response.ok) {
+        console.log("✅ Task saved successfully:", result.task);
+        setIsModalOpen(false);
+        setEditingTask(null);
+        fetchTasks(); 
+      } else {
+        console.error("❌ Error saving task:", result.message);
+      }
+    } catch (error) {
+      console.error("❌ Fetch error:", error);
+    }
+  };
+  
   const handleEditTask = (task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
 
-  const handleDeleteTask = (taskId) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach((status) => {
-        updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== taskId);
+  const handleDeleteTask = async (taskId) => {
+    console.log("Trying to delete task with ID:", taskId); 
+    if (!taskId) {
+      console.error("Error: taskId is undefined or null!");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
       });
-      return updatedTasks;
-    });
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        console.log("Task deleted successfully");
+
+        setTasks((prevTasks) => {
+          const updatedTasks = { ...prevTasks };
+          Object.keys(updatedTasks).forEach((status) => {
+            updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== taskId);
+          });
+          console.log("Updated tasks:", updatedTasks);
+          return updatedTasks;
+        });
+      } else {
+        const result = await response.json();
+        console.error("Error deleting task:", result.message);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
   const handleMoveTask = (task, direction) => {
@@ -89,7 +169,6 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-          {/* Check the database to verify if the user is an admin before allowing access to the Admin Dashboard */}
         <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
         <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
       </div>
@@ -97,9 +176,33 @@ const TaskBoard = () => {
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
 
       <div style={styles.board}>
-        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.todo} onAssignColor={(color) => handleAssignColor("todo", color)}/>
-        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.inProgress} onAssignColor={(color) => handleAssignColor("inProgress", color)}/>
-        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.done} onAssignColor={(color) => handleAssignColor("done", color)}/>
+        <TaskList
+          title="To-Do"
+          tasks={tasks.todo}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.todo}
+          onAssignColor={(color) => handleAssignColor("todo", color)}
+        />
+        <TaskList
+          title="In Progress"
+          tasks={tasks.inProgress}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.inProgress}
+          onAssignColor={(color) => handleAssignColor("inProgress", color)}
+        />
+        <TaskList
+          title="Done"
+          tasks={tasks.done}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.done}
+          onAssignColor={(color) => handleAssignColor("done", color)}
+        />
       </div>
     </div>
   );

@@ -1,31 +1,116 @@
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
-const corsOptions = {
-    origin: process.env.FRONTEND_URL, 
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,  
-  };
+let tasks = {
+    todo: [],
+    inProgress: [],
+    done: []
+};
 
-// Middleware
-app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); 
 
-// routes
-app.use("/auth", require("./routes/auth"));
-app.use("/register", require("./routes/userRoutes"));
+const corsOptions = {
+    origin:  "http://localhost:3001",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,  
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
 
-// Basic Route
-app.get("/", (req, res) => {
-  res.send("Hello from backend");
+app.use(cors(corsOptions));
+
+
+app.use((req, res, next) => {
+    console.log("Middleware Check - Request Body:", req.body);
+    next();
 });
 
-// Start Express Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.post("/api/tasks", (req, res) => {
+  const { title, description, priority, dueDate, status } = req.body;
+
+  if (!title || !description || !priority || !dueDate) {
+    return res.status(400).json({ message: "All fields except status are required" });
+  }
+
+  const newTask = {
+    id: Date.now().toString(),
+    title,
+    description,
+    priority,
+    dueDate,
+    status,
+  };
+
+  tasks[status] = tasks[status] || [];
+  tasks[status].push(newTask);
+
+  return res.status(201).json({ message: "Task created successfully", task: newTask });
+});
+
+
+
+app.put("/api/tasks/:taskId", (req, res) => {
+  const { taskId } = req.params; 
+  const { title, description, priority, dueDate, status } = req.body;
+
+  let task = null;
+  Object.keys(tasks).forEach((category) => {
+    task = tasks[category].find(t => t.id === taskId);
+    if (task) return; 
+  });
+
+  if (!task) {
+    console.error("Task not found:", taskId); 
+    return res.status(404).json({ message: "Task not found" });
+  }
+
+ 
+  task.title = title || task.title;
+  task.description = description || task.description;
+  task.priority = priority || task.priority;
+  task.dueDate = dueDate || task.dueDate;
+  task.status = status || task.status;
+
+  console.log("Updated task:", task); 
+
+  return res.status(200).json({ message: "Task updated successfully", task });
+});
+
+
+
+app.delete("/api/tasks/:taskId", (req, res) => {
+  const taskId = req.params.taskId.toString();
+
+  console.log(`Deleting task with ID: ${taskId}`); 
+
+  let taskFound = false;
+
+  Object.keys(tasks).forEach((status) => {
+      const initialLength = tasks[status].length;
+      tasks[status] = tasks[status].filter(task => task.id !== taskId);
+      if (tasks[status].length < initialLength) {
+          taskFound = true;
+      }
+  });
+
+  if (!taskFound) {
+      return res.status(404).json({ message: "Task not found" });
+  }
+
+  return res.status(200).json({ message: "Task deleted successfully" });
+});
+
+
+
+app.get("/api/tasks", (req, res) => {
+    return res.status(200).json(tasks);
+});
+
+
+const PORT = 5001;
+app.listen(PORT, "127.0.0.1", () => {
+  console.log(`Server is running on http://127.0.0.1:${PORT}`);
 });
