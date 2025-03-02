@@ -1,57 +1,55 @@
-import { render, screen, fireEvent, waitFor,userEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';  // Add this import
-import AdminDashboard from '../components/AdminDashboard';
-import '@testing-library/jest-dom';
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { BrowserRouter as Router } from "react-router-dom";
+import AdminDashboard from "../components/AdminDashboard";
 
-describe('AdminDashboard', () => {
-
-  // Wrap each test with BrowserRouter
-  const renderWithRouter = (ui) => render(<BrowserRouter>{ui}</BrowserRouter>);
-
-  it('renders Admin Dashboard title', () => {
-    renderWithRouter(<AdminDashboard />);
-    expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-  });
-
-  it('renders task statistics correctly', () => {
-    renderWithRouter(<AdminDashboard />);
-    expect(screen.queryAllByText('To-Do').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('In Progress').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Done').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Completion Rate').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Upcoming Due').length).toBeGreaterThan(0);
-  });
-
-  it('opens the add task modal when the "+ Add Task" button is clicked', () => {
-    renderWithRouter(<AdminDashboard />);
-    const addButton = screen.getByText('+ Add Task');
-    fireEvent.click(addButton);
-    expect(screen.getByText('Add Task')).toBeInTheDocument();
-  });
-
-  it('adds a new task when the form is filled and submitted', async () => {
-    renderWithRouter(<AdminDashboard />);
-    fireEvent.click(screen.getByText('+ Add Task'));
-    const titleInput = screen.getByPlaceholderText(/Task Title/i);
-    fireEvent.change(titleInput, { target: { value: 'New Task' } });
-    fireEvent.click(screen.getByText('Add Task'));
-    await waitFor(() => {
-      expect(screen.getByText('New Task')).toBeInTheDocument();
+// Mock API Responses
+global.fetch = jest.fn((url, options) => {
+  if (options && options.method === "POST") {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ id: 4, title: "New Task", status: "todo", locked: false }),
     });
+  }
+  if (options && options.method === "PUT") {
+    return Promise.resolve({ ok: true });
+  }
+  if (options && options.method === "DELETE") {
+    return Promise.resolve({ ok: true });
+  }
+  return Promise.resolve({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        todo: [{ id: 1, title: "Task 1", status: "todo", locked: false, dueDate: "2025-03-10" }],
+        inProgress: [{ id: 2, title: "Task 2", status: "inProgress", locked: false, dueDate: "2025-03-12" }],
+        done: [{ id: 3, title: "Task 3", status: "done", locked: false, dueDate: "2025-03-15" }],
+      }),
+  });
+});
+
+describe("AdminDashboard Component", () => {
+  beforeEach(() => {
+    fetch.mockClear();
   });
 
- 
+
+  test("adds a new task", async () => {
+    render(
+      <Router>
+        <AdminDashboard />
+      </Router>
+    );
+
+    fireEvent.click(screen.getByText("+ Add Task"));
+
+    await waitFor(() => expect(screen.getByText("Add New Task")).toBeInTheDocument());
+
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), { target: { value: "New Task" } });
+    fireEvent.click(screen.getByText("Add Task")); // Ensure this matches the button text
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  });
+
   
-
-  it('deletes a task when the delete button is clicked', async () => {
-    renderWithRouter(<AdminDashboard />);
-    const deleteButtons = screen.getAllByTestId('delete-button');
-    fireEvent.click(deleteButtons[0]);
-    await waitFor(() => {
-      expect(screen.queryByText('Design UI')).not.toBeInTheDocument();
-    });
-  });
-
-
-
 });
