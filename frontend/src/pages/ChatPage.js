@@ -8,7 +8,7 @@ import EmojiPicker from "emoji-picker-react";
 import { FaRegSmile, FaRegThumbsUp, FaImage, FaTrash, FaUsers } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import "../css/ChatPage.css";
-import { getDoc } from "firebase/firestore";
+import { getDoc,setDoc } from "firebase/firestore";
 
 
 
@@ -50,84 +50,105 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!selectedChat) return;
-
-    const isGroupChat = selectedChat?.participants?.length > 2;
-    const chatId = isGroupChat ? selectedChat?.id : selectedChat?.id || selectedChat;
-
   
-
-    if (!chatId) {
-      return;
-    }
-
+    console.log("📢 Fetching messages for:", selectedChat.id);
+  
     const q = query(
       collection(db, "messages"),
-      where("participants", "array-contains", selectedChat.id), 
+      where("chatId", "==", selectedChat.id),  
       orderBy("timestamp", "asc")
     );
-    
-    
+  
 
+  
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMessages = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
-      
-      setMessages(newMessages);
+  
+      console.log("🔄 New messages received:", newMessages);
+      setMessages(newMessages); 
     });
-
+  
     return () => unsubscribe();
   }, [selectedChat]);
-
+  
+  
+  
   const sendMessage = async (imageUrl = "") => {
     if (!newMessage.trim() && !imageUrl) return;
   
+    const messageId = uuidv4(); 
+  
+    const newMsg = {
+      id: messageId,
+      text: newMessage.trim(),
+      timestamp: new Date().toISOString(),
+      senderId: userId,
+      chatId: selectedChat.id,
+      imageUrl: imageUrl || "",
+      likes: 0,
+      likedBy: [],
+      isGroupChat: selectedChat?.participants?.length > 2,
+    };
+  
+
+    setMessages((prevMessages) => [...prevMessages, newMsg]);
+  
     try {
-      const isGroupChat = selectedChat?.participants?.length > 2;
-      
-      const participants = isGroupChat ? [selectedChat.id] : [userId, selectedChat.id];
   
-      await addDoc(collection(db, "messages"), {
-        text: newMessage.trim(),
-        timestamp: new Date(),
-        senderId: userId,
-        participants, 
-        imageUrl: imageUrl || "",
-        likes: 0,
-        likedBy: [],
-        isGroupChat,
-      });
-  
-      setNewMessage("");
+      await setDoc(doc(db, "messages", messageId), newMsg);
+      console.log("✅ Message successfully sent!");
     } catch (error) {
+      console.error("❌ Error sending message:", error);
     }
+  
+    setNewMessage(""); 
   };
+  
 
   const handleLike = async (msgId) => {
+    console.log("👍 Like button clicked for message:", msgId); 
+  
     const messageRef = doc(db, "messages", msgId);
     const messageDoc = await getDoc(messageRef);
   
-    if (!messageDoc.exists()) return;
+    if (!messageDoc.exists()) {
+      console.error("❌ Message not found in Firestore:", msgId);
+      return;
+    }
   
     const messageData = messageDoc.data();
     const userHasLiked = messageData.likedBy.includes(userId);
   
     if (userHasLiked) {
-      console.log("You already liked this message.");
-      return; 
+      console.log("❌ You already liked this message.");
+      return;
     }
   
     try {
+      
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === msgId
+            ? { ...msg, likes: msg.likes + 1, likedBy: [...msg.likedBy, userId] }
+            : msg
+        )
+      );
+  
       await updateDoc(messageRef, {
         likes: messageData.likes + 1,
-        likedBy: [...messageData.likedBy, userId], 
+        likedBy: [...messageData.likedBy, userId],
       });
+  
+      console.log("Like added:", msgId);
     } catch (error) {
-      console.error("Error updating like:", error);
+      console.error(" Error updating like:", error);
     }
   };
+  
+  
   
   
   const createGroupChat = async () => {
@@ -193,14 +214,17 @@ export default function ChatPage() {
   
 
   const handleSelectChat = (chat) => {
-
+    if (!chat) return;
+  
+    console.log("📢 Chat selected:", chat.id);
+  
     if (typeof chat === "string") {
-      const newSelectedChat = { id: chat, participants: [userId, chat] };
-      setSelectedChat(newSelectedChat);
+      setSelectedChat({ id: chat, participants: [userId, chat] });
     } else {
       setSelectedChat(chat);
     }
   };
+  
 
   return (
     <div className="chat-container">
@@ -300,12 +324,13 @@ export default function ChatPage() {
         <span>{msg.text}</span>
       )}
 
-      <button
-        className={`like-button ${msg.likedBy.includes(userId) ? "liked" : ""}`}  
-        onClick={() => handleLike(msg.id)} 
-      >
-        <FaRegThumbsUp /> {msg.likes} 
-      </button>
+<button
+  className={`like-button ${msg.likedBy.includes(userId) ? "liked" : ""}`}
+  onClick={() => handleLike(msg.id)}
+>
+  <FaRegThumbsUp /> {msg.likes} 
+</button>
+
     </div>
   ))}
 </div>
