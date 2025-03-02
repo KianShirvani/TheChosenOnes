@@ -18,6 +18,7 @@ app.use(express.json());
 // routes
 app.use("/auth", require("./routes/auth"));
 app.use("/register", require("./routes/userRoutes"));
+app.use("/admin", require("./routes/adminRoutes"));
 
 // Basic Route
 app.get("/", (req, res) => {
