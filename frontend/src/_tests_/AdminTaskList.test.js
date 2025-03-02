@@ -66,15 +66,37 @@ describe("AdminTaskList", () => {
   });
 
   test("moves task left and right", async () => {
-    renderAdminTaskList();
+  
+    const modifiedSampleTasks = [
+      { id: "1", title: "Task A", description: "Desc A", priority: "High", dueDate: "2025-02-10", locked: false },
+      { id: "2", title: "Task B", description: "Desc B", priority: "Medium", dueDate: "2025-02-15", locked: false }, // 确保任务未锁定
+    ];
+  
+    const renderModifiedAdminTaskList = () => {
+      render(
+        <AdminTaskList
+          title="In Progress"  
+          tasks={modifiedSampleTasks}
+          onEditTask={mockOnEditTask}
+          onDeleteTask={mockOnDeleteTask}
+          onMoveTask={mockOnMoveTask}
+          onToggleLock={mockOnToggleLock}
+        />
+      );
+    };
+  
+    renderModifiedAdminTaskList();
+  
 
     const moveLeftButtons = screen.getAllByTestId("move-left-button");
     const moveRightButtons = screen.getAllByTestId("move-right-button");
-
-    await userEvent.click(moveLeftButtons[0]);
-    expect(mockOnMoveTask).toHaveBeenCalledWith(sampleTasks[0], "left");
-
-    await userEvent.click(moveRightButtons[0]);
-    expect(mockOnMoveTask).toHaveBeenCalledWith(sampleTasks[0], "right");
+  
+ 
+    await userEvent.click(moveLeftButtons[0]);  
+    expect(mockOnMoveTask).toHaveBeenCalledWith(modifiedSampleTasks[0], "left");
+  
+    await userEvent.click(moveRightButtons[0]);  
+    expect(mockOnMoveTask).toHaveBeenCalledWith(modifiedSampleTasks[0], "right");
   });
+  
 });

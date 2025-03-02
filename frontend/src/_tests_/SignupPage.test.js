@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import SignupPage from "../SignupPage";
+import SignupPage from "../pages/SignupPage";
 import { MemoryRouter } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
