@@ -10,51 +10,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   
   const [tasks, setTasks] = useState({
-    todo: [
-      { 
-        id: "1", 
-        title: "Design UI", 
-        description: "Create homepage layout", 
-        priority: "High", 
-        dueDate: "2025-03-10", 
-        startDate: "2025-03-01", 
-        endDate: "2025-03-10", 
-        progress: 20, 
-        status: "todo",
-        dependencies: ["2: Fix login bug"],
-        locked: false
-      }
-    ],
-    inProgress: [
-      { 
-        id: "2", 
-        title: "Fix login bug", 
-        description: "Debug authentication issue", 
-        priority: "Medium", 
-        dueDate: "2025-03-12", 
-        startDate: "2025-03-05", 
-        endDate: "2025-03-12", 
-        progress: 70, 
-        status: "inProgress", 
-        dependencies: [] ,
-        locked: false
-      }
-    ],
-    done: [
-      { 
-        id: "3", 
-        title: "Deploy backend", 
-        description: "Push backend to production", 
-        priority: "Low", 
-        dueDate: "2025-03-15", 
-        startDate: "2025-03-01", 
-        endDate: "2025-03-15", 
-        progress: 100, 
-        status: "done", 
-        dependencies: [] ,
-        locked: false
-      }
-    ]
+    todo: [],
+    inProgress: [],
+    done: []
   });
 
   const [taskStats, setTaskStats] = useState({
@@ -70,8 +28,43 @@ const AdminDashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
-    updateTaskStats();
-  }, [tasks]);
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5001/api/tasks");
+      if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+      
+      const data = await response.json();
+      console.log("Fetched Tasks:", data); 
+  
+      setTasks({
+        todo: data.todo.map(task => ({
+          ...task,
+          startDate: task.startDate || "",  
+          endDate: task.endDate || "",     
+          progress: task.progress || 0,     
+        })),
+        inProgress: data.inProgress.map(task => ({
+          ...task,
+          startDate: task.startDate || "",
+          endDate: task.endDate || "",
+          progress: task.progress || 0,
+        })),
+        done: data.done.map(task => ({
+          ...task,
+          startDate: task.startDate || "",
+          endDate: task.endDate || "",
+          progress: task.progress || 0,
+        }))
+      });
+  
+    } catch (error) {
+      console.error("❌ Error fetching tasks:", error);
+    }
+  };
+  
 
   const updateTaskStats = () => {
     const todo = tasks.todo.length;
@@ -128,18 +121,12 @@ const AdminDashboard = () => {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to delete task: ${response.statusText}`);
       }
-  
-      setTasks(prevTasks => {
-        const updatedTasks = { ...prevTasks };
-        Object.keys(updatedTasks).forEach(status => {
-          updatedTasks[status] = updatedTasks[status].filter(task => task.id !== taskId);
-        });
-        return updatedTasks;
-      });
+
+      fetchTasks(); 
     } catch (error) {
       console.error("❌ Error deleting task:", error);
     }
@@ -153,29 +140,34 @@ const AdminDashboard = () => {
     setEditingTask(task);
     setIsEditModalOpen(true);
   };
-
-  const handleUpdateTask = (updatedTask) => {
-    //first check if task is locked before editing
+  const handleUpdateTask = async (updatedTask) => {
     if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
-    //task is NOT locked so allow update
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach(status => {
-        updatedTasks[status] = updatedTasks[status].filter(task => task.id !== updatedTask.id);
+    
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${updatedTask.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTask),
       });
-      updatedTasks[updatedTask.status] = [...updatedTasks[updatedTask.status], updatedTask];
-      return updatedTasks;
-    });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update task: ${response.statusText}`);
+      }
+      
+      fetchTasks();
+    } catch (error) {
+      console.error("❌ Error updating task:", error);
+    }
     setIsEditModalOpen(false);
   };
 
   const handleAddTask = async (newTask) => {
     try {
+      console.log("New Task Before Sending:", newTask); 
+  
       const response = await fetch("http://127.0.0.1:5001/api/tasks", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
       });
   
@@ -183,17 +175,17 @@ const AdminDashboard = () => {
         throw new Error(`Failed to add task: ${response.statusText}`);
       }
   
-      const result = await response.json();
-      setTasks(prevTasks => ({
-        ...prevTasks,
-        [result.task.status]: [...prevTasks[result.task.status], result.task],
-      }));
+      const data = await response.json();
+      console.log("New Task From Backend:", data); 
   
+      fetchTasks();
       setIsAddModalOpen(false);
     } catch (error) {
       console.error("❌ Error adding task:", error);
     }
   };
+  
+
   
 
   return (

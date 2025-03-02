@@ -6,7 +6,10 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
     description: "", 
     priority: "Medium", 
     dueDate: "", 
-    status: "todo" // ✅ default to 'To-Do'
+    startDate: "", 
+    endDate: "", 
+    progress: 0, 
+    status: "todo" 
   });
 
   const handleChange = (e) => {
@@ -36,9 +39,24 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
           <option value="done">Done</option>
         </select>
 
+ {/* ✅ Start Date */}
+ <label>Start Date:</label>
+        <input type="date" name="startDate" value={taskData.startDate} onChange={handleChange} style={styles.input} />
+        
+        {/* ✅ End Date */}
+        <label>End Date:</label>
+        <input type="date" name="endDate" value={taskData.endDate} onChange={handleChange} style={styles.input} />
+
+
         {/* ✅ Due Date */}
         <label>Due Date:</label>
         <input type="date" name="dueDate" value={taskData.dueDate} onChange={handleChange} style={styles.input} />
+
+  
+      {/* ✅ Progress Bar */}
+      <label>Progress:</label>
+        <input type="range" name="progress" min="0" max="100" value={taskData.progress} onChange={handleChange} style={styles.input} />
+        <p>{taskData.progress}%</p>
 
         <button onClick={() => onSaveTask(taskData)} style={styles.saveButton}>{task ? "Update Task" : "Add Task"}</button>
         <button onClick={onClose} style={styles.closeButton}>Close</button>
