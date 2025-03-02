@@ -33,14 +33,14 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
         email: formData.email,
         password: formData.password,
       });
       alert("Login successful!");
       navigate("/dashboard");
     } catch (error) {
-      alert("Login failed!");
+      alert("Login failed! Please try again later.");
     }
   };
 
