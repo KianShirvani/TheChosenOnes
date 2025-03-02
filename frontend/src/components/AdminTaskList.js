@@ -58,6 +58,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     style={styles.arrow}
     data-testid="move-left-button"
   >
+ ←
   </button>
 )}
 
@@ -67,6 +68,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     style={styles.arrow}
     data-testid="move-right-button"
   >
+    →
   </button>
 )}
 
@@ -85,6 +87,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   data-testid="delete-button"
   disabled={task.locked}  // Disable the delete button when the task is locked
 >
+🗑
 </button>
 
           </div>

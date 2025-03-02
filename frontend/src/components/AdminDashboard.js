@@ -35,52 +35,45 @@ const AdminDashboard = () => {
     try {
       const response = await fetch("http://127.0.0.1:5001/api/tasks");
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
-      
+  
       const data = await response.json();
-      console.log("Fetched Tasks:", data); 
+      console.log("Fetched Tasks:", data);
   
       setTasks({
-        todo: data.todo.map(task => ({
-          ...task,
-          startDate: task.startDate || "",  
-          endDate: task.endDate || "",     
-          progress: task.progress || 0,     
-        })),
-        inProgress: data.inProgress.map(task => ({
-          ...task,
-          startDate: task.startDate || "",
-          endDate: task.endDate || "",
-          progress: task.progress || 0,
-        })),
-        done: data.done.map(task => ({
-          ...task,
-          startDate: task.startDate || "",
-          endDate: task.endDate || "",
-          progress: task.progress || 0,
-        }))
+        todo: data.todo || [],
+        inProgress: data.inProgress || [],
+        done: data.done || [],
       });
+
+      updateTaskStats(data);
   
     } catch (error) {
       console.error("❌ Error fetching tasks:", error);
     }
   };
   
+  
 
-  const updateTaskStats = () => {
-    const todo = tasks.todo.length;
-    const inProgress = tasks.inProgress.length;
-    const done = tasks.done.length;
-    const total = todo + inProgress + done;
-    const completedRate = total > 0 ? ((done / total) * 100).toFixed(1) : 0;
-
+  const updateTaskStats = (taskData) => {
+    const todo = taskData.todo.length;
+    const inProgress = taskData.inProgress.length;
+    const done = taskData.done.length;
+    const totalTasks = [...taskData.todo, ...taskData.inProgress, ...taskData.done].length;
+    const totalProgress = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
+      .reduce((sum, task) => sum + Number(task.progress || 0), 0);  
+    
+    const completedRate = totalTasks > 0 ? (totalProgress / totalTasks).toFixed(1) : "0";
+    
+  
+  
     const today = new Date();
-    const upcomingDue = Object.values(tasks)
-      .flat()
+    const upcomingDue = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
       .filter(task => new Date(task.dueDate) >= today)
       .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0]?.dueDate || "No upcoming tasks";
-
+  
     setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
   };
+  
   
   const handleToggleLock = (taskId) => {
     setTasks((prevTasks) => {
@@ -121,16 +114,19 @@ const AdminDashboard = () => {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-
+  
       if (!response.ok) {
         throw new Error(`Failed to delete task: ${response.statusText}`);
       }
-
-      fetchTasks(); 
+  
+      const updatedData = await fetchTasks(); 
+      updateTaskStats(updatedData); 
     } catch (error) {
       console.error("❌ Error deleting task:", error);
     }
   };
+  
+  
   
 
   const handleEditTask = (task) => {
@@ -160,10 +156,9 @@ const AdminDashboard = () => {
     }
     setIsEditModalOpen(false);
   };
-
   const handleAddTask = async (newTask) => {
     try {
-      console.log("New Task Before Sending:", newTask); 
+      console.log("New Task Before Sending:", newTask);
   
       const response = await fetch("http://127.0.0.1:5001/api/tasks", {
         method: "POST",
@@ -175,15 +170,16 @@ const AdminDashboard = () => {
         throw new Error(`Failed to add task: ${response.statusText}`);
       }
   
-      const data = await response.json();
-      console.log("New Task From Backend:", data); 
-  
-      fetchTasks();
       setIsAddModalOpen(false);
+
+      const updatedData = await fetchTasks(); 
+      updateTaskStats(updatedData);
+  
     } catch (error) {
       console.error("❌ Error adding task:", error);
     }
   };
+  
   
 
   
