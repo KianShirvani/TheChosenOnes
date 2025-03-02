@@ -1,13 +1,19 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SignupPage from "../pages/SignupPage";
 import { MemoryRouter } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
 
+// Mock axios and useNavigate
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn(),
 }));
+
+// Create a mock instance of axios
+const mock = new MockAdapter(axios);
 
 const renderSignupPage = () => {
   render(
@@ -25,6 +31,7 @@ describe("SignupPage", () => {
     useNavigate.mockReturnValue(navigate);
     jest.clearAllMocks();
     jest.spyOn(window, "alert").mockImplementation(() => {}); // Mock alert globally
+    mock.reset(); // Reset mock before each test
   });
 
   test("clicking 'Login here' navigates to login page", async () => {
@@ -37,6 +44,10 @@ describe("SignupPage", () => {
   });
 
   test("submits form successfully and shows alert", async () => {
+    mock.onPost("/register").reply(200, {
+      message: "User created successfully",
+    });
+
     renderSignupPage();
 
     await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
@@ -48,6 +59,43 @@ describe("SignupPage", () => {
 
     expect(window.alert).toHaveBeenCalledWith("Sign up successful!");
     expect(navigate).toHaveBeenCalledWith("/login");
+  });
+
+  test("calls the /register route", async () => {
+    mock.onPost("/register").reply(200, {
+      message: "User created successfully",
+    });
+
+    renderSignupPage();
+
+    await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
+    await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[1], "password123");
+
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(mock.history.post[0].url).toBe("/register");
+    });
+  });
+
+  test("sends correct data to /register", async () => {
+    mock.onPost("/register").reply(200, {
+      message: "User created successfully",
+    });
+
+    renderSignupPage();
+
+    await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
+    await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[1], "password123");
+
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    expect(mock.history.post[0].data).toContain("testuser");
+    expect(mock.history.post[0].data).toContain("test@example.com");
   });
 
   test("form submission fails if fields are empty", async () => {
@@ -98,6 +146,28 @@ describe("SignupPage", () => {
     await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
     expect(window.alert).toHaveBeenCalledWith("Password must be at least 8 characters long");
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test("should show alert on error when sign-up fails", async () => {
+    // Mock the POST request to /register to return an error
+    mock.onPost("/register").reply(400, {
+      error: "User already exists",
+    });
+
+    renderSignupPage();
+
+    await userEvent.type(screen.getByRole("textbox", { name: /username/i }), "testuser");
+    await userEvent.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[0], "password123");
+    await userEvent.type(screen.getAllByLabelText(/password/i)[1], "password123");
+
+    await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
+
+    // Wait for the error handling
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Sign up failed!");
+    });
     expect(navigate).not.toHaveBeenCalled();
   });
 });
