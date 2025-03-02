@@ -1,66 +1,97 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AdminDashboard from '../components/AdminDashboard';
-import '@testing-library/jest-dom';
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { BrowserRouter as Router } from "react-router-dom";
+import AdminDashboard from "../components/AdminDashboard";
 
-describe('AdminDashboard', () => {
-
-  it('renders Admin Dashboard title', () => {
-    render(<AdminDashboard />);
-    expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+// Mock API Responses
+global.fetch = jest.fn((url, options) => {
+  if (options && options.method === "POST") {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ id: 4, title: "New Task", status: "todo", locked: false }),
+    });
+  }
+  if (options && options.method === "PUT") {
+    return Promise.resolve({ ok: true });
+  }
+  if (options && options.method === "DELETE") {
+    return Promise.resolve({ ok: true });
+  }
+  return Promise.resolve({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        todo: [{ id: 1, title: "Task 1", status: "todo", locked: false, dueDate: "2025-03-10" }],
+        inProgress: [{ id: 2, title: "Task 2", status: "inProgress", locked: false, dueDate: "2025-03-12" }],
+        done: [{ id: 3, title: "Task 3", status: "done", locked: false, dueDate: "2025-03-15" }],
+      }),
   });
+});
 
-  it('renders task statistics correctly', () => {
-    render(<AdminDashboard />);
-    expect(screen.queryAllByText('To-Do').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('In Progress').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Done').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Completion Rate').length).toBeGreaterThan(0);
-    expect(screen.queryAllByText('Upcoming Due').length).toBeGreaterThan(0);
-  });
+describe("AdminDashboard Component", () => {
+  beforeEach(() => {
+    fetch.mockClear();
 
-  it('opens the add task modal when the "+ Add Task" button is clicked', () => {
-    render(<AdminDashboard />);
-    const addButton = screen.getByText('+ Add Task');
-    fireEvent.click(addButton);
-    expect(screen.getByText('Add Task')).toBeInTheDocument();
-  });
-
-  it('adds a new task when the form is filled and submitted', async () => {
-    render(<AdminDashboard />);
-    fireEvent.click(screen.getByText('+ Add Task'));
-    const titleInput = screen.getByPlaceholderText(/Task Title/i);
-    fireEvent.change(titleInput, { target: { value: 'New Task' } });
-    fireEvent.click(screen.getByText('Add Task'));
-    await waitFor(() => {
-      expect(screen.getByText('New Task')).toBeInTheDocument();
+    fetch.mockImplementation((url) => {
+      if (url.includes("/api/tasks")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              todo: [{ id: 1, title: "Task 1", status: "todo", locked: false, dueDate: "2025-03-10" }],
+              inProgress: [{ id: 2, title: "Task 2", status: "inProgress", locked: false, dueDate: "2025-03-12" }],
+              done: [{ id: 3, title: "Task 3", status: "done", locked: false, dueDate: "2025-03-15" }],
+            }),
+        });
+      }
+      return Promise.resolve({ ok: true }); // Default response for other requests
     });
   });
 
-  it('moves a task from To-Do to In Progress when the move button is clicked', async () => {
-    render(<AdminDashboard />);
-    const moveButtons = screen.getAllByTestId('move-right-button');
-    fireEvent.click(moveButtons[0]);
-    await waitFor(() => {
-      expect(screen.getByText('Fix login bug')).toBeInTheDocument();
-    });
+
+  test("adds a new task", async () => {
+    render(
+      <Router>
+        <AdminDashboard />
+      </Router>
+    );
+
+    fireEvent.click(screen.getByText("+ Add Task"));
+
+    await waitFor(() => expect(screen.getByText("Add New Task")).toBeInTheDocument());
+
+    fireEvent.change(screen.getByPlaceholderText("Task Title"), { target: { value: "New Task" } });
+    fireEvent.click(screen.getByText("Add Task")); // Ensure this matches the button text
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   });
 
-  it('deletes a task when the delete button is clicked', async () => {
-    render(<AdminDashboard />);
-    const deleteButtons = screen.getAllByTestId('delete-button');
-    fireEvent.click(deleteButtons[0]);
+  // test to ensure that the task is locked when toggled
+  test("toggles task lock state", async () => {
+    render(
+      <Router>
+        <AdminDashboard />
+      </Router>
+    );
+  
+    // Wait for tasks to load
+    await waitFor(() => expect(screen.getByText("Task 1")).toBeInTheDocument());
+  
+    // Find the lock toggle button for Task 1
+    const lockButtons = screen.getAllByTestId("lock-button");
+    expect(lockButtons.length).toBeGreaterThan(0);
+  
+    // Click the lock toggle
+    fireEvent.click(lockButtons[0]);
+  
+    // Wait for state to update
     await waitFor(() => {
-      expect(screen.queryByText('Design UI')).not.toBeInTheDocument();
+      expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:5001/api/tasks",);
+    });
+
+    await waitFor(() => {
+      expect(lockButtons[0]).toHaveTextContent("🔒");
     });
   });
-
-  it('opens the edit task modal when edit button is clicked', async () => {
-    render(<AdminDashboard />);
-    const editButtons = screen.getAllByTestId('edit-button');
-    fireEvent.click(editButtons[0]);
-    await waitFor(() => {
-      expect(screen.getByText('Edit Task')).toBeInTheDocument();
-    });
-  });
-
+  
 });

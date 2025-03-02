@@ -50,27 +50,27 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
           )}
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button disabled={task.locked}">✏️</button>
+            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button" disabled={task.locked}>✏️</button>
             
             {title !== "To-Do" && !task.locked && (
-              <button 
-                onClick={() => onMoveTask(task, "left")} 
-                style={styles.arrow} 
-                data-testid="move-left-button"
-              >
-                ←
-              </button>
-            )}
+  <button
+    onClick={() => onMoveTask(task, "left")}
+    style={styles.arrow}
+    data-testid="move-left-button"
+  >
+ ←
+  </button>
+)}
 
-            {title !== "Done" && !task.locked && (
-              <button 
-                onClick={() => onMoveTask(task, "right")} 
-                style={styles.arrow} 
-                data-testid="move-right-button"
-              >
-                →
-              </button>
-            )}
+{title !== "Done" && !task.locked && (
+  <button
+    onClick={() => onMoveTask(task, "right")}
+    style={styles.arrow}
+    data-testid="move-right-button"
+  >
+    →
+  </button>
+)}
 
            
             <button 
@@ -81,7 +81,15 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
               {task.locked ? "🔒 Locked" : "🔓 Lock"}
             </button>
 
-            <button onClick={() => onDeleteTask(task.id)} style={styles.delete} data-testid="delete-button">🗑</button>
+            <button
+  onClick={() => onDeleteTask(task.id)}
+  style={styles.delete}
+  data-testid="delete-button"
+  disabled={task.locked}  // Disable the delete button when the task is locked
+>
+🗑
+</button>
+
           </div>
         </div>
       ))}

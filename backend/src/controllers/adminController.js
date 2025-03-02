@@ -4,7 +4,6 @@ const { Client } = require('pg');
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: false
-
 });
 
 // Connect to the database if not in testing environment

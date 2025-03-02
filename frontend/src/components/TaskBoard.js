@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TaskList from "./TaskList";
 import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 const TaskBoard = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState({
-    todo: [{ id: "1", title: "Design UI", description: "Create homepage layout", priority: "High", dueDate: "2025-02-10" }],
-    inProgress: [{ id: "2", title: "Fix login bug", description: "Debug authentication issue", priority: "Medium", dueDate: "2025-02-12" }],
-    done: [{ id: "3", title: "Deploy backend", description: "Push backend to production", priority: "Low", dueDate: "2025-02-15" }],
+    todo: [],
+    inProgress: [],
+    done: [],
   });
 
   const [taskListColors, setTaskListColors] = useState({
@@ -21,62 +21,115 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  const handleSaveTask = (taskData) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-
-      if (editingTask) {
-        Object.keys(updatedTasks).forEach((status) => {
-          updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== editingTask.id);
-        });
-        const newStatus = taskData.status || "todo";
-        updatedTasks[newStatus] = [...(updatedTasks[newStatus] || []), { ...taskData, id: editingTask.id }];
-      } else {
-        const newStatus = taskData.status || "todo";
-        updatedTasks[newStatus] = [...(updatedTasks[newStatus] || []), { ...taskData, id: Date.now().toString() }];
-      }
-
-      return updatedTasks;
-    });
-
-    setIsModalOpen(false);
-    setEditingTask(null);
+  // Fetch tasks from the backend
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/tasks");
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      setTasks({
+        todo: data.todo || [],
+        inProgress: data.inProgress || [],
+        done: data.done || [],
+      });
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
   };
 
+  useEffect(() => {
+    fetchTasks(); // Fetch tasks on initial load
+  }, []);
+
+  // Create or update task in the backend
+  const handleSaveTask = async (taskData) => {
+    if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
+      console.error(" Missing fields:", taskData);
+      return;
+    }
+  
+    const updatedTaskData = { ...taskData, id: editingTask ? editingTask.id : undefined };
+  
+    try {
+      const url = editingTask
+        ? `http://localhost:5001/api/tasks/${updatedTaskData.id}`
+        : "http://localhost:5001/api/tasks";
+      const method = editingTask ? "PUT" : "POST";
+  
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updatedTaskData),
+      });
+  
+      if (response.ok) {
+        setIsModalOpen(false);
+        setEditingTask(null);  // Reset editingTask after save 
+        fetchTasks(); // Refresh UI after update
+      } else {
+        console.error(" Error saving task:", await response.json());
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+  
+  
+
+  // Edit task
   const handleEditTask = (task) => {
+    if (task.locked) {
+      alert("This task is locked and cannot be edited.");
+      return;
+    }
     setEditingTask(task);
     setIsModalOpen(true);
   };
+  
 
-  const handleDeleteTask = (taskId) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach((status) => {
-        updatedTasks[status] = updatedTasks[status].filter((task) => task.id !== taskId);
+  // Delete task from the backend
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
-      return updatedTasks;
-    });
+
+      if (response.ok) {
+        fetchTasks(); // Refresh task list after delete
+      } else {
+        const result = await response.json();
+        console.error("Error deleting task:", result.message);
+      }
+    } catch (error) {
+      console.error(" Fetch error:", error);
+    }
   };
 
-  const handleMoveTask = (task, direction) => {
-    const columnOrder = ["todo", "inProgress", "done"];
-    const currentIndex = columnOrder.indexOf(
-      Object.keys(tasks).find((status) => tasks[status].some((t) => t.id === task.id))
-    );
+  // Move task between columns (todo, inProgress, done)
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) {
+      alert("This task is locked and cannot be moved.");
+      return;
+    }
 
-    if (currentIndex === -1) return;
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${task.id}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ direction }),
+      });
 
-    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= columnOrder.length) return;
+      if (!response.ok) throw new Error("Failed to move task");
 
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[columnOrder[currentIndex]] = updatedTasks[columnOrder[currentIndex]].filter((t) => t.id !== task.id);
-      updatedTasks[columnOrder[newIndex]] = [...updatedTasks[columnOrder[newIndex]], task];
-      return updatedTasks;
-    });
+      fetchTasks(); // Refresh UI
+    } catch (error) {
+      console.error(" Error moving task:", error);
+    }
   };
-
   const handleAssignColor = (status, color) => {
     setTaskListColors((prevColors) => ({
       ...prevColors,
@@ -89,17 +142,40 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-          {/* Check the database to verify if the user is an admin before allowing access to the Admin Dashboard */}
         <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
-        <button onClick={() => setIsModalOpen(true)} style={styles.addButton}>+ Add Task</button>
+        <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
 
       <div style={styles.board}>
-        <TaskList title="To-Do" tasks={tasks.todo} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.todo} onAssignColor={(color) => handleAssignColor("todo", color)}/>
-        <TaskList title="In Progress" tasks={tasks.inProgress} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.inProgress} onAssignColor={(color) => handleAssignColor("inProgress", color)}/>
-        <TaskList title="Done" tasks={tasks.done} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onMoveTask={handleMoveTask} selectedColor={taskListColors.done} onAssignColor={(color) => handleAssignColor("done", color)}/>
+        <TaskList
+          title="To-Do"
+          tasks={tasks.todo}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.todo}
+          onAssignColor={(color) => handleAssignColor("todo", color)}
+        />
+        <TaskList
+          title="In Progress"
+          tasks={tasks.inProgress}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.inProgress}
+          onAssignColor={(color) => handleAssignColor("inProgress", color)}
+        />
+        <TaskList
+          title="Done"
+          tasks={tasks.done}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          selectedColor={taskListColors.done}
+          onAssignColor={(color) => handleAssignColor("done", color)}
+        />
       </div>
     </div>
   );
