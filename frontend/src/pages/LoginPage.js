@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
@@ -17,7 +18,7 @@ const LoginPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email.trim() || !formData.password.trim()) {
@@ -31,8 +32,16 @@ const LoginPage = () => {
       return;
     }
 
-    alert("Login successful!");
-    navigate("/dashboard");
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+        email: formData.email,
+        password: formData.password,
+      });
+      alert("Login successful!");
+      navigate("/dashboard");
+    } catch (error) {
+      alert("Login failed! Please try again later.");
+    }
   };
 
   return (
