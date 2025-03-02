@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,  useEffect } from "react";
 
 const EditTaskModal = ({ task, onSave, onClose }) => {
   const [taskData, setTaskData] = useState({
@@ -6,8 +6,24 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
     description: task.description || "",
     priority: task.priority || "Medium",
     dueDate: task.dueDate || "",
+    startDate: task.startDate || "", 
+    endDate: task.endDate || "", 
+    progress: task.progress || 0, 
     status: task.status || "todo",
   });
+
+  useEffect(() => {
+    setTaskData({
+      title: task.title || "",
+      description: task.description || "",
+      priority: task.priority || "Medium",
+      dueDate: task.dueDate || "",
+      startDate: task.startDate || "",
+      endDate: task.endDate || "",
+      progress: task.progress || 0,
+      status: task.status || "todo",
+    });
+  }, [task]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,6 +78,41 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
           <option value="inProgress">In Progress</option>
           <option value="done">Done</option>
         </select>
+
+       {/* ✅ Progress Bar */}
+       <label>Progress:</label>
+        <input
+          type="range"
+          name="progress"
+          min="0"
+          max="100"
+          value={taskData.progress}
+          onChange={handleChange}
+          style={styles.input}
+        />
+        <p>{taskData.progress}%</p>
+
+
+        {/* Start Date */}
+        <label>Start Date:</label>
+        <input
+          type="date"
+          name="startDate"
+          value={taskData.startDate}
+          onChange={handleChange}
+          style={styles.input}
+        />
+
+        {/* End Date */}
+        <label>End Date:</label>
+        <input
+          type="date"
+          name="endDate"
+          value={taskData.endDate}
+          onChange={handleChange}
+          style={styles.input}
+        />
+        
         <label>Due Date:</label>
         <input
           type="date"

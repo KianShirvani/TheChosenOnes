@@ -10,51 +10,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   
   const [tasks, setTasks] = useState({
-    todo: [
-      { 
-        id: "1", 
-        title: "Design UI", 
-        description: "Create homepage layout", 
-        priority: "High", 
-        dueDate: "2025-03-10", 
-        startDate: "2025-03-01", 
-        endDate: "2025-03-10", 
-        progress: 20, 
-        status: "todo",
-        dependencies: ["2: Fix login bug"],
-        locked: false
-      }
-    ],
-    inProgress: [
-      { 
-        id: "2", 
-        title: "Fix login bug", 
-        description: "Debug authentication issue", 
-        priority: "Medium", 
-        dueDate: "2025-03-12", 
-        startDate: "2025-03-05", 
-        endDate: "2025-03-12", 
-        progress: 70, 
-        status: "inProgress", 
-        dependencies: [] ,
-        locked: false
-      }
-    ],
-    done: [
-      { 
-        id: "3", 
-        title: "Deploy backend", 
-        description: "Push backend to production", 
-        priority: "Low", 
-        dueDate: "2025-03-15", 
-        startDate: "2025-03-01", 
-        endDate: "2025-03-15", 
-        progress: 100, 
-        status: "done", 
-        dependencies: [] ,
-        locked: false
-      }
-    ]
+    todo: [],
+    inProgress: [],
+    done: []
   });
 
   const [taskStats, setTaskStats] = useState({
@@ -70,74 +28,109 @@ const AdminDashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
-    updateTaskStats();
-  }, [tasks]);
+    fetchTasks();
+  }, []);
 
-  const updateTaskStats = () => {
-    const todo = tasks.todo.length;
-    const inProgress = tasks.inProgress.length;
-    const done = tasks.done.length;
-    const total = todo + inProgress + done;
-    const completedRate = total > 0 ? ((done / total) * 100).toFixed(1) : 0;
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5001/api/tasks");
+      if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+  
+      const data = await response.json();
+      console.log("Fetched Tasks:", data);
+  
+      setTasks({
+        todo: data.todo || [],
+        inProgress: data.inProgress || [],
+        done: data.done || [],
+      });
 
+      updateTaskStats(data);
+  
+    } catch (error) {
+      console.error(" Error fetching tasks:", error);
+    }
+  };
+  
+  
+
+  const updateTaskStats = (taskData) => {
+    const todo = taskData.todo.length;
+    const inProgress = taskData.inProgress.length;
+    const done = taskData.done.length;
+    const totalTasks = [...taskData.todo, ...taskData.inProgress, ...taskData.done].length;
+    const totalProgress = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
+      .reduce((sum, task) => sum + Number(task.progress || 0), 0);  
+    
+    const completedRate = totalTasks > 0 ? (totalProgress / totalTasks).toFixed(1) : "0";
+    
+  
+  
     const today = new Date();
-    const upcomingDue = Object.values(tasks)
-      .flat()
+    const upcomingDue = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
       .filter(task => new Date(task.dueDate) >= today)
       .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0]?.dueDate || "No upcoming tasks";
-
+  
     setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
   };
   
-  const handleToggleLock = (taskId) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) return alert("This task is locked and cannot be moved.");
   
-      Object.keys(updatedTasks).forEach((status) => {
-        updatedTasks[status] = updatedTasks[status].map((task) =>
-          task.id === taskId ? { ...task, locked: !task.locked } : task
-        );
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${task.id}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direction }),
       });
   
-      return updatedTasks;
-    });
-  };
-
-  const handleMoveTask = (task, direction) => {
-    //first check if task is locked before editing
-    if (task.locked) return alert("This task is locked and cannot be edited.");
-    //task is NOT locked so allow move
-    const columnOrder = ["todo", "inProgress", "done"];
-    const currentIndex = columnOrder.findIndex(status => tasks[status].some(t => t.id === task.id));
-
-    if (currentIndex === -1) return;
-
-    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= columnOrder.length) return;
-
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[columnOrder[currentIndex]] = updatedTasks[columnOrder[currentIndex]].filter(t => t.id !== task.id);
-      updatedTasks[columnOrder[newIndex]] = [...updatedTasks[columnOrder[newIndex]], { ...task, status: columnOrder[newIndex] }];
-      return updatedTasks;
-    });
-  };
-  const handleDeleteTask = (taskId) => {
-    // Find the task in any of the task categories
-    const task = Object.values(tasks).flat().find(task => task.id === taskId);
+      if (!response.ok) {
+        throw new Error(`Failed to move task: ${response.statusText}`);
+      }
   
-    // If task is locked, prevent deletion
-    if (task.locked) return alert("This task is locked and cannot be deleted.");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
+  }
   
-    // Proceed with deletion if not locked
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach(status => {
-        updatedTasks[status] = updatedTasks[status].filter(task => task.id !== taskId);
+  const handleToggleLock = async (taskId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}/lock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
       });
-      return updatedTasks;
-    });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to toggle lock: ${response.statusText}`);
+      }
+  
+      fetchTasks();
+    } catch (error) {
+      console.error(" Error toggling lock:", error);
+    }
   };
+  
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete task: ${response.statusText}`);
+      }
+  
+      const updatedData = await fetchTasks(); 
+      updateTaskStats(updatedData); 
+    } catch (error) {
+      console.error(" Error deleting task:", error);
+    }
+  };
+  
+  
+  
 
   const handleEditTask = (task) => {
     //first check if task is locked before editing
@@ -146,29 +139,53 @@ const AdminDashboard = () => {
     setEditingTask(task);
     setIsEditModalOpen(true);
   };
-
-  const handleUpdateTask = (updatedTask) => {
-    //first check if task is locked before editing
+  const handleUpdateTask = async (updatedTask) => {
     if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
-    //task is NOT locked so allow update
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach(status => {
-        updatedTasks[status] = updatedTasks[status].filter(task => task.id !== updatedTask.id);
+    
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${updatedTask.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTask),
       });
-      updatedTasks[updatedTask.status] = [...updatedTasks[updatedTask.status], updatedTask];
-      return updatedTasks;
-    });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update task: ${response.statusText}`);
+      }
+      
+      fetchTasks();
+    } catch (error) {
+      console.error(" Error updating task:", error);
+    }
     setIsEditModalOpen(false);
   };
+  const handleAddTask = async (newTask) => {
+    try {
+      console.log("New Task Before Sending:", newTask);
+  
+      const response = await fetch("http://127.0.0.1:5001/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTask),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add task: ${response.statusText}`);
+      }
+  
+      setIsAddModalOpen(false);
 
-  const handleAddTask = (newTask) => {
-    setTasks(prevTasks => ({
-      ...prevTasks,
-      [newTask.status]: [...prevTasks[newTask.status], { ...newTask, id: Date.now().toString() }],
-    }));
-    setIsAddModalOpen(false);
+      const updatedData = await fetchTasks(); 
+      updateTaskStats(updatedData);
+  
+    } catch (error) {
+      console.error(" Error adding task:", error);
+    }
   };
+  
+  
+
+  
 
   return (
     <div className="admin-dashboard">
