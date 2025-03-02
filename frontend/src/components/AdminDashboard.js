@@ -122,22 +122,29 @@ const AdminDashboard = () => {
       return updatedTasks;
     });
   };
-  const handleDeleteTask = (taskId) => {
-    // Find the task in any of the task categories
-    const task = Object.values(tasks).flat().find(task => task.id === taskId);
-  
-    // If task is locked, prevent deletion
-    if (task.locked) return alert("This task is locked and cannot be deleted.");
-  
-    // Proceed with deletion if not locked
-    setTasks(prevTasks => {
-      const updatedTasks = { ...prevTasks };
-      Object.keys(updatedTasks).forEach(status => {
-        updatedTasks[status] = updatedTasks[status].filter(task => task.id !== taskId);
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       });
-      return updatedTasks;
-    });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete task: ${response.statusText}`);
+      }
+  
+      setTasks(prevTasks => {
+        const updatedTasks = { ...prevTasks };
+        Object.keys(updatedTasks).forEach(status => {
+          updatedTasks[status] = updatedTasks[status].filter(task => task.id !== taskId);
+        });
+        return updatedTasks;
+      });
+    } catch (error) {
+      console.error("❌ Error deleting task:", error);
+    }
   };
+  
 
   const handleEditTask = (task) => {
     //first check if task is locked before editing
@@ -162,13 +169,32 @@ const AdminDashboard = () => {
     setIsEditModalOpen(false);
   };
 
-  const handleAddTask = (newTask) => {
-    setTasks(prevTasks => ({
-      ...prevTasks,
-      [newTask.status]: [...prevTasks[newTask.status], { ...newTask, id: Date.now().toString() }],
-    }));
-    setIsAddModalOpen(false);
+  const handleAddTask = async (newTask) => {
+    try {
+      const response = await fetch("http://127.0.0.1:5001/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add task: ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      setTasks(prevTasks => ({
+        ...prevTasks,
+        [result.task.status]: [...prevTasks[result.task.status], result.task],
+      }));
+  
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error("❌ Error adding task:", error);
+    }
   };
+  
 
   return (
     <div className="admin-dashboard">
