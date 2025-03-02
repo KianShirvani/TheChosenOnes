@@ -22,7 +22,7 @@ app.use("/api/tasks", require("./routes/taskRoutes"));
 app.use("/auth", require("./routes/auth"));       
 app.use("/register", require("./routes/userRoutes"));
 app.use("/admin", require("./routes/adminRoutes"));
-
+app.use("/messages", require("./routes/messageRoutes")); 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" });

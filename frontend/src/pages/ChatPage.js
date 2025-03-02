@@ -99,9 +99,9 @@ export default function ChatPage() {
     try {
   
       await setDoc(doc(db, "messages", messageId), newMsg);
-      console.log("✅ Message successfully sent!");
+      console.log("Message successfully sent!");
     } catch (error) {
-      console.error("❌ Error sending message:", error);
+      console.error(" Error sending message:", error);
     }
   
     setNewMessage(""); 
@@ -109,13 +109,13 @@ export default function ChatPage() {
   
 
   const handleLike = async (msgId) => {
-    console.log("👍 Like button clicked for message:", msgId); 
+    console.log("Like button clicked for message:", msgId); 
   
     const messageRef = doc(db, "messages", msgId);
     const messageDoc = await getDoc(messageRef);
   
     if (!messageDoc.exists()) {
-      console.error("❌ Message not found in Firestore:", msgId);
+      console.error(" Message not found in Firestore:", msgId);
       return;
     }
   
@@ -123,7 +123,7 @@ export default function ChatPage() {
     const userHasLiked = messageData.likedBy.includes(userId);
   
     if (userHasLiked) {
-      console.log("❌ You already liked this message.");
+      console.log(" You already liked this message.");
       return;
     }
   
