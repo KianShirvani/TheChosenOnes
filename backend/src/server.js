@@ -17,6 +17,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev")); // Logging requests
 
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
+
 // Routes (Import Route Files)
 app.use("/api/tasks", require("./routes/taskRoutes")); 
 app.use("/auth", require("./routes/auth"));       

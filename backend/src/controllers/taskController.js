@@ -1,161 +1,130 @@
-const tasks = {
-    todo: [],
-    inProgress: [],
-    done: []
-};
+const db = require("../database/db"); // ✅ Import database connection
 
-// Get all tasks
-exports.getTasks = (req, res) => {
-  console.log("Current tasks in memory:", tasks);
-  return res.status(200).json(tasks);
-};
-
-// Create a new task
-exports.createTask = (req, res) => {
-  const { title, description, priority, dueDate, startDate, endDate, progress, status } = req.body;
-
-  if (!title || !description || !priority || !dueDate) {
-    return res.status(400).json({ message: "All fields except status are required" });
+// ✅ Get all tasks
+exports.getTasks = async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM tasks");
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
-
-  const newTask = {
-    id: Date.now().toString(),
-    title,
-    description,
-    priority,
-    dueDate,
-    startDate: startDate || "",  
-    endDate: endDate || "",      
-    progress: progress || 0,     
-    status,
-  };
-
-  tasks[status] = tasks[status] || [];
-  tasks[status].push(newTask);
-
-  console.log("New task added:", newTask);
-  return res.status(201).json({ message: "Task created successfully", task: newTask });
 };
 
-// Move a task
-exports.moveTask = (req, res) => {
-  const { taskId } = req.params;
-  const { direction } = req.body; // "left" or "right"
+// ✅ Create a new task
+exports.createTask = async (req, res) => {
+  try {
+    const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
 
-  const columnOrder = ["todo", "inProgress", "done"];
-  let task = null;
-  let currentStatus = null;
-
-  Object.keys(tasks).forEach((status) => {
-    let foundTask = tasks[status].find(t => String(t.id) === String(taskId));
-    if (foundTask) {
-      task = foundTask;
-      currentStatus = status;
+    if (!title || !description || !priority || !due_date || !kanban_id || !user_id) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
-  });
 
-  if (!task) {
-    return res.status(404).json({ message: "Task not found" });
+    const result = await db.query(
+      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
+      [kanban_id, user_id, title, description, priority, due_date, status]
+    );
+
+    res.status(201).json({ message: "Task created successfully", task: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
-
-  if (task.locked) {
-    return res.status(403).json({ message: "Task is locked and cannot be moved" });
-  }
-
-  const currentIndex = columnOrder.indexOf(currentStatus);
-  const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
-
-  if (newIndex < 0 || newIndex >= columnOrder.length) {
-    return res.status(400).json({ message: "Cannot move task further" });
-  }
-
-  tasks[currentStatus] = tasks[currentStatus].filter(t => t.id !== taskId);
-  task.status = columnOrder[newIndex];
-  tasks[columnOrder[newIndex]].push(task);
-
-  return res.status(200).json({ message: "Task moved successfully", task });
 };
 
-// Lock a task
-exports.toggleLock = (req, res) => {
-  const { taskId } = req.params;
+// ✅ Toggle task lock/unlock
+exports.toggleLock = async (req, res) => {
+  try {
+    const { taskId } = req.params;
 
-  let task = null;
-  Object.keys(tasks).forEach((status) => {
-    let foundTask = tasks[status].find(t => String(t.id) === String(taskId));
-    if (foundTask) {
-      task = foundTask;
-    }
-  });
+    // Check if task exists
+    const taskResult = await db.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
+    if (taskResult.rowCount === 0) return res.status(404).json({ message: "Task not found" });
 
-  if (!task) {
-    return res.status(404).json({ message: "Task not found" });
+    // Toggle lock state
+    const newLockStatus = !taskResult.rows[0].locked;
+    const updatedTask = await db.query(
+      "UPDATE tasks SET locked = $1 WHERE task_id = $2 RETURNING *",
+      [newLockStatus, taskId]
+    );
+
+    res.status(200).json({ message: `Task lock status updated to ${newLockStatus}`, task: updatedTask.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
-
-  task.locked = !task.locked;
-  return res.status(200).json({ message: `Task lock status updated to ${task.locked}`, task });
 };
 
-// Update a task
-exports.updateTask = (req, res) => {
-  const { taskId } = req.params;
-  const { title, description, priority, dueDate, startDate, endDate, progress, status } = req.body;
+// ✅ Move a task
+exports.moveTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { direction } = req.body;
 
-  let task = null;
-  let currentStatus = null;
+    const columnOrder = ["todo", "inProgress", "done"];
 
-  Object.keys(tasks).forEach((category) => {
-    let foundTask = tasks[category].find(t => String(t.id) === String(taskId));
-    if (foundTask) {
-      task = foundTask;
-      currentStatus = category;
+    const taskResult = await db.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
+    if (taskResult.rowCount === 0) return res.status(404).json({ message: "Task not found" });
+
+    const task = taskResult.rows[0];
+    if (task.locked) return res.status(403).json({ message: "Task is locked and cannot be moved" });
+
+    const currentIndex = columnOrder.indexOf(task.status);
+    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
+
+    if (newIndex < 0 || newIndex >= columnOrder.length) {
+      return res.status(400).json({ message: "Cannot move task further" });
     }
-  });
 
-  if (!task) {
-    return res.status(404).json({ message: "Task not found" });
+    const updatedTask = await db.query(
+      "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *",
+      [columnOrder[newIndex], taskId]
+    );
+
+    res.status(200).json({ message: "Task moved successfully", task: updatedTask.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
-
-  if (task.locked) {
-    return res.status(403).json({ message: "Task is locked and cannot be edited" });
-  }
-
-  if (currentStatus) {
-    tasks[currentStatus] = tasks[currentStatus].filter(t => String(t.id) !== String(taskId));
-  }
-
-  task.title = title || task.title;
-  task.description = description || task.description;
-  task.priority = priority || task.priority;
-  task.dueDate = dueDate || task.dueDate;
-  task.startDate = startDate || task.startDate;
-  task.endDate = endDate || task.endDate;
-  task.progress = progress !== undefined ? progress : task.progress;
-  task.status = status || task.status;
-
-  tasks[status] = tasks[status] || [];
-  tasks[status].push(task);
-
-  return res.status(200).json({ message: "Task updated successfully", task });
 };
 
-// Delete a task
-exports.deleteTask = (req, res) => {
-  const { taskId } = req.params;
+// ✅ Update a task
+exports.updateTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { title, description, priority, due_date, status } = req.body;
 
-  let taskFound = false;
+    const taskCheck = await db.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
+    if (taskCheck.rowCount === 0) return res.status(404).json({ message: "Task not found" });
 
-  Object.keys(tasks).forEach((status) => {
-    const initialLength = tasks[status].length;
-    tasks[status] = tasks[status].filter(task => task.id !== taskId);
-    if (tasks[status].length < initialLength) {
-      taskFound = true;
-    }
-  });
+    if (taskCheck.rows[0].locked) return res.status(403).json({ message: "Task is locked and cannot be edited" });
 
-  if (!taskFound) {
-    return res.status(404).json({ message: "Task not found" });
+    const result = await db.query(
+      "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), priority = COALESCE($3, priority), due_date = COALESCE($4, due_date), status = COALESCE($5, status) WHERE task_id = $6 RETURNING *",
+      [title, description, priority, due_date, status, taskId]
+    );
+
+    res.status(200).json({ message: "Task updated successfully", task: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
+};
 
-  return res.status(200).json({ message: "Task deleted successfully" });
+// ✅ Delete a task
+exports.deleteTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+
+    const result = await db.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
+  }
 };

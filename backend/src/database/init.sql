@@ -45,3 +45,6 @@ CREATE TABLE IF NOT EXISTS tasks(
     FOREIGN KEY (user_id) REFERENCES users (user_id)
         ON UPDATE CASCADE ON DELETE SET NULL
 );
+
+-- add the locked column separately to avoid conflicts
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE;
