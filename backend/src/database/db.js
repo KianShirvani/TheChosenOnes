@@ -1,17 +1,13 @@
-const { Pool } = require("pg"); // PostgreSQL client
-require("dotenv").config(); // Load environment variables
+const { Pool } = require("pg");
+require("dotenv").config(); // Ensure environment variables are loaded
 
-// ✅ Create a connection pool
+const connectionString = process.env.DATABASE_URL || ""; // Ensure it's not undefined
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Get database URL from .env
-  ssl: process.env.DATABASE_URL.includes("localhost")
+  connectionString,
+  ssl: connectionString.includes("localhost")
     ? false
     : { rejectUnauthorized: false }, // Use SSL only if it's not localhost
 });
 
-// ✅ Test database connection
-pool.connect()
-  .then(() => console.log("✅ Connected to PostgreSQL"))
-  .catch((err) => console.error("❌ Database connection error", err));
-
-module.exports = pool; // Export database connection
+module.exports = pool;
