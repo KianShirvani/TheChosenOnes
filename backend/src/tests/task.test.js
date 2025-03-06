@@ -108,7 +108,7 @@ describe("POST /api/tasks", () => {
     });
 
     test("Should return error for missing required fields", async () => {
-      const newTask = { title: "", description: "", priority: "", dueDate: "" };
+      const newTask = { title: "", description: "", priority: "", due_date: "" };
 
       const res = await request(app)
         .post("/api/tasks")
