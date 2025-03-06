@@ -1,13 +1,13 @@
 const { Pool } = require("pg");
 require("dotenv").config();  // Ensure environment variables are loaded
 
-// Database connection details
+const isLocalDB = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("db"));
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@db:5432/mydatabase',
-  ssl: process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("db")
-    ? false // Disable SSL for local & Docker
-    : { rejectUnauthorized: false }
+  ssl: isLocalDB ? false : { rejectUnauthorized: false }
 });
+
 
 
 // ✅ Get all tasks
