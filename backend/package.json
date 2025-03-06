@@ -24,7 +24,8 @@
     "jsonwebtoken": "^9.0.2",
     "mailgun.js": "^11.1.0",
     "morgan": "^1.10.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.3",
+    "pg-pool": "^3.7.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",

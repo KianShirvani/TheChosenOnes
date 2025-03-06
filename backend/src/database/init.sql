@@ -40,8 +40,10 @@ CREATE TABLE IF NOT EXISTS tasks(
     due_date DATE,
     status VARCHAR(20),
     priority INT CHECK (priority BETWEEN 1 AND 5),
+    locked BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (kanban_id) REFERENCES kanbans (kanban_id)
         ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
         ON UPDATE CASCADE ON DELETE SET NULL
 );
+
