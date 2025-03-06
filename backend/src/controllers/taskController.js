@@ -1,88 +1,107 @@
-const { Pool } = require("pg");
-require("dotenv").config();  // Ensure environment variables are loaded
+// dependencies
+const { Client } = require("pg");
 
-const isLocalDB = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes("localhost") || process.env.DATABASE_URL.includes("db"));
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@db:5432/mydatabase',
-  ssl: isLocalDB ? false : { rejectUnauthorized: false }
+// set up connection to the database
+const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: false
 });
 
-
+// to prevent connecting to the database during tests
+if (process.env.NODE_ENV !== "test") {
+    client.connect();
+}
 
 // ✅ Get all tasks
-exports.getTasks = async (req, res) => {
+// ✅ define getTasks at the top
+const getTasks = async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM tasks");
-    res.status(200).json(result.rows);
+    const result = await client.query("SELECT * FROM tasks");
+
+    if (!result || !result.rows) {
+      console.error("Error in getTasks: No rows returned.");
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    res.status(200).json({ todo: result.rows });
   } catch (error) {
     console.error("Error in getTasks:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
+
+
+
 // ✅ Create a new task
-exports.createTask = async (req, res) => {
+const createTask = async (req, res) => {
   try {
+    console.log("🔹 Received task data:", req.body); 
+
     const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
 
     if (!title || !description || !priority || !due_date || !kanban_id || !user_id) {
-      return res.status(400).json({ message: "Missing required fields" });
+      console.log("❌ Missing required fields:", req.body);
+      return res.status(400).json({ message: "All fields except status are required" });
     }
 
-    const result = await pool.query(
+    const result = await client.query(
       "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
       [kanban_id, user_id, title, description, priority, due_date, status]
     );
 
+    if (!result || !result.rows || result.rows.length === 0) {
+      console.error("❌ Error: Task was not created.");
+      return res.status(500).json({ message: "Task creation failed" });
+    }
+
+    console.log("✅ Task created:", result.rows[0]);
     res.status(201).json({ message: "Task created successfully", task: result.rows[0] });
   } catch (error) {
-    console.error("Error in createTask:", error);
-    res.status(500).json({ message: "Server error", error });
+    console.error("❌ Error in createTask:", error.message, "\nQuery Error Details:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
+
+
 // ✅ Toggle task lock/unlock
-exports.toggleLock = async (req, res) => {
+const toggleLock = async (req, res) => {
   try {
     const { taskId } = req.params;
-    console.log(`🔹 Received request to toggle lock for Task ID: ${taskId}`);
 
-    const taskResult = await pool.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
-    console.log(`🔹 Task Query Result:`, taskResult.rows);
+    const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
 
-    if (taskResult.rowCount === 0) {
-      console.log(`❌ Task not found for ID: ${taskId}`);
-      return res.status(404).json({ message: "Task not found" });
-    }
+if (taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  // ✅ fix: return 404 instead of 500
+  return res.status(404).json({ message: "Task not found" });
+}
 
-    const newLockStatus = !taskResult.rows[0].locked;
-    console.log(`🔹 Toggling lock to: ${newLockStatus}`);
 
-    const updatedTask = await pool.query(
+  const newLockStatus = !taskCheck.rows[0].locked;
+
+    const updatedTask = await client.query(
       "UPDATE tasks SET locked = $1 WHERE task_id = $2 RETURNING *",
       [newLockStatus, taskId]
     );
 
-    console.log(`✅ Task lock updated successfully!`, updatedTask.rows[0]);
-
     res.status(200).json({ message: `Task lock status updated to ${newLockStatus}`, task: updatedTask.rows[0] });
   } catch (error) {
-    console.error("❌ Error in toggleLock:", error);
+    console.error("Error in toggleLock:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
 
+
 // ✅ Move a task
-exports.moveTask = async (req, res) => {
+const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
 
     const columnOrder = ["todo", "inProgress", "done"];
 
-    const taskResult = await pool.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
+    const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
     if (taskResult.rowCount === 0) return res.status(404).json({ message: "Task not found" });
 
     const task = taskResult.rows[0];
@@ -95,7 +114,7 @@ exports.moveTask = async (req, res) => {
       return res.status(400).json({ message: "Cannot move task further" });
     }
 
-    const updatedTask = await pool.query(
+    const updatedTask = await client.query(
       "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *",
       [columnOrder[newIndex], taskId]
     );
@@ -108,42 +127,65 @@ exports.moveTask = async (req, res) => {
 };
 
 // ✅ Update a task
-exports.updateTask = async (req, res) => {
+const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { title, description, priority, due_date, status } = req.body;
 
-    const taskCheck = await pool.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
-    if (taskCheck.rowCount === 0) return res.status(404).json({ message: "Task not found" });
+    const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
 
-    if (taskCheck.rows[0].locked) return res.status(403).json({ message: "Task is locked and cannot be edited" });
+    // ✅ Fix: Prevent accessing 'locked' on undefined rows
+    if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
+      console.error(`❌ Task with ID ${taskId} not found.`);
+      return res.status(404).json({ message: "Task not found" });
+    }
 
-    const result = await pool.query(
+    if (taskCheck.rows[0].locked) {
+      return res.status(403).json({ message: "Task is locked and cannot be edited" });
+    }
+
+    const result = await client.query(
       "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), priority = COALESCE($3, priority), due_date = COALESCE($4, due_date), status = COALESCE($5, status) WHERE task_id = $6 RETURNING *",
       [title, description, priority, due_date, status, taskId]
     );
 
+    if (!result || result.rowCount === 0) {
+      return res.status(500).json({ message: "Failed to update task" });
+    }
+
+    console.log(`✅ Task ${taskId} updated.`);
     res.status(200).json({ message: "Task updated successfully", task: result.rows[0] });
   } catch (error) {
-    console.error("Error in updateTask:", error);
+    console.error("❌ Error in updateTask:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-// ✅ Delete a task
-exports.deleteTask = async (req, res) => {
+
+
+
+const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const result = await pool.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
+    const result = await client.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
 
-    if (result.rowCount === 0) {
+    if (result.rowCount === 0) {  // ✅ Fix: return 404 if no task was deleted
+      console.log(`❌ Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
+    console.log(`✅ Task ${taskId} deleted.`);
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error("Error in deleteTask:", error);
-    res.status(500).json({ message: "Server error", error });
+    console.error("❌ Error in deleteTask:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+
+
+// ✅ make sure it's included in module.exports
+module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask };
+
