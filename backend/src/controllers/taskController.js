@@ -41,7 +41,7 @@ const createTask = async (req, res) => {
     const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
 
     if (!title || !description || !priority || !due_date || !kanban_id || !user_id) {
-      console.log("❌ Missing required fields:", req.body);
+      console.log("Missing required fields:", req.body);
       return res.status(400).json({ message: "All fields except status are required" });
     }
 
@@ -51,14 +51,14 @@ const createTask = async (req, res) => {
     );
 
     if (!result || !result.rows || result.rows.length === 0) {
-      console.error("❌ Error: Task was not created.");
+      console.error("Error: Task was not created.");
       return res.status(500).json({ message: "Task creation failed" });
     }
 
-    console.log("✅ Task created:", result.rows[0]);
+    console.log("Task created:", result.rows[0]);
     res.status(201).json({ message: "Task created successfully", task: result.rows[0] });
   } catch (error) {
-    console.error("❌ Error in createTask:", error.message, "\nQuery Error Details:", error);
+    console.error("Error in createTask:", error.message, "\nQuery Error Details:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -136,7 +136,7 @@ const updateTask = async (req, res) => {
 
     // ✅ Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
-      console.error(`❌ Task with ID ${taskId} not found.`);
+      console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
@@ -153,10 +153,10 @@ const updateTask = async (req, res) => {
       return res.status(500).json({ message: "Failed to update task" });
     }
 
-    console.log(`✅ Task ${taskId} updated.`);
+    console.log(`Task ${taskId} updated.`);
     res.status(200).json({ message: "Task updated successfully", task: result.rows[0] });
   } catch (error) {
-    console.error("❌ Error in updateTask:", error);
+    console.error("Error in updateTask:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
@@ -171,14 +171,14 @@ const deleteTask = async (req, res) => {
     const result = await client.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
 
     if (result.rowCount === 0) {  // ✅ Fix: return 404 if no task was deleted
-      console.log(`❌ Task with ID ${taskId} not found.`);
+      console.log(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
-    console.log(`✅ Task ${taskId} deleted.`);
+    console.log(`Task ${taskId} deleted.`);
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error("❌ Error in deleteTask:", error);
+    console.error("Error in deleteTask:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
