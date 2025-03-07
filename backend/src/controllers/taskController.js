@@ -124,7 +124,7 @@ const updateTask = async (req, res) => {
     const { taskId } = req.params;
     const { title, description, priority, due_date, status } = req.body;
 
-    const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
+    const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
 
     // ✅ Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
@@ -155,7 +155,22 @@ const updateTask = async (req, res) => {
   }
 };
 
+// ✅ Get assigned tasks for a specific user
+const getAssignedTasks = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await client.query("SELECT * FROM tasks WHERE user_id = $1", [userId]);
 
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "No assigned tasks found for this user." });
+    }
+
+    res.status(200).json({ assignedTasks: result.rows });
+  } catch (error) {
+    console.error("Error in getAssignedTasks:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
 
 
 // ✅ Update assigned task
@@ -180,7 +195,8 @@ const updateAssignedTask = async (req, res) => {
       "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE id = $6 RETURNING *",
       [title, description, priority, due_date, status, taskId]
     );
-
+  
+  
     res.status(200).json({ message: "Task updated successfully", task: updatedTask.rows[0] });
   } catch (error) {
     console.error("Error in updateAssignedTask:", error);
@@ -208,4 +224,13 @@ const deleteTask = async (req, res) => {
   }
 };
 
-module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask, getAssignedTasks, updateAssignedTask };
+module.exports = { 
+  getTasks, 
+  createTask, 
+  toggleLock, 
+  moveTask, 
+  updateTask, 
+  deleteTask, 
+  updateAssignedTask, 
+  getAssignedTasks  
+};
