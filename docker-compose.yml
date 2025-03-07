@@ -48,5 +48,14 @@ services:
       timeout: 5s
       retries: 5
 
+  mock-data-loader:
+    image: node:14
+    depends_on:
+      - backend
+    volumes:
+      - .:/app
+    working_dir: /app/backend/src/database
+    command: ["node", "loadMockData.js"]
+
 volumes:
   pgdata:
