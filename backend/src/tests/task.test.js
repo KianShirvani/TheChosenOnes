@@ -30,7 +30,7 @@ beforeEach(() => {
   mockDatabase = {
     tasks: [
       {
-        id: "1",
+        task_id: "1",
         kanban_id: 1,
         user_id: 1,
         title: "Test Task",
@@ -101,16 +101,17 @@ beforeEach(() => {
       });
     }
   
-    // 5. SELECT by id: for queries like "SELECT * FROM TASKS WHERE ID = $1"
-    if (q.startsWith("SELECT") && q.includes("WHERE ID =")) {
-      const task = mockDatabase.tasks.find(
-        (t) => String(t.id) === String(values[0])
-      );
-      return Promise.resolve({
-        rows: task ? [task] : [],
-        rowCount: task ? 1 : 0,
-      });
-    }
+    // 5. SELECT by id or task_id: for queries like "SELECT * FROM tasks WHERE ID = $1" or "WHERE TASK_ID = $1"
+if (q.startsWith("SELECT") && (q.includes("WHERE ID =") || q.includes("WHERE TASK_ID ="))) {
+  const field = q.includes("WHERE TASK_ID =") ? "task_id" : "id";
+  const task = mockDatabase.tasks.find((t) => String(t[field]) === String(values[0]));
+  return Promise.resolve({
+    rows: task ? [task] : [],
+    rowCount: task ? 1 : 0,
+  });
+}
+
+    
   
     // 6. UPDATE locked status (for toggleLock)
     if (q.includes("UPDATE TASKS SET LOCKED")) {
@@ -126,9 +127,8 @@ beforeEach(() => {
   
     // 7. UPDATE task (updateTask and updateAssignedTask) that updates multiple fields (includes "TITLE =")
     if (q.includes("UPDATE TASKS SET TITLE =")) {
-      const task = mockDatabase.tasks.find(
-        (t) => String(t.id) === String(values[5])
-      );
+      const task = mockDatabase.tasks.find((t) => String(t.task_id) === String(values[5]));
+
       if (task) {
         task.title = values[0];
         task.description = values[1];
