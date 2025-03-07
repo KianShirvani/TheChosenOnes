@@ -3,41 +3,34 @@ const { Client } = require("pg");
 
 // set up connection to the database
 const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: false
+  connectionString: process.env.DATABASE_URL,
+  ssl: false
 });
 
 // to prevent connecting to the database during tests
 if (process.env.NODE_ENV !== "test") {
-    client.connect();
+  client.connect();
 }
 
 // ✅ Get all tasks
-// ✅ define getTasks at the top
 const getTasks = async (req, res) => {
   try {
     const result = await client.query("SELECT * FROM tasks");
 
-    if (!result || !result.rows) {
-      console.error("Error in getTasks: No rows returned.");
-      return res.status(500).json({ message: "Server error" });
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "No tasks found." });
     }
 
-    res.status(200).json({ todo: result.rows });
+    res.status(200).json({ tasks: result.rows });
   } catch (error) {
     console.error("Error in getTasks:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-
-
-
 // ✅ Create a new task
 const createTask = async (req, res) => {
   try {
-    console.log("🔹 Received task data:", req.body); 
-
     const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
 
     if (!title || !description || !priority || !due_date || !kanban_id || !user_id) {
@@ -63,24 +56,21 @@ const createTask = async (req, res) => {
   }
 };
 
-
-
 // ✅ Toggle task lock/unlock
 const toggleLock = async (req, res) => {
   try {
-    const { taskId } = req.params;
+    const { taskId } = req.params; 
 
-    const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
+    // Check if task exists
+    const taskCheck = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+    if (taskCheck.rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
 
-if (taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  // ✅ fix: return 404 instead of 500
-  return res.status(404).json({ message: "Task not found" });
-}
-
-
-  const newLockStatus = !taskCheck.rows[0].locked;
+    const newLockStatus = !taskCheck.rows[0].locked;
 
     const updatedTask = await client.query(
-      "UPDATE tasks SET locked = $1 WHERE task_id = $2 RETURNING *",
+      "UPDATE tasks SET locked = $1 WHERE id = $2 RETURNING *",
       [newLockStatus, taskId]
     );
 
@@ -91,21 +81,23 @@ if (taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  // ✅ fix: return 404 in
   }
 };
 
-
-
 // ✅ Move a task
 const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-
     const columnOrder = ["todo", "inProgress", "done"];
 
-    const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
-    if (taskResult.rowCount === 0) return res.status(404).json({ message: "Task not found" });
+    // Use the proper field name and variable (id instead of task_id)
+    const taskResult = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+    if (taskResult.rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
 
     const task = taskResult.rows[0];
-    if (task.locked) return res.status(403).json({ message: "Task is locked and cannot be moved" });
+    if (task.locked) {
+      return res.status(403).json({ message: "Task is locked and cannot be moved" });
+    }
 
     const currentIndex = columnOrder.indexOf(task.status);
     const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
@@ -115,7 +107,7 @@ const moveTask = async (req, res) => {
     }
 
     const updatedTask = await client.query(
-      "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *",
+      "UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *",
       [columnOrder[newIndex], taskId]
     );
 
@@ -140,12 +132,14 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (taskCheck.rows[0].locked) {
-      return res.status(403).json({ message: "Task is locked and cannot be edited" });
+    const task = taskCheck.rows[0];
+
+    if (task.locked) {
+      return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
 
     const result = await client.query(
-      "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), priority = COALESCE($3, priority), due_date = COALESCE($4, due_date), status = COALESCE($5, status) WHERE task_id = $6 RETURNING *",
+      "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE id = $6 RETURNING *",
       [title, description, priority, due_date, status, taskId]
     );
 
@@ -164,11 +158,42 @@ const updateTask = async (req, res) => {
 
 
 
+// ✅ Update assigned task
+const updateAssignedTask = async (req, res) => {
+  const { taskId } = req.params;
+  const { title, description, priority, due_date, status } = req.body;
+
+  try {
+    const result = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    const task = result.rows[0];
+
+    if (task.locked) {
+      return res.status(403).json({ message: "Task is locked and cannot be updated." });
+    }
+
+    const updatedTask = await client.query(
+      "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE id = $6 RETURNING *",
+      [title, description, priority, due_date, status, taskId]
+    );
+
+    res.status(200).json({ message: "Task updated successfully", task: updatedTask.rows[0] });
+  } catch (error) {
+    console.error("Error in updateAssignedTask:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// ✅ Delete task
 const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const result = await client.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
+    const result = await client.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [taskId]);
 
     if (result.rowCount === 0) {  // ✅ Fix: return 404 if no task was deleted
       console.log(`Task with ID ${taskId} not found.`);
@@ -183,9 +208,4 @@ const deleteTask = async (req, res) => {
   }
 };
 
-
-
-
-// ✅ make sure it's included in module.exports
-module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask };
-
+module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask, getAssignedTasks, updateAssignedTask };
