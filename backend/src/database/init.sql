@@ -47,3 +47,12 @@ CREATE TABLE IF NOT EXISTS tasks(
         ON UPDATE CASCADE ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS task_users (
+    task_id INT,
+    user_id INT,
+    PRIMARY KEY (task_id, user_id),
+    FOREIGN KEY (task_id) REFERENCES tasks (task_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);

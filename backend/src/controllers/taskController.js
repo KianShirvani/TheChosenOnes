@@ -183,9 +183,81 @@ const deleteTask = async (req, res) => {
   }
 };
 
+// Assign one or multiple users to a task
+const assignUsersToTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { userIds } = req.body; // Expecting an array of user IDs
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ message: "User IDs must be a non-empty array" });
+    }
+
+    // Check if the task exists
+    const taskExists = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
+    if (taskExists.rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Insert each user-task assignment, ignoring duplicates
+    const values = userIds.map(userId => `(${taskId}, ${userId})`).join(",");
+    const insertQuery = `INSERT INTO task_users (task_id, user_id) VALUES ${values} ON CONFLICT DO NOTHING`;
+
+    await client.query(insertQuery);
+
+    res.status(201).json({ message: "Users assigned to task successfully" });
+  } catch (error) {
+    console.error("Error in assignUsersToTask:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Get list of users assigned to a task
+const getUsersForTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+
+    const result = await client.query(
+      "SELECT u.user_id, u.first_name, u.last_name, u.email FROM users u INNER JOIN task_users tu ON u.user_id = tu.user_id WHERE tu.task_id = $1",
+      [taskId]
+    );
+
+    res.status(200).json({ users: result.rows });
+  } catch (error) {
+    console.error("Error in getUsersForTask:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// Remove one or multiple users from a task
+const removeUsersFromTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { userIds } = req.body;
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ message: "User IDs must be a non-empty array" });
+    }
+
+    const result = await client.query(
+      "DELETE FROM task_users WHERE task_id = $1 AND user_id = ANY($2) RETURNING *",
+      [taskId, userIds]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "No users were removed, check task and user IDs" });
+    }
+
+    res.status(200).json({ message: "Users removed from task successfully" });
+  } catch (error) {
+    console.error("Error in removeUsersFromTask:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
 
 
 
 // ✅ make sure it's included in module.exports
-module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask };
+// Added assignUsersToTask, getUsersForTask, and removeUsersFromTask
+module.exports = { getTasks, createTask, toggleLock, moveTask, updateTask, deleteTask, assignUsersToTask, getUsersForTask, removeUsersFromTask };
 
