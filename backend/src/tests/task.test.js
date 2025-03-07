@@ -162,3 +162,53 @@ describe("DELETE /api/tasks/:taskId", () => {
       expect(res.body.message).toBe("Task not found");
     });
 });
+
+// Unit testing for assigning users, getting users, and removing users from tasks
+describe("POST /api/tasks/:taskId/assign-users", () => {
+  test("Should assign users to a task", async () => {
+    const res = await request(app)
+      .post("/api/tasks/1/assign-users")
+      .send({ userIds: [1, 2] });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.message).toBe("Users assigned to task successfully");
+  });
+
+  test("Should return error for missing userIds", async () => {
+    const res = await request(app)
+      .post("/api/tasks/1/assign-users")
+      .send({ userIds: [] });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe("User IDs must be a non-empty array");
+  });
+});
+
+describe("GET /api/tasks/:taskId/users", () => {
+  test("Should return assigned users for a task", async () => {
+    const res = await request(app).get("/api/tasks/1/users");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("users");
+  });
+});
+
+describe("DELETE /api/tasks/:taskId/remove-users", () => {
+  test("Should remove users from a task", async () => {
+    const res = await request(app)
+      .delete("/api/tasks/1/remove-users")
+      .send({ userIds: [1] });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Users removed from task successfully");
+  });
+
+  test("Should return error for missing userIds", async () => {
+    const res = await request(app)
+      .delete("/api/tasks/1/remove-users")
+      .send({ userIds: [] });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe("User IDs must be a non-empty array");
+  });
+});

@@ -9,4 +9,9 @@ router.put("/:taskId/lock", taskController.toggleLock);
 router.put("/:taskId", taskController.updateTask);
 router.delete("/:taskId", taskController.deleteTask);
 
+// Added router for the task assignment, get users, and remove users from tasks functionality
+router.post("/:taskId/assign-users", taskController.assignUsersToTask);
+router.get("/:taskId/users", taskController.getUsersForTask);
+router.delete("/:taskId/remove-users", taskController.removeUsersFromTask);
+
 module.exports = router;
