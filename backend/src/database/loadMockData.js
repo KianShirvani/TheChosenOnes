@@ -1,40 +1,54 @@
 const axios = require('axios');
+const { Client } = require('pg');
 
-const backendUrl = 'http://backend-container:5000';
 
-const waitForBackend = async () => {
-  while (true) {
-    try {
-      await axios.get(`${backendUrl}/healthcheck`);
-      console.log('Backend is ready');
-      break;
-    } catch (error) {
-      console.log('Waiting for backend to be ready...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
-};
+// Set up the database connection
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: false
+});
+
+// Connect to the database if not in testing environment
+if (process.env.NODE_ENV !== 'test') {
+  client.connect();
+}
 
 const insertMockData = async () => {
   console.log('Inserting mock data...');
 
-  // Example: Sign up a user
-  await axios.post(`${backendUrl}/api/signup`, {
-    username: 'testuser',
-    password: 'password123'
-  });
+     // Sign up a user (admin)
+    await axios.post(`${process.env.REACT_APP_API_URL}/register`, {
+        firstName: "Arnold",
+        lastName: "Arnold",
+        email: "arnold@example.com",
+        phoneNum: "250-500-5000",
+        country: "Canada",
+        displayName: "arnold",
+        password: "Password123",
+        confirmPassword: "Password123"
+    });
 
-  // Example: Add kanban data
-  await axios.post(`${backendUrl}/api/kanban`, {
-    title: 'Sample Kanban Board',
-    description: 'This is a sample kanban board.'
-  });
+    const adminId = await client.query(`SELECT user_id FROM users WHERE email = $1`, ["arnold@example.com"]);
+
+    // Promote Arnold to admin
+    await client.query(`INSERT INTO admins (admin_id) VALUES ($1)`, [adminId.rows[0].user_id]);
+
+    // Sign up a user (regular user)
+    await axios.post(`${process.env.REACT_APP_API_URL}/register`, {
+        firstName: "Bob",
+        lastName: "Bob",
+        email: "bob@example.com",
+        phoneNum: "250-500-5001",
+        country: "Canada",
+        displayName: "bob",
+        password: "Password123",
+        confirmPassword: "Password123"
+    });
 
   console.log('Mock data inserted successfully.');
 };
 
 const main = async () => {
-  await waitForBackend();
   await insertMockData();
 };
 
