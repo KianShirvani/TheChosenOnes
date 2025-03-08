@@ -3,6 +3,7 @@ const router = express.Router();
 const taskController = require("../controllers/taskController");
 
 router.get("/", taskController.getTasks);
+router.get("/filter", taskController.getFilteredTasks); // to filter the tasks based on the parameters
 router.post("/", taskController.createTask);
 router.put("/:taskId/move", taskController.moveTask);
 router.put("/:taskId/lock", taskController.toggleLock);
