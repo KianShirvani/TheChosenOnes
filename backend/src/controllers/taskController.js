@@ -144,7 +144,7 @@ const updateTask = async (req, res) => {
 
     const result = await client.query(
       "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
-      [title, description, priority, due_date || null, start_date || null, end_date || null, progressInt, status, taskId]
+      [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
 
     if (!result || result.rowCount === 0) {

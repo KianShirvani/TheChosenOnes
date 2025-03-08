@@ -28,9 +28,9 @@ const TaskBoard = () => {
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
   
-      console.log("Fetched data:", data); // ✅ Debugging: 确保 API 返回正确
+      console.log("Fetched data:", data); 
       const tasks = data.tasks || [];
-      // ✅ 正确解析 `tasks` 数组
+  
       setTasks({
         todo: data.tasks.filter(task => task.status === "todo"),
         inProgress: data.tasks.filter(task => task.status === "inProgress"),
@@ -53,7 +53,7 @@ const TaskBoard = () => {
   }, []);
 
   const handleSaveTask = async (taskData) => {
-    console.log("Raw taskData before sending:", taskData); // ✅ 检查原始数据
+    console.log("Raw taskData before sending:", taskData); 
   
     if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
       console.error("Missing fields:", taskData);
@@ -61,8 +61,9 @@ const TaskBoard = () => {
     }
   
     const formattedTaskData = {
-      kanban_id: taskData.kanbanId, // 确保传递了 `kanban_id`
-      user_id: taskData.userId, // 确保传递了 `user_id`
+      id: taskData.id || null, 
+      kanban_id: taskData.kanbanId, 
+      user_id: taskData.userId, 
       title: taskData.title,
       description: taskData.description,
       priority: taskData.priority,
@@ -73,7 +74,7 @@ const TaskBoard = () => {
       status: taskData.status || "todo",
     };
   
-    console.log("Final data sent to backend:", formattedTaskData); // ✅ 确保数据完整
+    console.log("Final data sent to backend:", formattedTaskData); 
   
     try {
       const url = editingTask
@@ -97,7 +98,7 @@ const TaskBoard = () => {
       console.log("Task saved successfully");
       setIsModalOpen(false);
       setEditingTask(null);
-      fetchTasks(); // 重新获取任务列表
+      fetchTasks(); 
     } catch (error) {
       console.error("Fetch error:", error);
     }
