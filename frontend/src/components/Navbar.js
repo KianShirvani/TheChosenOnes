@@ -6,8 +6,6 @@ const Navbar = () => {
       <div style={styles.spacer}></div> {/* Left spacer for centering */}
 
       <h2 style={styles.heading}>Collabium</h2> {/* Centered heading */}
-      
-      {/* ✅ Removed the button container */}
     </nav>
   );
 };
