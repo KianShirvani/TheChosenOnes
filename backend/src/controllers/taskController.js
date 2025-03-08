@@ -1,5 +1,6 @@
 // dependencies
 const { Client } = require("pg");
+const moment = require('moment');
 
 // set up connection to the database
 const client = new Client({
@@ -254,7 +255,7 @@ const removeUsersFromTask = async (req, res) => {
 // Task filtering
 const getFilteredTasks = async (req, res) => {
   try {
-    const { dueDate, user, priority, status } = req.query;
+    const { dueDate, userId, priority, status } = req.query;
 
     let query = "SELECT * FROM tasks WHERE 1=1"; // Base query
     const params = [];
@@ -262,13 +263,18 @@ const getFilteredTasks = async (req, res) => {
 
     // Check for due date filter
     if (dueDate) {
+      const formattedDueDate = moment(dueDate).format('YYYY-MM-DD');
+      console.log("Formatted due date: ", formattedDueDate);
       query += ` AND due_date = $${paramIndex++}`;
-      params.push(dueDate);
+      params.push(formattedDueDate);
     }
-    // Check for user filter
-    if (user && user !== "All") {
+    console.log("Generated query: ", query);
+    console.log("Params: ", params);
+
+    // Check for userId filter
+    if (userId && userId !== "All") {
       query += ` AND user_id = $${paramIndex++}`;
-      params.push(user);
+      params.push(userId);
     }
     // Check for priority filter
     if (priority && priority !== "All") {
@@ -284,13 +290,8 @@ const getFilteredTasks = async (req, res) => {
     // The result from the query with the parameters
     const result = await client.query(query, params);
 
-    // If no tasks were found with that filter set, return this
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No tasks found with the given filters" });
-    }
-
-    // Return the filtered tasks
-    res.status(200).json(result.rows);
+    // Return the filtered tasks (an empty array if no tasks match the filters)
+    res.status(200).json({tasks: result.rows});
 
   } catch (error) {
     // Error logging to provide details of what may have gone wrong
