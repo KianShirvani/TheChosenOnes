@@ -5,7 +5,7 @@ import {
 } from "../components/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";
-import { FaRegSmile, FaRegThumbsUp, FaImage, FaTrash, FaUsers } from "react-icons/fa";
+import { FaRegSmile, FaRegThumbsUp, FaImage, FaUsers } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import "../css/ChatPage.css";
 import { getDoc,setDoc } from "firebase/firestore";
@@ -51,7 +51,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!selectedChat) return;
   
-    console.log("📢 Fetching messages for:", selectedChat.id);
+    console.log("Fetching messages for:", selectedChat.id);
   
     const q = query(
       collection(db, "messages"),
@@ -67,7 +67,7 @@ export default function ChatPage() {
         ...doc.data(),
       }));
   
-      console.log("🔄 New messages received:", newMessages);
+      console.log("New messages received:", newMessages);
       setMessages(newMessages); 
     });
   
@@ -216,7 +216,7 @@ export default function ChatPage() {
   const handleSelectChat = (chat) => {
     if (!chat) return;
   
-    console.log("📢 Chat selected:", chat.id);
+    console.log("Chat selected:", chat.id);
   
     if (typeof chat === "string") {
       setSelectedChat({ id: chat, participants: [userId, chat] });
@@ -293,7 +293,7 @@ export default function ChatPage() {
             <div className="chat-header">
   {selectedChat?.name || `Chat with ${selectedChat.id}`}
   {selectedChat?.participants?.length > 2 && (
-    <button onClick={() => setEditingGroupName(true)}>✏️ Rename</button>
+    <button onClick={() => setEditingGroupName(true)}>Rename</button>
   )}
     </div>
     {editingGroupName && (
