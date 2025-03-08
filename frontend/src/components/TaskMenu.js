@@ -13,7 +13,7 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
 
   return (
     <div style={styles.menuContainer}>
-      {/* ✅ 3-dot button */}
+      {/* 3-dot button */}
       <button onClick={() => setIsOpen(!isOpen)} style={styles.menuButton}>⋮</button>
 
       {isOpen && (

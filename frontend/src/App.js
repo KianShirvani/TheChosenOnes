@@ -13,12 +13,12 @@ import ChatPage from "./pages/ChatPage";
 function App() {
   return (
     <Router>
-      <Header />  {/* ✅ This remains across all pages */}
+      <Header />  {/* This remains across all pages */}
       <Routes>
-        <Route path="/" element={<MainPage />} />   {/* ✅ Home Page */}
+        <Route path="/" element={<MainPage />} />   {/* Home Page */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/tasks" element={<TaskBoard />} />  {/* ✅ Task Management Page */}
+        <Route path="/tasks" element={<TaskBoard />} />  {/* Task Management Page */}
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
         <Route path="/chat" element={<ChatPage />} />
