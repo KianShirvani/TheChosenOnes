@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import Footer from "../components/Footer";
 
 const SignupPage = () => {
   const navigate = useNavigate();

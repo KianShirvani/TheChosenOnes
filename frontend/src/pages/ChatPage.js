@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { 
-  db, storage, collection, addDoc, query, orderBy, where, onSnapshot, updateDoc, 
-  deleteDoc, doc, ref, uploadBytes, getDownloadURL, getDocs 
+  db, collection, addDoc, query, orderBy, where, onSnapshot, updateDoc, 
+  deleteDoc, doc, getDocs 
 } from "../components/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import EmojiPicker from "emoji-picker-react";

@@ -1,4 +1,4 @@
-import React from "react"; // ✅ keep imports at the top
+import React from "react"; // keep imports at the top
 
 const HeroSection = () => {
   return (
