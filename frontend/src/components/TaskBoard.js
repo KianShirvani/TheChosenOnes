@@ -27,32 +27,57 @@ const TaskBoard = () => {
       const response = await fetch("http://localhost:5001/api/tasks");
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
+  
+      console.log("Fetched data:", data); // ✅ Debugging: 确保 API 返回正确
+      const tasks = data.tasks || [];
+      // ✅ 正确解析 `tasks` 数组
       setTasks({
-        todo: data.todo || [],
-        inProgress: data.inProgress || [],
-        done: data.done || [],
+        todo: data.tasks.filter(task => task.status === "todo"),
+        inProgress: data.tasks.filter(task => task.status === "inProgress"),
+        done: data.tasks.filter(task => task.status === "done"),
       });
+  
+      console.log("Updated tasks:", {
+        todo: data.tasks.filter(task => task.status === "todo"),
+        inProgress: data.tasks.filter(task => task.status === "inProgress"),
+        done: data.tasks.filter(task => task.status === "done"),
+      });
+  
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
   };
-
+  
   useEffect(() => {
     fetchTasks(); // Fetch tasks on initial load
   }, []);
 
-  // Create or update task in the backend
   const handleSaveTask = async (taskData) => {
-    if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
-      console.error(" Missing fields:", taskData);
+    console.log("Raw taskData before sending:", taskData); // ✅ 检查原始数据
+  
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
+      console.error("Missing fields:", taskData);
       return;
     }
   
-    const updatedTaskData = { ...taskData, id: editingTask ? editingTask.id : undefined };
+    const formattedTaskData = {
+      kanban_id: taskData.kanbanId, // 确保传递了 `kanban_id`
+      user_id: taskData.userId, // 确保传递了 `user_id`
+      title: taskData.title,
+      description: taskData.description,
+      priority: taskData.priority,
+      due_date: new Date(taskData.dueDate).toISOString().split("T")[0],
+      start_date: new Date(taskData.startDate).toISOString().split("T")[0],
+      end_date: new Date(taskData.endDate).toISOString().split("T")[0],
+      progress: taskData.progress || 0,
+      status: taskData.status || "todo",
+    };
+  
+    console.log("Final data sent to backend:", formattedTaskData); // ✅ 确保数据完整
   
     try {
       const url = editingTask
-        ? `http://localhost:5001/api/tasks/${updatedTaskData.id}`
+        ? `http://localhost:5001/api/tasks/${formattedTaskData.id}`
         : "http://localhost:5001/api/tasks";
       const method = editingTask ? "PUT" : "POST";
   
@@ -60,20 +85,24 @@ const TaskBoard = () => {
         method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(updatedTaskData),
+        body: JSON.stringify(formattedTaskData),
       });
   
-      if (response.ok) {
-        setIsModalOpen(false);
-        setEditingTask(null);  // Reset editingTask after save 
-        fetchTasks(); // Refresh UI after update
-      } else {
-        console.error(" Error saving task:", await response.json());
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error saving task:", errorData);
+        return;
       }
+  
+      console.log("Task saved successfully");
+      setIsModalOpen(false);
+      setEditingTask(null);
+      fetchTasks(); // 重新获取任务列表
     } catch (error) {
       console.error("Fetch error:", error);
     }
   };
+  
   
   
 
