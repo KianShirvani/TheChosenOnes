@@ -73,22 +73,21 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 )}
 
            
-            <button 
-              onClick={() => onToggleLock(task.id)} 
-              style={task.locked ? styles.locked : styles.unlock} 
-              data-testid="lock-button"
-            >
-              {task.locked ? "🔒 Locked" : "🔓 Lock"}
-            </button>
+  <button 
+    onClick={() => onToggleLock(task.id)} 
+    style={task.locked ? styles.locked : styles.unlock} 
+    data-testid="lock-button"
+  >
+    {task.locked ? "🔒 Locked" : "🔓 Lock"}
+  </button>
 
-            <button
-  onClick={() => onDeleteTask(task.id)}
-  style={styles.delete}
-  data-testid="delete-button"
-  disabled={task.locked}  // Disable the delete button when the task is locked
->
-🗑
-</button>
+  <button
+    onClick={() => onDeleteTask(task.id)}
+    style={styles.delete}
+    data-testid="delete-button"
+    disabled={task.locked}  // Disable the delete button when the task is locked
+  >
+  </button>
 
           </div>
         </div>
