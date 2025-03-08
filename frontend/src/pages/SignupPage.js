@@ -34,7 +34,7 @@ const SignupPage = () => {
       return;
     }
   
-    // ✅ Add email validation using regex
+    //  Add email validation using regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert("Invalid email format");
