@@ -41,7 +41,7 @@ const createTask = async (req, res) => {
 
     const result = await client.query(
       "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
-      [kanban_id, user_id, title, description, priority, due_date, status]
+      [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
     );
 
     if (!result || !result.rows || result.rows.length === 0) {
@@ -264,12 +264,9 @@ const getFilteredTasks = async (req, res) => {
     // Check for due date filter
     if (dueDate) {
       const formattedDueDate = moment(dueDate).format('YYYY-MM-DD');
-      console.log("Formatted due date: ", formattedDueDate);
       query += ` AND due_date = $${paramIndex++}`;
       params.push(formattedDueDate);
     }
-    console.log("Generated query: ", query);
-    console.log("Params: ", params);
 
     // Check for userId filter
     if (userId && userId !== "All") {
