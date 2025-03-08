@@ -12,7 +12,7 @@ if (process.env.NODE_ENV !== "test") {
   client.connect();
 }
 
-// ✅ Get all tasks
+//  Get all tasks
 const getTasks = async (req, res) => {
   try {
     const result = await client.query("SELECT * FROM tasks");
@@ -28,7 +28,7 @@ const getTasks = async (req, res) => {
   }
 };
 
-// ✅ Create a new task
+//  Create a new task
 const createTask = async (req, res) => {
   try {
     const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
@@ -56,7 +56,7 @@ const createTask = async (req, res) => {
   }
 };
 
-// ✅ Toggle task lock/unlock
+//  Toggle task lock/unlock
 const toggleLock = async (req, res) => {
   try {
     const { taskId } = req.params; 
@@ -117,7 +117,7 @@ const moveTask = async (req, res) => {
   }
 };
 
-// ✅ Update a task
+//  Update a task
 const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -125,7 +125,7 @@ const updateTask = async (req, res) => {
 
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
 
-    // ✅ Fix: Prevent accessing 'locked' on undefined rows
+    //  Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
       console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
@@ -154,7 +154,7 @@ const updateTask = async (req, res) => {
   }
 };
 
-// ✅ Get assigned tasks for a specific user
+//  Get assigned tasks for a specific user
 const getAssignedTasks = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -172,7 +172,7 @@ const getAssignedTasks = async (req, res) => {
 };
 
 
-// ✅ Update assigned task
+//  Update assigned task
 const updateAssignedTask = async (req, res) => {
   const { taskId } = req.params;
   const { title, description, priority, due_date, status } = req.body;
@@ -206,14 +206,14 @@ const updateAssignedTask = async (req, res) => {
     
     
 
-// ✅ Delete task
+//  Delete task
 const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
     const result = await client.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [taskId]);
 
-    if (result.rowCount === 0) {  // ✅ Fix: return 404 if no task was deleted
+    if (result.rowCount === 0) {  //  Fix: return 404 if no task was deleted
       console.log(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
@@ -226,7 +226,7 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// ✅ Assign users to a task
+//  Assign users to a task
 const assignUsersToTask = async (req, res) => {
   const { taskId } = req.params;
   const { userIds } = req.body;
@@ -237,14 +237,14 @@ const assignUsersToTask = async (req, res) => {
   return res.status(201).json({ message: "Users assigned to task successfully" });
 };
 
-// ✅ Get users assigned to a task
+//  Get users assigned to a task
 const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
   // Return a dummy list of users for testing purposes.
   return res.status(200).json({ users: [{ id: 1, name: "User One" }, { id: 2, name: "User Two" }] });
 };
 
-// ✅ Remove users from a task
+//  Remove users from a task
 const removeUsersFromTask = async (req, res) => {
   const { userIds } = req.body;
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
