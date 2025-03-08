@@ -78,7 +78,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     style={task.locked ? styles.locked : styles.unlock} 
     data-testid="lock-button"
   >
-    {task.locked ? "🔒 Locked" : "🔓 Lock"}
+    {task.locked ? "Locked" : "Lock"}
   </button>
 
   <button
