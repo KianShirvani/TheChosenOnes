@@ -1,10 +1,9 @@
 const axios = require('axios');
 const { Client } = require('pg');
 
-
 // Set up the database connection
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL || "postgres://postgres:password@db:5432/mydatabase",
   ssl: false
 });
 
@@ -13,11 +12,15 @@ if (process.env.NODE_ENV !== 'test') {
   client.connect();
 }
 
-const insertMockData = async () => {
-  console.log('Inserting mock data...');
+const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+const insertData = async () => {
+  console.log('Inserting data...');
+
+  console.log("API URL:", apiUrl);
 
      // Sign up a user (admin)
-    await axios.post(`${process.env.REACT_APP_API_URL}/register`, {
+    await axios.post(`${apiUrl}/register`, {
         firstName: "Arnold",
         lastName: "Arnold",
         email: "arnold@example.com",
@@ -45,14 +48,16 @@ const insertMockData = async () => {
         confirmPassword: "Password123"
     });
 
-  console.log('Mock data inserted successfully.');
+  console.log('Data inserted successfully.');
+  res.redirect('/');
 };
 
 const main = async () => {
-  await insertMockData();
+  await insertData();
+  Navigate();
 };
 
 main().catch(error => {
-  console.error('Error inserting mock data:', error);
+  console.error('Error inserting data:', error);
   process.exit(1);
 });

@@ -48,19 +48,5 @@ services:
       timeout: 5s
       retries: 5
 
-  mock-data-loader:
-    image: node:14
-    depends_on:
-      - backend
-      - db
-    volumes:
-      - .:/app
-    working_dir: /app/backend/src/database
-    environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/mydatabase
-    entrypoint: ["sh", "-c", "sleep 15 && node loadMockData.js"]
-    # Add sleep to ensure the backend and DB are ready before running the script
-    restart: "no"  # Ensures this container will not restart after completion
-
 volumes:
   pgdata:
