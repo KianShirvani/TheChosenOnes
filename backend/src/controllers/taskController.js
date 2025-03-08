@@ -12,7 +12,7 @@ if (process.env.NODE_ENV !== "test") {
   client.connect();
 }
 
-// ✅ Get all tasks
+// Get all tasks
 const getTasks = async (req, res) => {
   try {
     const result = await client.query("SELECT * FROM tasks");
@@ -28,7 +28,7 @@ const getTasks = async (req, res) => {
   }
 };
 
-// ✅ Create a new task
+// Create a new task
 const createTask = async (req, res) => {
   try {
     const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
@@ -56,7 +56,7 @@ const createTask = async (req, res) => {
   }
 };
 
-// ✅ Toggle task lock/unlock
+// Toggle task lock/unlock
 const toggleLock = async (req, res) => {
   try {
     const { taskId } = req.params; 
@@ -117,7 +117,7 @@ const moveTask = async (req, res) => {
   }
 };
 
-// ✅ Update a task
+// Update a task
 const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -125,7 +125,7 @@ const updateTask = async (req, res) => {
 
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
 
-    // ✅ Fix: Prevent accessing 'locked' on undefined rows
+    // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
       console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
@@ -154,7 +154,7 @@ const updateTask = async (req, res) => {
   }
 };
 
-// ✅ Get assigned tasks for a specific user
+// Get assigned tasks for a specific user
 const getAssignedTasks = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -171,8 +171,7 @@ const getAssignedTasks = async (req, res) => {
   }
 };
 
-
-// ✅ Update assigned task
+// Update assigned task
 const updateAssignedTask = async (req, res) => {
   const { taskId } = req.params;
   const { title, description, priority, due_date, status } = req.body;
@@ -204,9 +203,7 @@ const updateAssignedTask = async (req, res) => {
   }
 };
     
-    
-
-// ✅ Delete task
+// Delete task
 const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -226,7 +223,7 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// ✅ Assign users to a task
+// Assign users to a task
 const assignUsersToTask = async (req, res) => {
   const { taskId } = req.params;
   const { userIds } = req.body;
@@ -237,14 +234,14 @@ const assignUsersToTask = async (req, res) => {
   return res.status(201).json({ message: "Users assigned to task successfully" });
 };
 
-// ✅ Get users assigned to a task
+// Get users assigned to a task
 const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
   // Return a dummy list of users for testing purposes.
   return res.status(200).json({ users: [{ id: 1, name: "User One" }, { id: 2, name: "User Two" }] });
 };
 
-// ✅ Remove users from a task
+// Remove users from a task
 const removeUsersFromTask = async (req, res) => {
   const { userIds } = req.body;
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -252,6 +249,53 @@ const removeUsersFromTask = async (req, res) => {
   }
   // For now, simply return a success response.
   return res.status(200).json({ message: "Users removed from task successfully" });
+};
+
+// Task filtering
+const getFilteredTasks = async (req, res) => {
+  try {
+    const { dueDate, user, priority, status } = req.query;
+
+    let query = "SELECT * FROM tasks WHERE 1=1"; // Base query
+    const params = [];
+    let paramIndex = 1;
+
+    // Check for due date filter
+    if (dueDate) {
+      query += ` AND due_date = $${paramIndex++}`;
+      params.push(dueDate);
+    }
+    // Check for user filter
+    if (user && user !== "All") {
+      query += ` AND user_id = $${paramIndex++}`;
+      params.push(user);
+    }
+    // Check for priority filter
+    if (priority && priority !== "All") {
+      query += ` AND priority = $${paramIndex++}`;
+      params.push(priority);
+    }
+    // Check for status filter
+    if (status && status !== "All") {
+      query += ` AND status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // The result from the query with the parameters
+    const result = await client.query(query, params);
+
+    // If no tasks were found with that filter set, return this
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No tasks found with the given filters" });
+    }
+
+    // Return the filtered tasks
+    res.status(200).json(result.rows);
+
+  } catch (error) {
+    // Error logging to provide details of what may have gone wrong
+    res.status(500).json({error: "Failed to fetch tasks", details: error.message});
+  }
 };
 
 module.exports = { 
@@ -265,6 +309,7 @@ module.exports = {
   getAssignedTasks,
   assignUsersToTask,
   getUsersForTask,
-  removeUsersFromTask
+  removeUsersFromTask,
+  getFilteredTasks
 };
 
