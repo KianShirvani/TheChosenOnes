@@ -1,0 +1,100 @@
+
+> backend@1.0.0 test
+> jest --coverage
+
+PASS src/tests/task.test.js
+  ● Console
+
+    console.log
+      Task created: {
+        id: '2',
+        kanban_id: 1,
+        user_id: 1,
+        title: 'Test Task',
+        description: 'Test description',
+        priority: '5',
+        due_date: '2025-12-31',
+        status: 'todo',
+        locked: false
+      }
+
+      at log (src/controllers/taskController.js:52:13)
+
+    console.log
+      Missing required fields: { title: '', description: '', priority: '', due_date: '' }
+
+      at log (src/controllers/taskController.js:38:15)
+
+    console.error
+      Task with ID 999 not found.
+
+      132 |     // Fix: Prevent accessing 'locked' on undefined rows
+      133 |     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
+    > 134 |       console.error(`Task with ID ${taskId} not found.`);
+          |               ^
+      135 |       return res.status(404).json({ message: "Task not found" });
+      136 |     }
+      137 |
+
+      at error (src/controllers/taskController.js:134:15)
+
+    console.log
+      Task with ID 999 not found.
+
+      at log (src/controllers/taskController.js:218:15)
+
+PASS src/tests/registerUser.test.js
+PASS src/tests/auth.test.js
+PASS src/tests/getAdminStats.test.js
+  ● Console
+
+    console.error
+      Error fetching admin stats: Error: Database error
+          at Object.<anonymous> (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/src/tests/getAdminStats.test.js:55:44)
+          at Promise.then.completed (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/run.js:316:40)
+          at processTicksAndRejections (node:internal/process/task_queues:96:5)
+          at _runTest (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/run.js:121:9)
+          at run (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/run.js:71:3)
+          at runAndTransformResultsToJestFormat (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+          at jestAdapter (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+          at runTestInternal (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/Users/yanshuyu/Desktop/TheChosenOnes-1/backend/node_modules/jest-runner/build/runTest.js:444:34)
+
+       95 |
+       96 |     } catch (error) {
+    >  97 |         console.error('Error fetching admin stats:', error);
+          |                 ^
+       98 |         return res.status(500).json({ 
+       99 |             error: 'Internal Server Error',
+      100 |             message: 'An unexpected error occurred while processing your request. Please try again later.' });
+
+      at error (src/controllers/adminController.js:97:17)
+
+PASS src/tests/message.test.js
+PASS src/tests/promoteToAdmin.test.js
+--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------
+File                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                        
+--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------
+All files                 |    67.8 |    63.77 |   79.31 |   67.71 |                                                                                          
+ controllers              |   65.55 |       64 |   77.77 |   65.42 |                                                                                          
+  adminController.js      |   91.66 |       90 |     100 |   91.66 | 11,43-44                                                                                 
+  authController.js       |   63.33 |    83.33 |      40 |   63.33 | 19,52-53,58-98,124-125                                                                   
+  messageController.js    |   70.58 |    45.45 |   85.71 |      70 | 17,38,53-68                                                                              
+  taskController.js       |   63.75 |    60.97 |   91.66 |   63.75 | 13,22,27-28,48-49,55-56,71-81,86-117,127-128,138-157,173-174,205-206,222-226,286-287,298 
+  userController.js       |      30 |       25 |       0 |      30 | 12,16-53                                                                                 
+ middlewares              |    87.5 |       50 |     100 |    87.5 |                                                                                          
+  validateRegistration.js |    87.5 |       50 |     100 |    87.5 | 46                                                                                       
+ routes                   |     100 |      100 |     100 |     100 |                                                                                          
+  taskRoutes.js           |     100 |      100 |     100 |     100 |                                                                                          
+--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------
+
+Test Suites: 6 passed, 6 total
+Tests:       47 passed, 47 total
+Snapshots:   0 total
+Time:        1.285 s
+Ran all test suites.
