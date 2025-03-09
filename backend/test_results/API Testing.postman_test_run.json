@@ -1,0 +1,220 @@
+{
+	"id": "700439dd-dda8-42d9-8551-84da63f9eb76",
+	"name": "API Testing",
+	"timestamp": "2025-03-09T07:23:51.250Z",
+	"collection_id": "42539797-c8cbe237-5097-456a-9bea-15d12d2dc6a1",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 0,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-03-09T07:23:50.694Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "933c8033-004f-4870-9368-82a386246a32",
+			"name": "Register User",
+			"url": "http://localhost:5001/register",
+			"time": 109,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				109
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "19977be4-87a2-4645-8ea3-038fc8bd121a",
+			"name": "Login User",
+			"url": "http://localhost:5001/auth/login",
+			"time": 92,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				92
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "80297a9b-790c-4c5e-9288-989918c8288e",
+			"name": "Promote to Admin",
+			"url": "http://localhost:5001/admin/promote",
+			"time": 2,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				2
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "eb115b5e-0cbd-4dc7-9150-e8e2854018cc",
+			"name": "Get Admin Stats",
+			"url": "http://localhost:5001/admin/stats",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				5
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "3ccc6bfc-d12f-411f-99b4-c2ab05602469",
+			"name": "Create Task",
+			"url": "http://localhost:5001/api/tasks",
+			"time": 4,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				4
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "8d6f408f-2b30-4e50-b2c3-20b66a11a51f",
+			"name": "Get Tasks",
+			"url": "http://localhost:5001/api/tasks",
+			"time": 2,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				2
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "f7954adb-a7bc-491a-bb77-ab68f1e5342e",
+			"name": "Update Task",
+			"url": "http://localhost:5001/api/tasks/12",
+			"time": 3,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				3
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "9ab87622-1055-4430-881c-e29df86db0bf",
+			"name": "Delete Task",
+			"url": "http://localhost:5001/api/tasks/12",
+			"time": 2,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				2
+			],
+			"allTests": [
+				{}
+			]
+		},
+		{
+			"id": "7bf9201a-3818-4766-8904-e9631cd3e061",
+			"name": "Get Assigned Tasks",
+			"url": "http://localhost:5001/api/tasks/assigned/9",
+			"time": 2,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {},
+			"testPassFailCounts": {},
+			"times": [
+				2
+			],
+			"allTests": [
+				{}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 221,
+	"collection": {
+		"requests": [
+			{
+				"id": "933c8033-004f-4870-9368-82a386246a32",
+				"method": "POST"
+			},
+			{
+				"id": "19977be4-87a2-4645-8ea3-038fc8bd121a",
+				"method": "POST"
+			},
+			{
+				"id": "80297a9b-790c-4c5e-9288-989918c8288e",
+				"method": "POST"
+			},
+			{
+				"id": "eb115b5e-0cbd-4dc7-9150-e8e2854018cc",
+				"method": "GET"
+			},
+			{
+				"id": "3ccc6bfc-d12f-411f-99b4-c2ab05602469",
+				"method": "POST"
+			},
+			{
+				"id": "8d6f408f-2b30-4e50-b2c3-20b66a11a51f",
+				"method": "GET"
+			},
+			{
+				"id": "f7954adb-a7bc-491a-bb77-ab68f1e5342e",
+				"method": "PUT"
+			},
+			{
+				"id": "9ab87622-1055-4430-881c-e29df86db0bf",
+				"method": "DELETE"
+			},
+			{
+				"id": "7bf9201a-3818-4766-8904-e9631cd3e061",
+				"method": "GET"
+			}
+		]
+	}
+}
