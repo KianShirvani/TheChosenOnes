@@ -54,8 +54,8 @@
 			"url": "http://localhost:5001/admin/promote",
 			"time": 2,
 			"responseCode": {
-				"code": 403,
-				"name": "Forbidden"
+				"code": 200,
+				"name": "OK"
 			},
 			"tests": {},
 			"testPassFailCounts": {},
