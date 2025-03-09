@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1741479273449" clover="3.2.0">
+  <project timestamp="1741479273449" name="All files">
+    <metrics statements="29" coveredstatements="5" conditionals="21" coveredconditionals="0" methods="16" coveredmethods="0" elements="66" coveredelements="5" complexity="0" loc="29" ncloc="29" packages="3" files="3" classes="3"/>
+    <package name="components">
+      <metrics statements="16" coveredstatements="2" conditionals="17" coveredconditionals="0" methods="9" coveredmethods="0"/>
+      <file name="AdminTaskList.js" path="/Users/yanshuyu/Desktop/TheChosenOnes-1/frontend/src/components/AdminTaskList.js">
+        <metrics statements="16" coveredstatements="2" conditionals="17" coveredconditionals="0" methods="9" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="5" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="85" count="0" type="stmt"/>
+        <line num="100" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="components.ui">
+      <metrics statements="2" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <file name="button.js" path="/Users/yanshuyu/Desktop/TheChosenOnes-1/frontend/src/components/ui/button.js">
+        <metrics statements="2" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="pages">
+      <metrics statements="11" coveredstatements="2" conditionals="4" coveredconditionals="0" methods="6" coveredmethods="0"/>
+      <file name="AdminManagement.js" path="/Users/yanshuyu/Desktop/TheChosenOnes-1/frontend/src/pages/AdminManagement.js">
+        <metrics statements="11" coveredstatements="2" conditionals="4" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="20" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
