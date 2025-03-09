@@ -1,17 +1,34 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 const AddTask = ({ task, onSaveTask, onClose }) => {
-  const [taskData, setTaskData] = useState(task || { 
-    title: "", 
-    description: "", 
-    priority: "Medium", 
-    dueDate: "", 
-    startDate: "", 
-    endDate: "", 
-    progress: 0, 
-    status: "todo" 
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    return new Date(date).toISOString().split("T")[0]; 
+  };
+
+  const [taskData, setTaskData] = useState(task || {
+    title: "",
+    description: "",
+    priority: "Medium",
+    dueDate: "",
+    startDate: "",
+    endDate: "",
+    progress: 0,
+    status: "todo",
+    kanbanId: null,
+    userId: null,
   });
 
+  useEffect(() => {
+    if (task) {
+      setTaskData({
+        ...task,
+        dueDate: formatDateForInput(task.due_date),
+        startDate: formatDateForInput(task.start_date),
+        endDate: formatDateForInput(task.end_date),
+      });
+    }
+  }, [task]);
   const handleChange = (e) => {
     setTaskData({ ...taskData, [e.target.name]: e.target.value });
   };

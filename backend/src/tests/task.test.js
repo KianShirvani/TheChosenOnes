@@ -168,12 +168,12 @@ describe("POST /api/tasks", () => {
       description: "Test description",
       priority: "5",
       due_date: "2025-12-31",
-      startDate: "2025-01-01",
-      endDate: "2025-12-30",
+      start_date: "2025-01-01",
+      end_date: "2025-12-30",
       progress: 50,
       status: "todo",
       locked: true,
-    };
+    };    
 
     const res = await request(app)
       .post("/api/tasks")

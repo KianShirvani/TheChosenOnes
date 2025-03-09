@@ -32,9 +32,9 @@ const getTasks = async (req, res) => {
 // Create a new task
 const createTask = async (req, res) => {
   try {
-    const { kanban_id, user_id, title, description, priority, due_date, status } = req.body;
+    const { kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
 
-    if (!title || !description || !priority || !due_date || !kanban_id || !user_id) {
+    if (!title || !description || !progress || !due_date || !start_date || !end_date ) {
       console.log("Missing required fields:", req.body);
       return res.status(400).json({ message: "All fields except status are required" });
     }
@@ -121,9 +121,12 @@ const moveTask = async (req, res) => {
 // Update a task
 const updateTask = async (req, res) => {
   try {
+    const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
     const { taskId } = req.params;
-    const { title, description, priority, due_date, status } = req.body;
-
+    if (!taskId || isNaN(taskId)) {
+      console.error(`❌ Invalid Task ID: ${taskId}`);
+      return res.status(400).json({ message: "Invalid or missing Task ID" });
+    }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
 
     // Fix: Prevent accessing 'locked' on undefined rows
@@ -139,8 +142,8 @@ const updateTask = async (req, res) => {
     }
 
     const result = await client.query(
-      "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE id = $6 RETURNING *",
-      [title, description, priority, due_date, status, taskId]
+      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
+      [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
 
     if (!result || result.rowCount === 0) {

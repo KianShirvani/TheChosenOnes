@@ -27,32 +27,58 @@ const TaskBoard = () => {
       const response = await fetch("http://localhost:5001/api/tasks");
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
+  
+      console.log("Fetched data:", data); 
+      const tasks = data.tasks || [];
+  
       setTasks({
-        todo: data.todo || [],
-        inProgress: data.inProgress || [],
-        done: data.done || [],
+        todo: data.tasks.filter(task => task.status === "todo"),
+        inProgress: data.tasks.filter(task => task.status === "inProgress"),
+        done: data.tasks.filter(task => task.status === "done"),
       });
+  
+      console.log("Updated tasks:", {
+        todo: data.tasks.filter(task => task.status === "todo"),
+        inProgress: data.tasks.filter(task => task.status === "inProgress"),
+        done: data.tasks.filter(task => task.status === "done"),
+      });
+  
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
   };
-
+  
   useEffect(() => {
     fetchTasks(); // Fetch tasks on initial load
   }, []);
 
-  // Create or update task in the backend
   const handleSaveTask = async (taskData) => {
-    if (!taskData.title.trim() || !taskData.description.trim() || !taskData.priority || !taskData.dueDate) {
-      console.error(" Missing fields:", taskData);
+    console.log("Raw taskData before sending:", taskData); 
+  
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
+      console.error("Missing fields:", taskData);
       return;
     }
   
-    const updatedTaskData = { ...taskData, id: editingTask ? editingTask.id : undefined };
+    const formattedTaskData = {
+      id: taskData.id || null, 
+      kanban_id: taskData.kanbanId, 
+      user_id: taskData.userId, 
+      title: taskData.title,
+      description: taskData.description,
+      priority: taskData.priority,
+      due_date: new Date(taskData.dueDate).toISOString().split("T")[0],
+      start_date: new Date(taskData.startDate).toISOString().split("T")[0],
+      end_date: new Date(taskData.endDate).toISOString().split("T")[0],
+      progress: taskData.progress || 0,
+      status: taskData.status || "todo",
+    };
+  
+    console.log("Final data sent to backend:", formattedTaskData); 
   
     try {
       const url = editingTask
-        ? `http://localhost:5001/api/tasks/${updatedTaskData.id}`
+        ? `http://localhost:5001/api/tasks/${formattedTaskData.id}`
         : "http://localhost:5001/api/tasks";
       const method = editingTask ? "PUT" : "POST";
   
@@ -60,20 +86,24 @@ const TaskBoard = () => {
         method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(updatedTaskData),
+        body: JSON.stringify(formattedTaskData),
       });
   
-      if (response.ok) {
-        setIsModalOpen(false);
-        setEditingTask(null);  // Reset editingTask after save 
-        fetchTasks(); // Refresh UI after update
-      } else {
-        console.error(" Error saving task:", await response.json());
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error saving task:", errorData);
+        return;
       }
+  
+      console.log("Task saved successfully");
+      setIsModalOpen(false);
+      setEditingTask(null);
+      fetchTasks(); 
     } catch (error) {
       console.error("Fetch error:", error);
     }
   };
+  
   
   
 
