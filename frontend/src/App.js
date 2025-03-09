@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import MainPage from "./pages/MainPage";
@@ -9,8 +9,15 @@ import TaskBoard from "./components/TaskBoard";
 import AdminDashboard from "./components/AdminDashboard";
 import AdminManagement from "./pages/AdminManagement";
 import ChatPage from "./pages/ChatPage";
+import axios from "axios";
 
 function App() {
+  useEffect(() => {
+    // Load data when the app starts
+    axios.get("http://localhost:5000/load-data")
+      .then(response => console.log("Mock data loaded:", response.data))
+      .catch(error => console.error("Error loading mock data:", error));
+  }, []);  // Empty dependency array → Runs only on first render
   return (
     <Router>
       <Header />  {/* This remains across all pages */}

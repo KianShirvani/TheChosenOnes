@@ -40,6 +40,11 @@ const SignupPage = () => {
       alert("Invalid email format");
       return;
     }
+
+    if(formData.country === "Select a country") {
+      alert("Please select a country");
+      return;
+    }
   
     if (formData.password.length < 8) {
       alert("Password must be at least 8 characters long");
@@ -52,7 +57,7 @@ const SignupPage = () => {
     }
   
     try {
-      const response = await axios.post('/register', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/register`, {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -154,11 +159,14 @@ const SignupPage = () => {
           </div>
           <select
             className="country-select"
-            onChange={handleChange}
+            name="country" 
+            value={formData.country} 
+            onChange={handleChange} 
             style={styles.select}
             required
           >
             {/* these countries can change. We can also add or remove more */}
+            <option value="">Select a country</option>
             <option value="Afghanistan">Afghanistan</option>
             <option value="Antarctica">Antarctica</option>
             <option value="Australia">Australia</option>
