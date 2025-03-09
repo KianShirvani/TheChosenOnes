@@ -86,11 +86,11 @@ describe("AdminDashboard Component", () => {
   
     // Wait for state to update
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:5001/api/tasks",);
+      expect(fetch).toHaveBeenCalledWith(`${process.env.REACT_APP_API_URL}/api/tasks`,);
     });
 
     await waitFor(() => {
-      expect(lockButtons[0]).toHaveTextContent("🔒");
+      expect(lockButtons[0]).toHaveTextContent("Lock");
     });
   });
   

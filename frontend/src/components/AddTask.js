@@ -40,7 +40,7 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
         <input type="text" name="title" placeholder="Task Title" value={taskData.title} onChange={handleChange} style={styles.input} />
         <textarea name="description" placeholder="Task Description" value={taskData.description} onChange={handleChange} style={styles.input} />
         
-        {/* ✅ Priority selection */}
+        {/* Priority selection */}
         <label>Priority:</label>
         <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
           <option>High</option>
@@ -48,7 +48,7 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
           <option>Low</option>
         </select>
 
-        {/* ✅ Status selection (Move between To-Do, In Progress, Done) */}
+        {/* Status selection (Move between To-Do, In Progress, Done) */}
         <label>Move to:</label>
         <select name="status" value={taskData.status} onChange={handleChange} style={styles.input}>
           <option value="todo">To-Do</option>
@@ -56,21 +56,21 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
           <option value="done">Done</option>
         </select>
 
- {/* ✅ Start Date */}
+ {/* Start Date */}
  <label>Start Date:</label>
         <input type="date" name="startDate" value={taskData.startDate} onChange={handleChange} style={styles.input} />
         
-        {/* ✅ End Date */}
+        {/* End Date */}
         <label>End Date:</label>
         <input type="date" name="endDate" value={taskData.endDate} onChange={handleChange} style={styles.input} />
 
 
-        {/* ✅ Due Date */}
+        {/* Due Date */}
         <label>Due Date:</label>
         <input type="date" name="dueDate" value={taskData.dueDate} onChange={handleChange} style={styles.input} />
 
   
-      {/* ✅ Progress Bar */}
+      {/* Progress Bar */}
       <label>Progress:</label>
         <input type="range" name="progress" min="0" max="100" value={taskData.progress} onChange={handleChange} style={styles.input} />
         <p>{taskData.progress}%</p>

@@ -3,7 +3,7 @@ import DateFilter from './DateFilter';
 import UserFilter from './UserFilter';
 import PriorityFilter from './PriorityFilter';
 import StatusFilter from './StatusFilter';
-import './SearchBar.css';
+import '../css/SearchBar.css';
 
 const SearchBar = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);

@@ -24,7 +24,7 @@ const TaskBoard = () => {
   // Fetch tasks from the backend
   const fetchTasks = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/tasks");
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
   
@@ -78,8 +78,8 @@ const TaskBoard = () => {
   
     try {
       const url = editingTask
-        ? `http://localhost:5001/api/tasks/${formattedTaskData.id}`
-        : "http://localhost:5001/api/tasks";
+        ? `${process.env.REACT_APP_API_URL}/api/tasks/${updatedTaskData.id}`
+        : `${process.env.REACT_APP_API_URL}/api/tasks`;
       const method = editingTask ? "PUT" : "POST";
   
       const response = await fetch(url, {
@@ -121,7 +121,7 @@ const TaskBoard = () => {
   // Delete task from the backend
   const handleDeleteTask = async (taskId) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -146,7 +146,7 @@ const TaskBoard = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${task.id}/move`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${task.id}/move`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

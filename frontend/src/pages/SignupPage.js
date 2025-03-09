@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import Footer from "../components/Footer";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -35,7 +34,7 @@ const SignupPage = () => {
       return;
     }
   
-    // ✅ Add email validation using regex
+    //  Add email validation using regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert("Invalid email format");

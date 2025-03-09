@@ -33,7 +33,7 @@ const AdminDashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5001/api/tasks");
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
   
       const data = await response.json();
@@ -51,8 +51,6 @@ const AdminDashboard = () => {
       console.error(" Error fetching tasks:", error);
     }
   };
-  
-  
 
   const updateTaskStats = (taskData) => {
     const todo = taskData.todo.length;
@@ -63,8 +61,6 @@ const AdminDashboard = () => {
       .reduce((sum, task) => sum + Number(task.progress || 0), 0);  
     
     const completedRate = totalTasks > 0 ? (totalProgress / totalTasks).toFixed(1) : "0";
-    
-  
   
     const today = new Date();
     const upcomingDue = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
@@ -78,7 +74,7 @@ const AdminDashboard = () => {
     if (task.locked) return alert("This task is locked and cannot be moved.");
   
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${task.id}/move`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${task.id}/move`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ direction }),
@@ -96,7 +92,7 @@ const AdminDashboard = () => {
   
   const handleToggleLock = async (taskId) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}/lock`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/lock`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
@@ -113,7 +109,7 @@ const AdminDashboard = () => {
   
   const handleDeleteTask = async (taskId) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${taskId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
@@ -129,9 +125,6 @@ const AdminDashboard = () => {
     }
   };
   
-  
-  
-
   const handleEditTask = (task) => {
     //first check if task is locked before editing
     if (task.locked) return alert("This task is locked and cannot be edited.");
@@ -139,11 +132,12 @@ const AdminDashboard = () => {
     setEditingTask(task);
     setIsEditModalOpen(true);
   };
+
   const handleUpdateTask = async (updatedTask) => {
     if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
     
     try {
-      const response = await fetch(`http://127.0.0.1:5001/api/tasks/${updatedTask.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedTask),
@@ -163,7 +157,7 @@ const AdminDashboard = () => {
     try {
       console.log("New Task Before Sending:", newTask);
   
-      const response = await fetch("http://127.0.0.1:5001/api/tasks", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTask),
@@ -182,10 +176,6 @@ const AdminDashboard = () => {
       console.error(" Error adding task:", error);
     }
   };
-  
-  
-
-  
 
   return (
     <div className="admin-dashboard">

@@ -13,6 +13,7 @@ if (process.env.NODE_ENV !== "test") {
   client.connect();
 }
 
+
 // Get all tasks
 const getTasks = async (req, res) => {
   try {
@@ -28,6 +29,7 @@ const getTasks = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // Create a new task
 const createTask = async (req, res) => {
@@ -56,6 +58,7 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 // Toggle task lock/unlock
 const toggleLock = async (req, res) => {
@@ -118,6 +121,7 @@ const moveTask = async (req, res) => {
   }
 };
 
+
 // Update a task
 const updateTask = async (req, res) => {
   try {
@@ -128,6 +132,7 @@ const updateTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
+
 
     // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
@@ -158,6 +163,7 @@ const updateTask = async (req, res) => {
   }
 };
 
+
 // Get assigned tasks for a specific user
 const getAssignedTasks = async (req, res) => {
   try {
@@ -174,6 +180,7 @@ const getAssignedTasks = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // Update assigned task
 const updateAssignedTask = async (req, res) => {
@@ -207,6 +214,7 @@ const updateAssignedTask = async (req, res) => {
   }
 };
     
+
 // Delete task
 const deleteTask = async (req, res) => {
   try {
@@ -214,7 +222,7 @@ const deleteTask = async (req, res) => {
 
     const result = await client.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [taskId]);
 
-    if (result.rowCount === 0) {  // ✅ Fix: return 404 if no task was deleted
+    if (result.rowCount === 0) {  //  Fix: return 404 if no task was deleted
       console.log(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
@@ -227,6 +235,7 @@ const deleteTask = async (req, res) => {
   }
 };
 
+
 // Assign users to a task
 const assignUsersToTask = async (req, res) => {
   const { taskId } = req.params;
@@ -238,12 +247,14 @@ const assignUsersToTask = async (req, res) => {
   return res.status(201).json({ message: "Users assigned to task successfully" });
 };
 
+
 // Get users assigned to a task
 const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
   // Return a dummy list of users for testing purposes.
   return res.status(200).json({ users: [{ id: 1, name: "User One" }, { id: 2, name: "User Two" }] });
 };
+
 
 // Remove users from a task
 const removeUsersFromTask = async (req, res) => {

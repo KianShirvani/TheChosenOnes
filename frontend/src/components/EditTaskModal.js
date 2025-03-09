@@ -79,7 +79,7 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
           <option value="done">Done</option>
         </select>
 
-       {/* ✅ Progress Bar */}
+       {/* Progress Bar */}
        <label>Progress:</label>
         <input
           type="range"
