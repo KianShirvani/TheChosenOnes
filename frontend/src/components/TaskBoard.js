@@ -78,7 +78,7 @@ const TaskBoard = () => {
   
     try {
       const url = editingTask
-        ? `${process.env.REACT_APP_API_URL}/api/tasks/${updatedTaskData.id}`
+        ? `${process.env.REACT_APP_API_URL}/api/tasks/${formattedTaskData.id}`
         : `${process.env.REACT_APP_API_URL}/api/tasks`;
       const method = editingTask ? "PUT" : "POST";
   
