@@ -1,61 +1,104 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 
 const AdminManagement = () => {
     const navigate = useNavigate();
+    const [users, setUsers] = useState([]);
 
-    // mock data for users (for UI testing)
-    // change this once connected to the database to pull the actual data
-    const [users, setUsers] = useState([
-        { id: 1, fullName: "John Doe", displayName: "johnd", email: "john@example.com", isAdmin: false },
-        { id: 2, fullName: "Jane Smith", displayName: "janes", email: "jane@example.com", isAdmin: true },
-        { id: 3, fullName: "Alice Johnson", displayName: "alicej", email: "alice@example.com", isAdmin: false },
-    ]);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-    const promoteToAdmin = (userId) => {
-        // modify this once connected to the backend
-        console.log(`Promote user with ID ${userId} to admin`);
-        // update the user's isAdmin status in the state
-        setUsers(users.map(user => user.id === userId ? { ...user, isAdmin: true } : user));
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch("/api/admin/users", { credentials: "include" });
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            console.error("Error fetching users", error);
+        }
+    };
+
+    const promoteToAdmin = async (userId) => {
+        try {
+            await fetch(`/api/admin/promote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+                credentials: "include",
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error("Error promoting user", error);
+        }
+    };
+
+    const updateUser = async (userId, firstName, lastName, email) => {
+        try {
+            await fetch(`/api/admin/update/${userId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ firstName, lastName, email }),
+                credentials: "include",
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error("Error updating user", error);
+        }
+    };
+
+    const deleteUser = async (userId) => {
+        try {
+            await fetch(`/api/admin/delete/${userId}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error("Error deleting user", error);
+        }
     };
 
     return (
         <div style={styles.container}>
             <h1 style={styles.heading}>Admin Management</h1>
-            <table style={styles.table}>
-                <thead>
-                    <tr>
-                        <th style={styles.th}>Full Name</th>
-                        <th style={styles.th}>Display Name</th>
-                        <th style={styles.th}>Email</th>
-                        <th style={{ ...styles.th, ...styles.actionTh }}>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td style={styles.td}>{user.fullName}</td>
-                            <td style={styles.td}>{user.displayName}</td>
-                            <td style={styles.td}>{user.email}</td>
-                            <td style={{ ...styles.td, ...styles.actionTd }}>
-                                {user.isAdmin ? (
-                                    "admin"
-                                ) : (
-                                    <Button style={styles.button} onClick={() => promoteToAdmin(user.id)}>
-                                        Promote to Admin
-                                    </Button>
-                                )}
-                            </td>
+
+            {users.length > 0 ? (
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-            <br />
-            <br />
-            <Button style={styles.navigateButton} onClick={() => navigate('/tasks')}>
-                Go to Dashboard
-            </Button>
+                    </thead>
+                    <tbody>
+                        {users.map((user) => (
+                            <tr key={user.user_id}>
+                                <td>{user.first_name}</td>
+                                <td>{user.last_name}</td>
+                                <td>{user.email}</td>
+                                <td>{user.is_admin ? "Admin" : "User"}</td>
+                                <td>
+                                    {!user.is_admin && (
+                                        <Button onClick={() => promoteToAdmin(user.user_id)}>Promote</Button>
+                                    )}
+                                    <Button onClick={() => deleteUser(user.user_id)}>Delete</Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p style={styles.noUsersMessage}>
+                    There are no users to manage right now! Add them to your team to get started.
+                </p>
+            )}
+
+            <Button style={styles.navigateButton} onClick={() => navigate('/tasks')}>Go to Dashboard</Button>
         </div>
     );
 };
@@ -111,6 +154,13 @@ const styles = {
         borderRadius: "0.5rem",
         cursor: "pointer",
         fontSize: "1.1rem",
+    },
+    noUsersMessage: {
+        fontSize: "1.2rem",
+        fontWeight: "bold",
+        color: "#555",
+        marginTop: "20px",
+        textAlign: "center",
     },
 };
 
