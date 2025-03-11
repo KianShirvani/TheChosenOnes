@@ -7,12 +7,12 @@ const {
     deleteUser
 } = require("../controllers/adminController");
 const { validateAdmin } = require("../middlewares/validateAdmin");
-const { authMiddleware } = require("../middlewares/authMiddleware");
+const { authenticatedUser } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
 // Get all users (only accessible by admins)
-router.get("/users", authMiddleware, validateAdmin, getUsers);
+router.get("/users", authenticatedUser, validateAdmin, getUsers);
 
 // Promote user to admin route with validation middleware
 router.post("/promote", validateAdmin, promoteToAdmin);
@@ -21,9 +21,9 @@ router.post("/promote", validateAdmin, promoteToAdmin);
 router.get("/stats", validateAdmin, getAdminStats);
 
 // Update user details (name, email)
-router.put("/update/:id", authMiddleware, validateAdmin, updateUser);
+router.put("/update/:id", authenticatedUser, validateAdmin, updateUser);
 
 // Delete a user
-router.delete("/delete/:id", authMiddleware, validateAdmin, deleteUser);
+router.delete("/delete/:id", authenticatedUser, validateAdmin, deleteUser);
 
 module.exports = router;
