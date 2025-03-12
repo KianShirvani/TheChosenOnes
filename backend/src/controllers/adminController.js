@@ -48,6 +48,77 @@ const promoteToAdmin = async (req, res) => {
     }
 };
 
+// Fetch all users (for admin management UI)
+const getUsers = async (req, res) => {
+    try {
+        const usersQuery = await client.query(`
+            SELECT 
+                user_id, 
+                first_name, 
+                last_name, 
+                display_name, 
+                email, 
+                EXISTS (SELECT 1 FROM admins WHERE admins.admin_id = users.user_id) AS is_admin
+            FROM users
+        `);
+        res.json(usersQuery.rows);
+    } catch (error) {
+        console.error("Error in getUsers:", error);
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: 'An unexpected error occurred while processing your request. Please try again later.'
+        });
+    }
+};
+
+// Update user details (first name, last name, email)
+const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { firstName, lastName, email } = req.body;
+
+    try {
+        const updateQuery = await client.query(
+            `UPDATE users 
+            SET first_name = $1, last_name = $2, email = $3 
+            WHERE user_id = $4 RETURNING *`,
+            [firstName, lastName, email, id]
+        );
+
+        if (updateQuery.rowCount === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "User details updated successfully", user: updateQuery.rows[0] });
+    } catch (error) {
+        console.error("Error in updateUser:", error);
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: 'An unexpected error occurred while processing your request. Please try again later.'
+        });
+    }
+};
+
+// Delete a user from the database
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deleteQuery = await client.query("DELETE FROM users WHERE user_id = $1 RETURNING *", [id]);
+
+        if (deleteQuery.rowCount === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Error in deleteUser:", error);
+        return res.status(500).json({ 
+            error: 'Internal Server Error',
+            message: 'An unexpected error occurred while processing your request. Please try again later.'
+        });
+    }
+};
+
 // Stats for the admin dashboard
 const getAdminStats = async (req, res) => {
     try {
@@ -97,8 +168,9 @@ const getAdminStats = async (req, res) => {
         console.error('Error fetching admin stats:', error);
         return res.status(500).json({ 
             error: 'Internal Server Error',
-            message: 'An unexpected error occurred while processing your request. Please try again later.' });
+            message: 'An unexpected error occurred while processing your request. Please try again later.' 
+        });
     }
 };
 
-module.exports = { promoteToAdmin, getAdminStats };
+module.exports = { promoteToAdmin, getAdminStats, getUsers, updateUser, deleteUser };
