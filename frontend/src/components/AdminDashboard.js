@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminTaskList from "../components/AdminTaskList";
 import SearchBar from "../components/SearchBar";
 import EditTaskModal from "../components/EditTaskModal";
 import AddTask from "../components/AddTask";
 import "../css/AdminDashboard.css";
+import { NotificationContext } from "../components/NotificationContext";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -27,8 +28,11 @@ const AdminDashboard = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  // NEW: availableUsers state
+  // availableUsers state
   const [availableUsers, setAvailableUsers] = useState([]);
+
+  // Notification: Get setNotification from NotificationContext
+  const { setNotification } = useContext(NotificationContext);
 
   useEffect(() => {
     fetchTasks();
@@ -56,7 +60,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // NEW: Fetch available users from the backend
+  // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
@@ -195,6 +199,62 @@ const AdminDashboard = () => {
     }
   };
 
+  // Notification: Function to add a user to an existing task from AdminDashboard
+  const handleAddUserToTask = async (taskId, userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error assigning user:", errorData);
+      } else {
+        // Notification: Trigger notification on successful user addition
+        const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
+        const taskFound = allTasks.find(task => task.id === taskId);
+        const userFound = availableUsers.find(user => user.id === userId);
+        setNotification({
+          message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
+          color: "green"
+        }); // Notification:
+      }
+      fetchTasks();
+    } catch (error) {
+      console.error("Error assigning user:", error);
+    }
+  };
+
+  // Notification: Function to remove a user from an existing task from AdminDashboard
+  const handleRemoveUserFromTask = async (taskId, userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/remove-users`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error removing user:", errorData);
+      } else {
+        // Notification: Trigger notification on successful user removal
+        const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
+        const taskFound = allTasks.find(task => task.id === taskId);
+        const userFound = availableUsers.find(user => user.id === userId);
+        setNotification({
+          message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
+          color: "red"
+        }); // Notification:
+      }
+      fetchTasks();
+    } catch (error) {
+      console.error("Error removing user:", error);
+    }
+  };
+
   return (
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
@@ -253,6 +313,9 @@ const AdminDashboard = () => {
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
             onToggleLock={handleToggleLock}
+            // Notification: If needed, you can pass handleAddUserToTask and handleRemoveUserFromTask as props here.
+            onAddUser={handleAddUserToTask} // Notification:
+            onRemoveUser={handleRemoveUserFromTask} // Notification:
           />
         ))}
       </div>
