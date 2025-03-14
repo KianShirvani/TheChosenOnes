@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import TaskList from "./TaskList";
 import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
 import { useNavigate } from "react-router-dom";
+import { NotificationContext } from "./NotificationContext";
 
 const TaskBoard = () => {
   const navigate = useNavigate();
@@ -21,8 +22,11 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  // NEW: State to store available users fetched from the database
+  // State to store available users fetched from the database
   const [availableUsers, setAvailableUsers] = useState([]);
+
+  // Get setNotification from NotificationContext
+  const { setNotification } = useContext(NotificationContext);
 
   // Fetch tasks from the backend
   const fetchTasks = async () => {
@@ -51,7 +55,7 @@ const TaskBoard = () => {
     }
   };
   
-  // NEW: Fetch available users from the backend
+  // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
@@ -116,12 +120,12 @@ const TaskBoard = () => {
         return;
       }
       
-      // New Add this line to get the response data
+      // Add this line to get the response data
       const responseData = await response.json();
 
       console.log("Task saved successfully");
 
-      // NEW: If adding a new task with assignedUsers, call assignUsersToTask endpoint.
+      // If adding a new task with assignedUsers, call assignUsersToTask endpoint.
       if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
         await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.id}/assign-users`, {
           method: "POST",
@@ -140,7 +144,7 @@ const TaskBoard = () => {
   };
   
 
-  // NEW: Function to add a user to an existing task from TaskList
+  // Function to add a user to an existing task from TaskList
   const handleAddUserToTask = async (taskId, userId) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
@@ -152,6 +156,15 @@ const TaskBoard = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error assigning user:", errorData);
+      } else {
+        // Trigger notification on successful user addition
+        const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
+        const taskFound = allTasks.find(task => task.id === taskId);
+        const userFound = availableUsers.find(user => user.id === userId);
+        setNotification({
+          message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
+          color: "green"
+        }); // NEW:
       }
       fetchTasks();
     } catch (error) {
@@ -159,7 +172,7 @@ const TaskBoard = () => {
     }
   };
 
-  // NEW: Function to remove a user from an existing task from TaskList
+  // Function to remove a user from an existing task from TaskList
   const handleRemoveUserFromTask = async (taskId, userId) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/remove-users`, {
@@ -171,6 +184,15 @@ const TaskBoard = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error removing user:", errorData);
+      } else {
+        // Trigger notification on successful user removal
+        const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
+        const taskFound = allTasks.find(task => task.id === taskId);
+        const userFound = availableUsers.find(user => user.id === userId);
+        setNotification({
+          message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
+          color: "red"
+        });
       }
       fetchTasks();
     } catch (error) {

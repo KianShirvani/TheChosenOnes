@@ -10,6 +10,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import AdminManagement from "./pages/AdminManagement";
 import ChatPage from "./pages/ChatPage";
 import axios from "axios";
+import { NotificationProvider } from "./components/NotificationContext";
 
 function App() {
   useEffect(() => {
@@ -20,17 +21,19 @@ function App() {
   }, []);  // Empty dependency array → Runs only on first render
   return (
     <Router>
-      <Header />  {/* This remains across all pages */}
-      <Routes>
-        <Route path="/" element={<MainPage />} />   {/* Home Page */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/tasks" element={<TaskBoard />} />  {/* Task Management Page */}
-        <Route path="/admindashboard" element={<AdminDashboard />} />
-        <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
-        <Route path="/chat" element={<ChatPage />} />
-      </Routes>
-      <Footer />
+      <NotificationProvider>
+        <Header />  {/* This remains across all pages */}
+        <Routes>
+          <Route path="/" element={<MainPage />} />   {/* Home Page */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/tasks" element={<TaskBoard />} />  {/* Task Management Page */}
+          <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
+          <Route path="/chat" element={<ChatPage />} />
+        </Routes>
+        <Footer />
+      </NotificationProvider>
     </Router>
   );
 }
