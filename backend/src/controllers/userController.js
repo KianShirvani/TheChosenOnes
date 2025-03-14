@@ -57,4 +57,17 @@ const registerUser = async (req, res) => {
   }
 };
 
+// ===================== NEW CODE ADDED =====================
+// Endpoint to fetch all users from the database
+const getUsers = async (req, res) => {
+  try {
+    const result = await client.query('SELECT * FROM users');
+    return res.status(200).json({ users: result.rows });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+// ===================== END NEW CODE =====================
+
 module.exports = { registerUser };

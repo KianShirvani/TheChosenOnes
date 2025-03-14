@@ -1,6 +1,16 @@
-import React, { useState } from "react"; 
+import React, { useState, useEffect } from "react"; 
 
-const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selectedColor, onAssignColor }) => {
+const TaskList = ({ title, 
+                    tasks, 
+                    onEditTask, 
+                    onDeleteTask, 
+                    onMoveTask, 
+                    selectedColor, 
+                    onAssignColor,
+                    availableUsers,    // NEW: passed from TaskBoard
+                    onAddUser,         // NEW: function to add a user to a task
+                    onRemoveUser       // NEW: function to remove a user from a task
+                  }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const colors = {
@@ -17,6 +27,79 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
   // Find the color name from the colors object based on the current selectedColor
   const getSelectedColorName = () => {
     return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
+  };
+
+  // NEW: Inner component to manage and display assigned users for a task
+  const TaskUsers = ({ taskId }) => {
+    const [assignedUsers, setAssignedUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState("");
+
+    useEffect(() => {
+      // Fetch assigned users for this task
+      const fetchAssignedUsers = async () => {
+        try {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/users`, {
+            credentials: "include"
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setAssignedUsers(data.users);
+          }
+        } catch (error) {
+          console.error("Error fetching users for task:", error);
+        }
+      };
+      fetchAssignedUsers();
+    }, [taskId]);
+
+    const handleAddUser = () => {
+      if (selectedUser) {
+        onAddUser(taskId, selectedUser);
+        setSelectedUser("");
+        // Refresh local list after adding (in a real app, you might refetch)
+        setAssignedUsers(prev => [...prev, availableUsers.find(u => u.id === selectedUser)]);
+      }
+    };
+
+    const handleRemoveUser = (userId) => {
+      onRemoveUser(taskId, userId);
+      // Remove locally (in a real app, you might refetch)
+      setAssignedUsers(prev => prev.filter(user => user.id !== userId));
+    };
+
+    // Filter available users to show only those not already assigned
+    const availableToAdd = availableUsers.filter(
+      user => !assignedUsers.find(assigned => assigned.id === user.id)
+    );
+  
+    return (
+      <div style={userStyles.container}>
+        <h5>Assigned Users:</h5>
+        <ul style={userStyles.userList}>
+          {assignedUsers.map(user => (
+            <li key={user.id} style={userStyles.userItem}>
+              {user.display_name || `${user.first_name} ${user.last_name}`}
+              <button onClick={() => handleRemoveUser(user.id)} style={userStyles.removeButton}>Remove</button>
+            </li>
+          ))}
+        </ul>
+        <div style={userStyles.addUserContainer}>
+          <select 
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
+            style={userStyles.dropdown}
+          >
+            <option value="">Select user</option>
+            {availableToAdd.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.display_name || `${user.first_name} ${user.last_name}`}
+              </option>
+            ))}
+          </select>
+          <button onClick={handleAddUser} style={userStyles.addButton}>Add User</button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -74,6 +157,16 @@ const styles = {
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   delete: { background: "#dc3545", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   arrow: { background: "#6c757d", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" }
+};
+
+const userStyles = {
+  container: { marginTop: "10px", borderTop: "1px solid #ccc", paddingTop: "10px" },
+  userList: { listStyleType: "none", paddingLeft: 0 },
+  userItem: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" },
+  removeButton: { background: "#dc3545", color: "white", border: "none", padding: "2px 5px", cursor: "pointer", borderRadius: "3px" },
+  addUserContainer: { display: "flex", gap: "10px", marginTop: "5px" },
+  dropdown: { flex: 1 },
+  addButton: { padding: "5px", cursor: "pointer" }
 };
 
 export default TaskList;
