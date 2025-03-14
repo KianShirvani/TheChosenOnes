@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from "react";
 
-const AddTask = ({ task, onSaveTask, onClose }) => {
+const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
   const formatDateForInput = (date) => {
     if (!date) return "";
     return new Date(date).toISOString().split("T")[0]; 
@@ -9,6 +9,8 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
   const [taskData, setTaskData] = useState(task || {
     title: "",
     description: "",
+    // Added assignedUsers field to hold multiple user IDs
+    assignedUsers: [],
     priority: "Medium",
     dueDate: "",
     startDate: "",
@@ -23,6 +25,8 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
     if (task) {
       setTaskData({
         ...task,
+        // If editing, you might pre-populate assignedUsers if available in task
+        assignedUsers: task.assignedUsers || [],
         dueDate: formatDateForInput(task.due_date),
         startDate: formatDateForInput(task.start_date),
         endDate: formatDateForInput(task.end_date),
@@ -33,12 +37,35 @@ const AddTask = ({ task, onSaveTask, onClose }) => {
     setTaskData({ ...taskData, [e.target.name]: e.target.value });
   };
 
+  // New handler for multi-select change
+  const handleAssignedUsersChange = (e) => {
+    // Get all selected options as an array of user ids
+    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
+    setTaskData({ ...taskData, assignedUsers: selectedOptions });
+  };
+
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
         <h2>{task ? "Edit Task" : "Add New Task"}</h2>
         <input type="text" name="title" placeholder="Task Title" value={taskData.title} onChange={handleChange} style={styles.input} />
         <textarea name="description" placeholder="Task Description" value={taskData.description} onChange={handleChange} style={styles.input} />
+        
+        {/* NEW: User selection section */}
+        <label>Assign Users:</label>
+        <select 
+          multiple
+          name="assignedUsers"
+          value={taskData.assignedUsers}
+          onChange={handleAssignedUsersChange}
+          style={styles.input}
+        >
+          {availableUsers && availableUsers.map(user => (
+            <option key={user.id} value={user.id}>
+              {user.display_name || `${user.first_name} ${user.last_name}`}
+            </option>
+          ))}
+        </select>
         
         {/* Priority selection */}
         <label>Priority:</label>

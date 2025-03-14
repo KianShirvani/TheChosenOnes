@@ -27,8 +27,12 @@ const AdminDashboard = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
+  // NEW: availableUsers state
+  const [availableUsers, setAvailableUsers] = useState([]);
+
   useEffect(() => {
     fetchTasks();
+    fetchAvailableUsers(); // Fetch users from database
   }, []);
 
   const fetchTasks = async () => {
@@ -49,6 +53,20 @@ const AdminDashboard = () => {
   
     } catch (error) {
       console.error(" Error fetching tasks:", error);
+    }
+  };
+
+  // NEW: Fetch available users from the backend
+  const fetchAvailableUsers = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const data = await response.json();
+      setAvailableUsers(data.users);
+    } catch (error) {
+      console.error("Error fetching available users:", error);
     }
   };
 
@@ -239,7 +257,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} />}
+      {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} availableUsers={availableUsers} />}
       {isEditModalOpen && <EditTaskModal task={editingTask} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateTask} />}
     </div>
   );

@@ -21,6 +21,9 @@ const TaskBoard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
+  // NEW: State to store available users fetched from the database
+  const [availableUsers, setAvailableUsers] = useState([]);
+
   // Fetch tasks from the backend
   const fetchTasks = async () => {
     try {
@@ -48,10 +51,28 @@ const TaskBoard = () => {
     }
   };
   
+  // NEW: Fetch available users from the backend
+  const fetchAvailableUsers = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setAvailableUsers(data.users);
+    } catch (error) {
+      console.error("Error fetching available users:", error);
+    }
+  };
+  
   useEffect(() => {
     fetchTasks(); // Fetch tasks on initial load
+    fetchAvailableUsers(); // Fetch users from database
   }, []);
 
+  // Modified handleSaveTask to also handle assigned users for new tasks.
   const handleSaveTask = async (taskData) => {
     console.log("Raw taskData before sending:", taskData); 
   
@@ -94,8 +115,22 @@ const TaskBoard = () => {
         console.error("Error saving task:", errorData);
         return;
       }
-  
+      
+      // New Add this line to get the response data
+      const responseData = await response.json();
+
       console.log("Task saved successfully");
+
+      // NEW: If adding a new task with assignedUsers, call assignUsersToTask endpoint.
+      if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.id}/assign-users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ userIds: taskData.assignedUsers }),
+        });
+      }
+
       setIsModalOpen(false);
       setEditingTask(null);
       fetchTasks(); 
@@ -104,7 +139,44 @@ const TaskBoard = () => {
     }
   };
   
-  
+
+  // NEW: Function to add a user to an existing task from TaskList
+  const handleAddUserToTask = async (taskId, userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error assigning user:", errorData);
+      }
+      fetchTasks();
+    } catch (error) {
+      console.error("Error assigning user:", error);
+    }
+  };
+
+  // NEW: Function to remove a user from an existing task from TaskList
+  const handleRemoveUserFromTask = async (taskId, userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/remove-users`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error removing user:", errorData);
+      }
+      fetchTasks();
+    } catch (error) {
+      console.error("Error removing user:", error);
+    }
+  };
   
 
   // Edit task
@@ -176,7 +248,7 @@ const TaskBoard = () => {
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 
-      {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
 
       <div style={styles.board}>
         <TaskList
@@ -187,6 +259,9 @@ const TaskBoard = () => {
           onMoveTask={handleMoveTask}
           selectedColor={taskListColors.todo}
           onAssignColor={(color) => handleAssignColor("todo", color)}
+          availableUsers={availableUsers}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
         />
         <TaskList
           title="In Progress"
@@ -196,6 +271,9 @@ const TaskBoard = () => {
           onMoveTask={handleMoveTask}
           selectedColor={taskListColors.inProgress}
           onAssignColor={(color) => handleAssignColor("inProgress", color)}
+          availableUsers={availableUsers}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
         />
         <TaskList
           title="Done"
@@ -205,6 +283,9 @@ const TaskBoard = () => {
           onMoveTask={handleMoveTask}
           selectedColor={taskListColors.done}
           onAssignColor={(color) => handleAssignColor("done", color)}
+          availableUsers={availableUsers}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
         />
       </div>
     </div>
