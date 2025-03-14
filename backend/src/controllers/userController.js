@@ -70,4 +70,4 @@ const getUsers = async (req, res) => {
 };
 // ===================== END NEW CODE =====================
 
-module.exports = { registerUser };
+module.exports = { registerUser, getUsers };
