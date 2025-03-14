@@ -1,5 +1,9 @@
 backend/.env
 frontend/.env
 backend/.env.docker
-init.sql
 **/node_modules/
+.env
+backend/package-lock.json
+backend/package.json
+backend/package-lock.json
+backend/package.json

@@ -1,0 +1,56 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: navy;
+}
+
+.filter-container {
+  margin-right: 20px;
+  color: white;
+}
+
+.filter-input {
+  padding: 5px;
+  margin-left: 10px;
+  border-radius: 5px;
+  border: 1px solid white;
+}
+
+.calendar-button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: yellow;
+  border: none;
+  color: navy;
+  border-radius: 5px;
+}
+
+.clear-button {
+  padding: 5px 10px;
+  background-color: yellow;
+  border: none;
+  color: navy;
+  border-radius: 5px;
+}
+
+.dropdown {
+  position: absolute;
+  background-color: white;
+  color: black;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.dropdown label {
+  display: block;
+  padding: 5px;
+}
+
+.dropdown input {
+  margin-right: 10px;
+}

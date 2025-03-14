@@ -1,19 +1,19 @@
-version: "3.9"
-
 services:
   backend:
     container_name: backend-container
     build:
       context: ./backend
     ports:
-      - "5000:5000"
+      - "${BACKEND_HOST_PORT:-5000}:${BACKEND_CONTAINER_PORT:-5000}"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
-      - ./backend/.env  # Load environment variables from .env
+      - ./.env  # Load environment variables from .env
     volumes:
       - ./backend:/app
       - /app/node_modules
+    command: npm start
 
   frontend:
     container_name: frontend-container
@@ -24,7 +24,7 @@ services:
     depends_on:
       - backend
     env_file:
-      - ./frontend/.env  # Load environment variables from .env
+      - ./.env  # Load environment variables from .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -42,6 +42,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data  # Persist data across restarts
       - ./backend/src/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Mount init.sql to auto-execute
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:

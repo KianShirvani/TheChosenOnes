@@ -1,0 +1,34 @@
+name: Close Linked Issue When PR is Merged
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  close_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Check if PR was merged
+        id: check_merged
+        run: |
+          echo "MERGED=${{ github.event.pull_request.merged }}" >> $GITHUB_ENV
+      - name: Extract Linked Issue Number
+        id: get_issue
+        run: |
+          PR_BODY=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
+          ISSUE_NUMBER=$(echo "$PR_BODY" | grep -o '#[0-9]\+' | head -n1 | sed 's/#//')
+          echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
+          echo "::set-output name=issue::$ISSUE_NUMBER"
+
+      - name: Close the Issue
+        if: env.MERGED == 'true' && ${{ steps.get_issue.outputs.issue != '' }}
+        run: |
+          curl -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"state": "closed"}' \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ steps.get_issue.outputs.issue }}"
