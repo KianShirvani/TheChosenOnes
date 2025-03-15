@@ -12,7 +12,7 @@ const corsOptions = {
 };
 
 const axios = require("axios");
-const client = require('../database/db');
+const client = require('./database/db');
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
