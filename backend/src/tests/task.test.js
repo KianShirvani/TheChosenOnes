@@ -2,7 +2,6 @@
 const request = require("supertest");
 const express = require("express");
 const taskRoutes = require("../routes/taskRoutes");
-const { Client } = require("pg");
 require('dotenv').config();
 
 // setup for testing
@@ -22,7 +21,7 @@ jest.mock("pg", () => {
 });
 
 // Declare mockClient and a variable to hold our mock database
-const mockClient = new (require("pg").Client)();
+const mockClient = require("../database/db");
 let mockDatabase;
 
 beforeEach(() => {

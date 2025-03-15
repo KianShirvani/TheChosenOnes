@@ -12,16 +12,7 @@ const corsOptions = {
 };
 
 const axios = require("axios");
-const { Client } = require("pg");
-
-const client = new Client({
-  connectionString: process.env.DATABASE_URL || "postgres://postgres:password@db:5432/mydatabase",
-  ssl: false,
-});
-
-if (process.env.NODE_ENV !== 'test') {
-  client.connect();
-}
+const client = require('./database/db');
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
 

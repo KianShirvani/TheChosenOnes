@@ -1,18 +1,6 @@
 // dependencies
-const { Client } = require("pg");
 const moment = require('moment');
-
-// set up connection to the database
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false
-});
-
-// to prevent connecting to the database during tests
-if (process.env.NODE_ENV !== "test") {
-  client.connect();
-}
-
+const client = require('../database/db');
 
 // Get all tasks
 const getTasks = async (req, res) => {

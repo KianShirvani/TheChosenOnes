@@ -1,16 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { Client } = require('pg');
-
-// Set up the database connection
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false
-});
-
-// Connect to the database if not in testing environment
-if (process.env.NODE_ENV !== 'test') {
-  client.connect();
-}
+const client = require('../database/db');
 
 const registerUser = async (req, res) => {
   const { firstName, lastName, email, phoneNum, country, displayName, password } = req.body;

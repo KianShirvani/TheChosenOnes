@@ -1,7 +1,6 @@
 const request = require('supertest');
 const express = require('express');
 const { getAdminStats } = require('../controllers/adminController');
-const { Client } = require('pg');
 
 // Mock pg client (not using real database in tests)
 jest.mock('pg', () => {
@@ -21,7 +20,7 @@ describe('GET /admin/stats', () => {
     let client;
 
     beforeAll(() => {
-        client = new Client();
+        client = require("../database/db");
     });
 
     afterEach(() => {

@@ -6,18 +6,7 @@ const crypto = require('crypto');
 const jsonWebToken = require("jsonwebtoken");
 const formData = require('form-data');
 const Mailgun = require('mailgun.js');
-const { Client } = require("pg");
-
-// set up connection to the database
-const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: false
-});
-
-// to prevent connecting to the database during tests
-if (process.env.NODE_ENV !== "test") {
-    client.connect();
-}
+const client = require('../database/db');
 
 // Set up Mailgun
 const mailgun = new Mailgun(formData);
