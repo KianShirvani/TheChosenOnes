@@ -22,27 +22,38 @@ const LoginPage = () => {
     e.preventDefault();
 
     if (!formData.email.trim() || !formData.password.trim()) {
-      alert("All fields must be filled!");
-      return;
+        alert("All fields must be filled!");
+        return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      alert("Invalid email format");
-      return;
+        alert("Invalid email format");
+        return;
     }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
-        email: formData.email,
-        password: formData.password,
-      });
-      alert("Login successful!");
-      navigate("/dashboard");
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+            email: formData.email,
+            password: formData.password,
+        });
+
+        if (response.data.token) {
+            localStorage.setItem("token", response.data.token);  // Store token in localStorage
+            console.log("Token saved:", response.data.token);
+        } else {
+            console.error("Login successful but no token received.");
+        }
+
+        alert("Login successful!");
+        navigate("/dashboard");
     } catch (error) {
-      alert("Login failed! Please try again later.");
+        alert("Login failed! Please try again later.");
+        console.error("Login error:", error);
     }
-  };
+};
+
+
 
   return (
     <div style={styles.container}>

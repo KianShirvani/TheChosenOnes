@@ -12,24 +12,28 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 const validateAdmin = async (req, res, next) => {
-    const { userId } = req.body;
+    const userId = req.user?.user_id;  // Get from token
+    console.log("Validating Admin:", userId);  
+
+    if (!userId) {
+        return res.status(401).json({ error: "Access denied. No user ID provided" });
+    }
 
     try {
-        // Check if the user is an admin
         const adminCheckQuery = await client.query('SELECT * FROM admins WHERE admin_id = $1', [userId]);
+        console.log("Admin Check Result:", adminCheckQuery.rows);  
+
         if (adminCheckQuery.rows.length === 0) {
-            return res.status(403).json({ error: 'Access denied. User is not an admin.' });
+            return res.status(403).json({ error: "Access denied. User is not an admin." });
         }
 
-        // If user is an admin, proceed to the next middleware or route handler
         next();
     } catch (error) {
-        console.error('Error in validateAdmin middleware:', error);
-        return res.status(500).json({ 
-            error: 'Internal Server Error',
-            message: 'An unexpected error occurred while processing your request. Please try again later.'
-        });
+        console.error("Error in validateAdmin middleware:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
 
 module.exports = { validateAdmin };

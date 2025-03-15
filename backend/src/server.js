@@ -118,6 +118,7 @@ app.use("/auth", require("./routes/auth"));
 app.use("/register", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/messages", require("./routes/messageRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" });

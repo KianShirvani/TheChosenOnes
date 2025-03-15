@@ -59,9 +59,15 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
+      const response = await fetch("/api/admin/users", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
         credentials: "include",
-      });
+    });
+    
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }

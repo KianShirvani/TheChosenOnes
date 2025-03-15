@@ -10,24 +10,68 @@ const AdminManagement = () => {
         fetchUsers();
     }, []);
 
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+
     const fetchUsers = async () => {
         try {
-            const response = await fetch("/api/admin/users", { credentials: "include" });
-            const data = await response.json();
-            setUsers(data);
+            const token = localStorage.getItem("token");
+            console.log("Retrieved Token:", token);
+    
+            if (!token) {
+                console.error("❌ No token found, user might not be authenticated.");
+                return;
+            }
+    
+            const response = await fetch(`${apiUrl}/api/admin/users`, { // ✅ Use full URL
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+    
+            console.log("🔍 Response URL:", response.url);
+            console.log("🔍 Response Status:", response.status);
+            const responseText = await response.text();
+            console.log("🔍 Raw Response Body:", responseText);
+    
+            if (!response.ok) {
+                console.error("❌ API Error:", responseText);
+                throw new Error("Failed to fetch users");
+            }
+    
+            const data = JSON.parse(responseText);
+            console.log("✅ Fetched Users:", data);
+    
+            setUsers([...data]);
+    
         } catch (error) {
-            console.error("Error fetching users", error);
+            console.error("❌ Error fetching users", error);
         }
     };
+    
+    
+    
+    
+    
+    
 
     const promoteToAdmin = async (userId) => {
         try {
+            const token = localStorage.getItem("token");
+    
             await fetch(`/api/admin/promote`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Authorization": `Bearer ${token}`,  
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({ userId }),
                 credentials: "include",
             });
+    
             fetchUsers();
         } catch (error) {
             console.error("Error promoting user", error);
@@ -36,12 +80,18 @@ const AdminManagement = () => {
 
     const updateUser = async (userId, firstName, lastName, email) => {
         try {
+            const token = localStorage.getItem("token");
+    
             await fetch(`/api/admin/update/${userId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Authorization": `Bearer ${token}`,  
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({ firstName, lastName, email }),
                 credentials: "include",
             });
+    
             fetchUsers();
         } catch (error) {
             console.error("Error updating user", error);
@@ -50,10 +100,17 @@ const AdminManagement = () => {
 
     const deleteUser = async (userId) => {
         try {
+            const token = localStorage.getItem("token");
+    
             await fetch(`/api/admin/delete/${userId}`, {
                 method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`,  
+                    "Content-Type": "application/json",
+                },
                 credentials: "include",
             });
+    
             fetchUsers();
         } catch (error) {
             console.error("Error deleting user", error);
