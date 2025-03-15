@@ -56,6 +56,14 @@ const insertData = async () => {
       }
     }
 
+    //GENERATE KANBAN BOARD
+    // first check database if 'Sample Kanban' board already exists
+    const kanbanExists = await client.query(`SELECT * FROM kanbans WHERE title = 'Sample Kanban'`);
+    // If 'Sample Kanban' doesn't exist add to database
+    if (kanbanExists.rows.length === 0) {
+      await client.query(`INSERT INTO kanbans (user_id, title) VALUES ($1, $2)`, [adminUser.rows[0].user_id, "Sample Kanban"]);
+    }
+
 
     console.log('Data inserted successfully.');
     return { success: true };
