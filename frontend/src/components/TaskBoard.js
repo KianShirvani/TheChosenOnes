@@ -39,15 +39,16 @@ const TaskBoard = () => {
       const tasks = data.tasks || [];
   
       setTasks({
-        todo: data.tasks.filter(task => task.status === "todo"),
-        inProgress: data.tasks.filter(task => task.status === "inProgress"),
-        done: data.tasks.filter(task => task.status === "done"),
+        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
+        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
+        done: tasks.filter(task => task.status.toLowerCase() === "done"),
       });
+      
   
       console.log("Updated tasks:", {
-        todo: data.tasks.filter(task => task.status === "todo"),
-        inProgress: data.tasks.filter(task => task.status === "inProgress"),
-        done: data.tasks.filter(task => task.status === "done"),
+        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
+        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
+        done: tasks.filter(task => task.status.toLowerCase() === "done"),
       });
   
     } catch (error) {
