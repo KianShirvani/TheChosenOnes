@@ -18,7 +18,7 @@ const validateAdmin = async (req, res, next) => {
     }
 
     const userId = req.user?.user_id || req.user?.userId; 
-    console.log("🔍 Validating Admin:", userId);
+    console.log("Validating Admin:", userId);
 
     if (!userId) {
         console.error("No user ID found in token.");
@@ -27,7 +27,7 @@ const validateAdmin = async (req, res, next) => {
 
     try {
         const adminCheckQuery = await client.query('SELECT * FROM admins WHERE admin_id = $1', [userId]);
-        console.log("🔍 Admin Check Result:", adminCheckQuery.rows);
+        console.log("Admin Check Result:", adminCheckQuery.rows);
 
         if (adminCheckQuery.rows.length === 0) {
             return res.status(403).json({ error: "Access denied. User is not an admin." });
