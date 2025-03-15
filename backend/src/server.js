@@ -64,7 +64,7 @@ const insertData = async () => {
       await client.query(`INSERT INTO kanbans (user_id, title) VALUES ($1, $2)`, [adminUser.rows[0].user_id, "Sample Kanban"]);
     }
 
-    //GENERATE TASKS IN 'Sample Kanban' BOARD
+    // GENERATE TASKS IN 'Sample Kanban' BOARD
 
     // Query the database to get the kanban_id of the Kanban board with the title "Sample Kanban"
     const kanban = await client.query(
@@ -73,28 +73,42 @@ const insertData = async () => {
 
     // Check if the Kanban board exists
     if (kanban.rows.length > 0) {
-      // Query the database to check if a task with the title "Sample Task" already exists
+      const kanbanId = kanban.rows[0].kanban_id;
+
+      // Query the database to check if tasks already exist in this Kanban board
       const taskExists = await client.query(
-        `SELECT * FROM tasks WHERE title = 'Sample Task'`
+        `SELECT * FROM tasks WHERE kanban_id = $1`, [kanbanId]
       );
 
-      // If no task with the given title exists, insert a new task into the database
-    if (taskExists.rows.length === 0) {
-      await client.query(
-        `INSERT INTO tasks (kanban_id, user_id, title, description, due_date, status, priority) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [
-          kanban.rows[0].kanban_id, // Assign the task to the retrieved Kanban board
-          adminUser.rows[0].user_id, // Assign the task to the admin user
-          "Sample Task", // Task title
-          "This is a test task.", // Task description
-          '2025-12-31', // Due date
-          "To Do", // Task status
-          3 // Task priority
-        ]
-      );
+      // If no tasks exist, insert multiple tasks
+      if (taskExists.rows.length === 0) {
+        const sampleTasks = [
+          // Tasks in "To Do" Column
+          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "To Do", priority: 3 },
+          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "To Do", priority: 2 },
+
+          // Tasks in "In Progress" Column
+          { title: "Task 3", description: "Developing backend", due_date: "2025-12-20", status: "In Progress", priority: 4 },
+          { title: "Task 4", description: "Building frontend", due_date: "2025-12-18", status: "In Progress", priority: 2 },
+
+          // Tasks in "Done" Column
+          { title: "Task 5", description: "Initial setup completed", due_date: "2025-12-10", status: "Done", priority: 5 },
+          { title: "Task 6", description: "Testing phase completed", due_date: "2025-12-05", status: "Done", priority: 3 }
+        ];
+
+        for (const task of sampleTasks) {
+          await client.query(
+            `INSERT INTO tasks (kanban_id, user_id, title, description, due_date, status, priority, locked) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)`,
+            [kanbanId, adminUser.rows[0].user_id, task.title, task.description, task.due_date, task.status, task.priority]
+          );
+        }
+
+        console.log("Successfully inserted 6 sample tasks into 'Sample Kanban' board.");
+      } else {
+        console.log("ℹTasks already exist in 'Sample Kanban', skipping insert.");
+      }
     }
-  }
 
 
 
