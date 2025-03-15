@@ -177,4 +177,3 @@ const styles = {
 };
 
 export default LoginPage;
-c
