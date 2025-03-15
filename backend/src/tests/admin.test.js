@@ -25,8 +25,7 @@ jest.mock("pg", () => {
 });
 
 // Get instance of the mocked pg client.
-const { Client } = require("pg");
-const mockClient = new Client();
+const mockClient = require("../database/db");
 
 // Set up a minimal Express app mounting our admin endpoints.
 const app = express();
