@@ -18,7 +18,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     <div style={styles.list}>
       <h3>{renderTitle(title)}</h3>
       {tasks.map((task) => (
-        <div key={task.id} style={styles.task} data-testid="task-card">
+        <div key={task.task_id} style={styles.task} data-testid="task-card">
           <strong>{task.title}</strong>
           <p>{task.description}</p>
           <p><strong>Priority:</strong> {task.priority}</p>

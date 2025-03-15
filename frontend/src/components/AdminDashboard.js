@@ -47,11 +47,20 @@ const AdminDashboard = () => {
       const data = await response.json();
       console.log("Fetched Tasks:", data);
   
+      const tasks = data.tasks || [];
+
       setTasks({
-        todo: data.todo || [],
-        inProgress: data.inProgress || [],
-        done: data.done || [],
+        todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
+        inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
+        done: tasks.filter(task => task.status.toLowerCase().includes("done")),
       });
+
+      console.log("Updated tasks:", {
+        todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
+        inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
+        done: tasks.filter(task => task.status.toLowerCase().includes("done")),
+      });
+
 
       updateTaskStats(data);
   

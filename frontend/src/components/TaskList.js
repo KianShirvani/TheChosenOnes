@@ -127,7 +127,7 @@ const TaskList = ({ title,
       )}
 
       {tasks.map((task) => (
-        <div key={task.id} style={styles.task}>
+        <div key={task.task_id} style={styles.task}>
           <strong>{task.title}</strong>
           <p>{task.description}</p>
           <p><strong>Priority:</strong> {task.priority}</p>

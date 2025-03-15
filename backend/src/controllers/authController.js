@@ -45,7 +45,7 @@ const loginUser = async(req, res) => {
         }
 
         // generate a token for the user that will expire (security measure)
-        const token = jsonWebToken.sign({userId: user.user_id}, process.env.JWT_SECRET, {expiresIn: "1h"});
+        const token = jsonWebToken.sign({ user_id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         return res.status(200).json({token});
     } catch (error) {
