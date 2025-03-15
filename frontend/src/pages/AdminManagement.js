@@ -19,11 +19,11 @@ const AdminManagement = () => {
             console.log("Retrieved Token:", token);
     
             if (!token) {
-                console.error("❌ No token found, user might not be authenticated.");
+                console.error("No token found, user might not be authenticated.");
                 return;
             }
     
-            const response = await fetch(`${apiUrl}/api/admin/users`, { // ✅ Use full URL
+            const response = await fetch(`${apiUrl}/api/admin/users`, { 
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -38,17 +38,17 @@ const AdminManagement = () => {
             console.log("🔍 Raw Response Body:", responseText);
     
             if (!response.ok) {
-                console.error("❌ API Error:", responseText);
+                console.error("API Error:", responseText);
                 throw new Error("Failed to fetch users");
             }
     
             const data = JSON.parse(responseText);
-            console.log("✅ Fetched Users:", data);
+            console.log("Fetched Users:", data);
     
             setUsers([...data]);
     
         } catch (error) {
-            console.error("❌ Error fetching users", error);
+            console.error("Error fetching users", error);
         }
     };
     
