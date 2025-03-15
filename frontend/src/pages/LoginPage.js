@@ -46,7 +46,7 @@ const LoginPage = () => {
         }
 
         alert("Login successful!");
-        navigate("/dashboard");
+        navigate("/tasks");
     } catch (error) {
         alert("Login failed! Please try again later.");
         console.error("Login error:", error);
