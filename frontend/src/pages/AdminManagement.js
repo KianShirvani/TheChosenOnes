@@ -32,10 +32,10 @@ const AdminManagement = () => {
                 credentials: "include",
             });
     
-            console.log("🔍 Response URL:", response.url);
-            console.log("🔍 Response Status:", response.status);
+            console.log("Response URL:", response.url);
+            console.log("Response Status:", response.status);
             const responseText = await response.text();
-            console.log("🔍 Raw Response Body:", responseText);
+            console.log("Raw Response Body:", responseText);
     
             if (!response.ok) {
                 console.error("API Error:", responseText);
