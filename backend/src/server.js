@@ -44,6 +44,19 @@ const insertData = async () => {
       }
     }
 
+    //GENERATE ADMINS
+    // First check if arnold can be promoted to admin
+    const adminUser = await client.query(`SELECT user_id FROM users WHERE email = $1`, ["arnold@example.com"]);
+    if (adminUser.rows.length > 0) {
+      // check if user is already admin
+      let adminExists = await client.query(`SELECT * FROM admins WHERE admin_id = $1`, [adminUser.rows[0].user_id]);
+      if (adminExists.rows.length === 0) {
+      // user is not an admin so insert into admin table
+        await client.query(`INSERT INTO admins (admin_id) VALUES ($1)`, [adminUser.rows[0].user_id]);
+      }
+    }
+
+
     console.log('Data inserted successfully.');
     return { success: true };
   } catch (error) {
