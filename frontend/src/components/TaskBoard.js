@@ -39,15 +39,16 @@ const TaskBoard = () => {
       const tasks = data.tasks || [];
   
       setTasks({
-        todo: data.tasks.filter(task => task.status === "todo"),
-        inProgress: data.tasks.filter(task => task.status === "inProgress"),
-        done: data.tasks.filter(task => task.status === "done"),
+        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
+        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
+        done: tasks.filter(task => task.status.toLowerCase() === "done"),
       });
+      
   
       console.log("Updated tasks:", {
-        todo: data.tasks.filter(task => task.status === "todo"),
-        inProgress: data.tasks.filter(task => task.status === "inProgress"),
-        done: data.tasks.filter(task => task.status === "done"),
+        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
+        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
+        done: tasks.filter(task => task.status.toLowerCase() === "done"),
       });
   
     } catch (error) {
@@ -58,9 +59,15 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
+      const response = await fetch("/api/admin/users", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
         credentials: "include",
-      });
+    });
+    
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }

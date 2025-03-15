@@ -39,11 +39,7 @@ describe("Admin Controller Tests", () => {
 
   beforeAll(() => {
     // Generate a dummy token using our mocked jwt.sign.
-    mockToken = jwt.sign(
-      { userId: 1 },
-      process.env.JWT_SECRET || "supersecrettoken",
-      { expiresIn: "1h" }
-    );
+    const mockToken = jwt.sign({ user_id: 1 }, process.env.JWT_SECRET, { expiresIn: "1h" });
   });
 
   beforeEach(() => {
