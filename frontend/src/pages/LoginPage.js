@@ -37,20 +37,30 @@ const LoginPage = () => {
             email: formData.email,
             password: formData.password,
         });
-
+        console.log("Login Response:", response.data);
         if (response.data.token) {
-            localStorage.setItem("token", response.data.token);  // Store token in localStorage
-            console.log("Token saved:", response.data.token);
-        } else {
-            console.error("Login successful but no token received.");
-        }
+          localStorage.setItem("userToken", response.data.token);
+          localStorage.setItem("role", response.data.role);  // Store role
+          alert("Login successful!");
 
-        alert("Login successful!");
-        navigate("/tasks");
-    } catch (error) {
-        alert("Login failed! Please try again later.");
-        console.error("Login error:", error);
-    }
+          // Ensure the navigation happens AFTER setting the localStorage
+          setTimeout(() => {
+            const userRole = localStorage.getItem("role");
+            console.log("Stored Role:", userRole); 
+              if (response.data.role === "admin") {
+                  navigate("/admindashboard");
+              } else {
+                  navigate("/tasks");
+              }
+              window.location.reload();  // Force a UI update
+          }, 500); // Small delay to ensure state updates before navigation
+      } else {
+          alert("Login failed!");
+      }
+  } catch (error) {
+      alert("Login failed! Please try again later.");
+      console.error("Login error:", error);
+  }
 };
 
 
