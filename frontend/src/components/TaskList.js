@@ -101,7 +101,7 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
       });
 
       if (response.status !== 200) throw new Error("Failed to move task");
-      console.log("Task moved successfully");
+      console.log("Response data: ", response.data);
       // Refresh the task list after moving the task
       onMoveTask(task, direction);
     } catch (error) {
