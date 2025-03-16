@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-// Mock data for users
 const mockUsers = [
     { id: 1, firstName: "John", lastName: "Doe", email: "john@example.com" },
     { id: 2, firstName: "Jane", lastName: "Smith", email: "jane@example.com" },
@@ -25,19 +24,16 @@ const renderAdminManagement = () => {
     );
 };
 
-// Mocking `AdminManagement` Component
 const MockAdminManagement = ({ users }) => {
     const navigate = useNavigate();
 
     const handlePromote = (userId) => {
-        // Simulate promoting the user to admin
         users = users.map((user) =>
             user.user_id === userId ? { ...user, is_admin: true } : user
         );
     };
 
     const handleDelete = (userId) => {
-        // Simulate deleting the user
         users = users.filter((user) => user.user_id !== userId);
     };
 
@@ -86,7 +82,6 @@ const MockAdminManagement = ({ users }) => {
 
 describe("AdminManagement", () => {
     let navigate;
-    let mockPromote;
 
     // set up for each test
     beforeEach(() => {
@@ -118,13 +113,13 @@ describe("AdminManagement", () => {
 
     test("promotes user to admin", async () => {
         // Set up a mock function to update users
-        const setUsers = jest.fn();  // Mock state update function
+        const setUsers = jest.fn();
 
         render(<MockAdminManagement users={mockUsers} setUsers={setUsers} />);
 
         // find the first "Promote to Admin" button (for a specific user)
         const promoteButtons = screen.getAllByText(/Promote/i);
-        const firstPromoteButton = promoteButtons[0]; // Promote the first user
+        const firstPromoteButton = promoteButtons[0];
 
         await userEvent.click(firstPromoteButton);
 
@@ -132,11 +127,10 @@ describe("AdminManagement", () => {
         // Here we simulate what would happen after the promote action is completed
         setUsers.mockImplementationOnce(() => {
             const updatedUsers = [...mockUsers];
-            updatedUsers[0].is_admin = true; // First user becomes an admin
+            updatedUsers[0].is_admin = true;
             return updatedUsers;
         });
 
-        // Ensure that at least one "admin" label exists
         expect(screen.getAllByText(/admin/i).length).toBeGreaterThan(0);
     });
 
@@ -146,7 +140,6 @@ describe("AdminManagement", () => {
         const dashboardButton = screen.getByText(/Go to Dashboard/i);
         await userEvent.click(dashboardButton);
 
-        // wait for navigation to be triggered
         await waitFor(() => {
             expect(navigate).toHaveBeenCalledWith("/tasks");
         });

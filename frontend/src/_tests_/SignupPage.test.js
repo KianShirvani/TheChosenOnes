@@ -6,13 +6,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 
-// Mock axios and useNavigate
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn(),
 }));
 
-// Create a mock instance of axios
 const mock = new MockAdapter(axios);
 
 const renderSignupPage = () => {
@@ -24,7 +22,7 @@ const renderSignupPage = () => {
 };
 
 beforeAll(() => {
-  process.env.REACT_APP_API_URL = "http://localhost:5000"; // Adjust based on your API base URL
+  process.env.REACT_APP_API_URL = "http://localhost:5000";
 });
 
 describe("SignupPage", () => {
@@ -35,7 +33,7 @@ describe("SignupPage", () => {
     useNavigate.mockReturnValue(navigate);
     jest.clearAllMocks();
     jest.spyOn(window, "alert").mockImplementation(() => {}); // Mock alert globally
-    mock.reset(); // Reset mock before each test
+    mock.reset();
   });
 
   test("clicking 'Login here' navigates to login page", async () => {
@@ -154,7 +152,6 @@ describe("SignupPage", () => {
   });
 
   test("should show alert on error when sign-up fails", async () => {
-    // Mock the POST request to /register to return an error
     mock.onPost(`${process.env.REACT_APP_API_URL}/register`).reply(400, {
       error: "User already exists",
     });
@@ -168,7 +165,6 @@ describe("SignupPage", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
-    // Wait for the error handling
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith("Sign up failed!");
     });

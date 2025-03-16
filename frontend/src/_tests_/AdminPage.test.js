@@ -129,7 +129,7 @@ const MockAdminDashboard = () => {
             key={status}
             title={status}
             tasks={tasks[status]}
-            onToggleLock={handleToggleLock} // Mocked function
+            onToggleLock={handleToggleLock}
           />
         ))}
       </div>
@@ -140,7 +140,6 @@ const MockAdminDashboard = () => {
   );
 };
 
-// add render function that can be called by the tests instead of having the render in each test
 const renderMockAdminManagement = () => {
   render(
     <Router>
@@ -178,7 +177,7 @@ describe("AdminDashboard Component", () => {
     await waitFor(() => expect(screen.getByText("Add New Task")).toBeInTheDocument());
 
     fireEvent.change(screen.getByPlaceholderText("Task Title"), { target: { value: "New Task" } });
-    fireEvent.click(screen.getByText("Add Task")); // Ensure this matches the button text
+    fireEvent.click(screen.getByText("Add Task"));
 
     // Ensure the new task appears in the To-Do column
     await waitFor(() => expect(screen.getByText("New Task")).toBeInTheDocument());
@@ -188,7 +187,6 @@ describe("AdminDashboard Component", () => {
   test("toggles task lock state", async () => {
     renderMockAdminManagement();
   
-    // Wait for tasks to load
     await waitFor(() => expect(screen.getByText("Mock Task 1")).toBeInTheDocument());
   
     // Find the lock toggle button for Task 1
@@ -196,13 +194,11 @@ describe("AdminDashboard Component", () => {
     expect(lockButtons[0]).toHaveTextContent("Lock");
     expect(lockButtons.length).toBeGreaterThan(0);
   
-    // Click the lock toggle
     fireEvent.click(lockButtons[0]);
   
     // Ensure button text changes
     await waitFor(() => expect(lockButtons[0]).toHaveTextContent("Locked"));
 
-    // Click again to unlock
     fireEvent.click(lockButtons[0]);
 
     // Ensure button text changes back

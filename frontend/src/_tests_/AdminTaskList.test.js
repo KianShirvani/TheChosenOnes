@@ -69,7 +69,7 @@ describe("AdminTaskList", () => {
   
     const modifiedSampleTasks = [
       { id: "1", title: "Task A", description: "Desc A", priority: "High", dueDate: "2025-02-10", locked: false },
-      { id: "2", title: "Task B", description: "Desc B", priority: "Medium", dueDate: "2025-02-15", locked: false }, // 确保任务未锁定
+      { id: "2", title: "Task B", description: "Desc B", priority: "Medium", dueDate: "2025-02-15", locked: false },
     ];
   
     const renderModifiedAdminTaskList = () => {
