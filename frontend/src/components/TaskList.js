@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const TaskList = ({ title, 
-                    tasks, 
-                    onEditTask, 
-                    onDeleteTask, 
-                    onMoveTask, 
-                    selectedColor, 
-                    onAssignColor,
-                    availableUsers,    // NEW: passed from TaskBoard
-                    onAddUser,         // NEW: function to add a user to a task
-                    onRemoveUser       // NEW: function to remove a user from a task
-                  }) => {
+const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selectedColor, onAssignColor, availableUsers, onAddUser, onRemoveUser }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const colors = {
@@ -24,26 +15,22 @@ const TaskList = ({ title,
     Grey: "grey"
   };
 
-  // Find the color name from the colors object based on the current selectedColor
   const getSelectedColorName = () => {
     return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
   };
 
-  // NEW: Inner component to manage and display assigned users for a task
   const TaskUsers = ({ taskId }) => {
     const [assignedUsers, setAssignedUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState("");
 
     useEffect(() => {
-      // Fetch assigned users for this task
       const fetchAssignedUsers = async () => {
         try {
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/users`, {
-            credentials: "include"
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/users`, {
+            withCredentials: true
           });
-          if (response.ok) {
-            const data = await response.json();
-            setAssignedUsers(data.users);
+          if (response.status === 200) {
+            setAssignedUsers(response.data.users);
           }
         } catch (error) {
           console.error("Error fetching users for task:", error);
@@ -56,18 +43,15 @@ const TaskList = ({ title,
       if (selectedUser) {
         onAddUser(taskId, selectedUser);
         setSelectedUser("");
-        // Refresh local list after adding (in a real app, you might refetch)
         setAssignedUsers(prev => [...prev, availableUsers.find(u => u.id === selectedUser)]);
       }
     };
 
     const handleRemoveUser = (userId) => {
       onRemoveUser(taskId, userId);
-      // Remove locally (in a real app, you might refetch)
       setAssignedUsers(prev => prev.filter(user => user.id !== userId));
     };
 
-    // Filter available users to show only those not already assigned
     const availableToAdd = availableUsers.filter(
       user => !assignedUsers.find(assigned => assigned.id === user.id)
     );
@@ -102,6 +86,29 @@ const TaskList = ({ title,
     );
   };
 
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) {
+      alert("This task is locked and cannot be moved.");
+      return;
+    }
+    console.log("handleMoveTask is clicked");
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/tasks/${task.task_id}/move`, {
+        direction
+      }, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (response.status !== 200) throw new Error("Failed to move task");
+      console.log("Task moved successfully");
+      // Refresh the task list after moving the task
+      onMoveTask(task, direction);
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
+  };
+
   return (
     <div style={{ ...styles.list, background: selectedColor }}>
       <div style={styles.header}>
@@ -111,10 +118,10 @@ const TaskList = ({ title,
 
       {showDropdown && (
         <select
-          value={getSelectedColorName()}  // Set value dynamically to match the selected color
+          value={getSelectedColorName()}
           onChange={(e) => {
             const selectedOption = e.target.value;
-            const newColor = colors[selectedOption] || "#e0e0e0"; // Ensure it resets to default grey
+            const newColor = colors[selectedOption] || "#e0e0e0";
             onAssignColor(newColor);
             setShowDropdown(false);
           }}
@@ -136,10 +143,10 @@ const TaskList = ({ title,
           <div style={styles.actions}>
             <button onClick={() => onEditTask(task)} style={styles.edit}>✏️</button>
             {title !== "To-Do" && (
-              <button onClick={() => onMoveTask(task, "left")} style={styles.arrow}>←</button>
+              <button onClick={() => handleMoveTask(task, "left")} style={styles.arrow}>←</button>
             )}
             {title !== "Done" && (
-              <button onClick={() => onMoveTask(task, "right")} style={styles.arrow}>→</button>
+              <button onClick={() => handleMoveTask(task, "right")} style={styles.arrow}>→</button>
             )}
             <button onClick={() => onDeleteTask(task.id)} style={styles.delete}>🗑</button>
           </div>
@@ -148,7 +155,6 @@ const TaskList = ({ title,
     </div>
   );
 };
-
 
 const styles = {
   list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px" },

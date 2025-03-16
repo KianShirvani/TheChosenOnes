@@ -74,13 +74,14 @@ const toggleLock = async (req, res) => {
 };
 
 const moveTask = async (req, res) => {
+  console.log("Move Task");
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["todo", "inProgress", "done"];
+    const columnOrder = ["To Do", "In Progress", "Done"];
 
     // Use the proper field name and variable (id instead of task_id)
-    const taskResult = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+    const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
     if (taskResult.rowCount === 0) {
       return res.status(404).json({ message: "Task not found" });
     }
@@ -98,7 +99,7 @@ const moveTask = async (req, res) => {
     }
 
     const updatedTask = await client.query(
-      "UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *",
+      "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *",
       [columnOrder[newIndex], taskId]
     );
 
@@ -116,7 +117,7 @@ const updateTask = async (req, res) => {
     const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
     const { taskId } = req.params;
     if (!taskId || isNaN(taskId)) {
-      console.error(`❌ Invalid Task ID: ${taskId}`);
+      console.error(`Invalid Task ID: ${taskId}`);
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
