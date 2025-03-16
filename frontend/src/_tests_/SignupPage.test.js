@@ -23,6 +23,10 @@ const renderSignupPage = () => {
   );
 };
 
+beforeAll(() => {
+  process.env.REACT_APP_API_URL = "http://localhost:5000"; // Adjust based on your API base URL
+});
+
 describe("SignupPage", () => {
   let navigate;
 
@@ -44,7 +48,7 @@ describe("SignupPage", () => {
   });
 
   test("submits form successfully and shows alert", async () => {
-    mock.onPost("/register").reply(200, {
+    mock.onPost(`${process.env.REACT_APP_API_URL}/register`).reply(200, {
       message: "User created successfully",
     });
 
@@ -62,7 +66,7 @@ describe("SignupPage", () => {
   });
 
   test("calls the /register route", async () => {
-    mock.onPost("/register").reply(200, {
+    mock.onPost(`${process.env.REACT_APP_API_URL}/register`).reply(200, {
       message: "User created successfully",
     });
 
@@ -76,12 +80,12 @@ describe("SignupPage", () => {
     await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
 
     await waitFor(() => {
-      expect(mock.history.post[0].url).toBe("/register");
+      expect(mock.history.post[0].url).toBe(`${process.env.REACT_APP_API_URL}/register`);
     });
   });
 
   test("sends correct data to /register", async () => {
-    mock.onPost("/register").reply(200, {
+    mock.onPost(`${process.env.REACT_APP_API_URL}/register`).reply(200, {
       message: "User created successfully",
     });
 
@@ -151,7 +155,7 @@ describe("SignupPage", () => {
 
   test("should show alert on error when sign-up fails", async () => {
     // Mock the POST request to /register to return an error
-    mock.onPost("/register").reply(400, {
+    mock.onPost(`${process.env.REACT_APP_API_URL}/register`).reply(400, {
       error: "User already exists",
     });
 
