@@ -140,6 +140,15 @@ const MockAdminDashboard = () => {
   );
 };
 
+// add render function that can be called by the tests instead of having the render in each test
+const renderMockAdminManagement = () => {
+  render(
+    <Router>
+        <MockAdminDashboard />
+    </Router>
+  );
+};
+
 describe("AdminDashboard Component", () => {
   beforeEach(() => {
     fetch.mockClear();
@@ -162,11 +171,7 @@ describe("AdminDashboard Component", () => {
 
 
   test("adds a new task", async () => {
-    render(
-      <Router>
-        <MockAdminDashboard />
-      </Router>
-    );
+    renderMockAdminManagement();
 
     fireEvent.click(screen.getByText("+ Add Task"));
 
@@ -181,11 +186,7 @@ describe("AdminDashboard Component", () => {
 
   // test to ensure that the task is locked when toggled
   test("toggles task lock state", async () => {
-    render(
-      <Router>
-        <MockAdminDashboard />
-      </Router>
-    );
+    renderMockAdminManagement();
   
     // Wait for tasks to load
     await waitFor(() => expect(screen.getByText("Mock Task 1")).toBeInTheDocument());
