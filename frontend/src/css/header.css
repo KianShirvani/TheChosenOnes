@@ -79,6 +79,11 @@
     transition: background-color 0.3s;
     font-size: 0.9rem;
 }
+.admin-dashboard {
+    text-align: center;
+    background-color: #f4f4f4;
+    font-size: 0.9rem;
+  }
 
 .sign-in {
     background-color: transparent;

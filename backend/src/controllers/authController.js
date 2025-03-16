@@ -34,9 +34,8 @@ const loginUser = async(req, res) => {
         }
 
         // generate a token for the user that will expire (security measure)
-        const token = jsonWebToken.sign({ user_id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-        return res.status(200).json({token});
+        const token = jsonWebToken.sign({ user_id: user.user_id ,role: user.role}, process.env.JWT_SECRET, { expiresIn: "1h" });
+        return res.status(200).json({token,role: user.role});
     } catch (error) {
         console.error("error in loginUser:", error);
         return res.status(500).json({error: "Internal Server Error"}); // HTTP/1.1 500 Internal Server Error

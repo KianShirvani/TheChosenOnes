@@ -11,7 +11,8 @@ import AdminManagement from "./pages/AdminManagement";
 import ChatPage from "./pages/ChatPage";
 import axios from "axios";
 import { NotificationProvider } from "./components/NotificationContext";
-
+import PrivateRoute from "./components/Privateroute";
+import AdminRoute from "./components/adminroute";
 function App() {
   useEffect(() => {
     // Load data when the app starts
@@ -27,9 +28,9 @@ function App() {
           <Route path="/" element={<MainPage />} />   {/* Home Page */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/tasks" element={<TaskBoard />} />  {/* Task Management Page */}
-          <Route path="/admindashboard" element={<AdminDashboard />} />
-          <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
+          <Route path="/tasks" element={<PrivateRoute><TaskBoard /></PrivateRoute>} />
+          <Route path="/admindashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/adminManagement" element={<AdminRoute><AdminManagement /></AdminRoute>} />
           <Route path="/chat" element={<ChatPage />} />
         </Routes>
         <Footer />
