@@ -285,7 +285,7 @@ const TaskBoard = () => {
           tasks={tasks.todo}
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
-          onMoveTask={handleMoveTask}
+          onMoveTask={fetchTasks}
           selectedColor={taskListColors.todo}
           onAssignColor={(color) => handleAssignColor("todo", color)}
           availableUsers={availableUsers}
@@ -297,7 +297,7 @@ const TaskBoard = () => {
           tasks={tasks.inProgress}
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
-          onMoveTask={handleMoveTask}
+          onMoveTask={fetchTasks}
           selectedColor={taskListColors.inProgress}
           onAssignColor={(color) => handleAssignColor("inProgress", color)}
           availableUsers={availableUsers}
@@ -309,7 +309,7 @@ const TaskBoard = () => {
           tasks={tasks.done}
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
-          onMoveTask={handleMoveTask}
+          onMoveTask={fetchTasks}
           selectedColor={taskListColors.done}
           onAssignColor={(color) => handleAssignColor("done", color)}
           availableUsers={availableUsers}
