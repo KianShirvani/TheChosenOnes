@@ -22,7 +22,7 @@ const getTasks = async (req, res) => {
 // Create a new task
 const createTask = async (req, res) => {
   try {
-    const { kanban_, user_id, title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
+    const { kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
 
     if (!title || !description || !progress || !due_date || !start_date || !end_date ) {
       console.log("Missing required fields:", req.body);
@@ -30,8 +30,8 @@ const createTask = async (req, res) => {
     }
 
     const result = await client.query(
-      "INSERT INTO tasks (kanban_, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
-      [kanban_, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
+      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
+      [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
     );
 
     if (!result || !result.rows || result.rows.length === 0) {
@@ -74,13 +74,12 @@ const toggleLock = async (req, res) => {
 };
 
 const moveTask = async (req, res) => {
-  console.log("Move Task");
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["To Do", "In Progress", "Done"];
+    const columnOrder = ["todo", "inProgress", "done"];
 
-    // Use the proper field name and variable ( instead of task_id)
+    // Use the proper field name and variable (id instead of task_id)
     const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
     if (taskResult.rowCount === 0) {
       return res.status(404).json({ message: "Task not found" });
@@ -117,15 +116,15 @@ const updateTask = async (req, res) => {
     const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
     const { taskId } = req.params;
     if (!taskId || isNaN(taskId)) {
-      console.error(`Invalid Task : ${taskId}`);
-      return res.status(400).json({ message: "Invalid or missing Task " });
+      console.error(`❌ Invalid Task ID: ${taskId}`);
+      return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
 
 
     // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
-      console.error(`Task with  ${taskId} not found.`);
+      console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
@@ -136,7 +135,7 @@ const updateTask = async (req, res) => {
     }
 
     const result = await client.query(
-      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
+      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
       [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
 
@@ -212,7 +211,7 @@ const deleteTask = async (req, res) => {
     const result = await client.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
 
     if (result.rowCount === 0) {  //  Fix: return 404 if no task was deleted
-      console.log(`Task with ${taskId} not found.`);
+      console.log(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
@@ -313,4 +312,3 @@ module.exports = {
   removeUsersFromTask,
   getFilteredTasks
 };
-
