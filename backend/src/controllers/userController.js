@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
 
     // Insert the new user into the database
     const insertUserQuery = await client.query(
-      'INSERT INTO users (first_name, last_name, email, phone_num, country, display_name, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      'INSERT INTO users (first_name, last_name, email, phone_num, country, display_name, password,role) VALUES ($1, $2, $3, $4, $5, $6, $7,$8) RETURNING *',
       [firstName, lastName, email, phoneNum, country, displayName, hashedPassword]
     );
 
