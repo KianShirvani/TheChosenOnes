@@ -59,7 +59,7 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/users`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -134,7 +134,7 @@ const TaskBoard = () => {
 
       // If adding a new task with assignedUsers, call assignUsersToTask endpoint.
       if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
-        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.id}/assign-users`, {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.task_id}/assign-users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -166,7 +166,7 @@ const TaskBoard = () => {
       } else {
         // Trigger notification on successful user addition
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id === taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
@@ -194,7 +194,7 @@ const TaskBoard = () => {
       } else {
         // Trigger notification on successful user removal
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id === taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,

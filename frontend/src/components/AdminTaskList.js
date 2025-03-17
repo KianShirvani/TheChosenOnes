@@ -13,6 +13,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
         return status;
     }
   };
+
+  const priorityLabelMap = {
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Critical",
+    5: "Urgent"
+  };
   
   return (
     <div style={styles.list}>
@@ -21,7 +29,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
         <div key={task.task_id} style={styles.task} data-testid="task-card">
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {task.priority}</p>
+          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.progressBar} data-testid="progress-bar">
@@ -74,7 +82,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 
            
   <button 
-    onClick={() => onToggleLock(task.id)} 
+    onClick={() => onToggleLock(task.task_id)} 
     style={task.locked ? styles.locked : styles.unlock} 
     data-testid="lock-button"
   >
@@ -82,7 +90,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   </button>
 
   <button
-    onClick={() => onDeleteTask(task.id)}
+    onClick={() => onDeleteTask(task.task_id)}
     style={styles.delete}
     data-testid="delete-button"
     disabled={task.locked}  // Disable the delete button when the task is locked

@@ -14,6 +14,14 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
     White: "white",
     Grey: "grey"
   };
+  const priorityLabelMap = {
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Critical",
+    5: "Urgent"
+  };
+
 
   const getSelectedColorName = () => {
     return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
@@ -137,7 +145,7 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
         <div key={task.task_id} style={styles.task}>
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {task.priority}</p>
+          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.actions}>
@@ -148,7 +156,7 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
             {title !== "Done" && (
               <button onClick={() => handleMoveTask(task, "right")} style={styles.arrow}>→</button>
             )}
-            <button onClick={() => onDeleteTask(task.id)} style={styles.delete}>🗑</button>
+            <button onClick={() => onDeleteTask(task.task_id)} style={styles.delete}>🗑</button>
           </div>
         </div>
       ))}
