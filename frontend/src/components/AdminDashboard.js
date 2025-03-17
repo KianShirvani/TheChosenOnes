@@ -58,7 +58,7 @@ const AdminDashboard = () => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
       const data = await response.json();
-      console.log("Fetched Tasks:", data.task);
+
   
      
       const tasks = data.tasks.map(task => ({
@@ -201,7 +201,7 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateTask = async (updatedTask) => {
-    console.log("Updated Task Before Sending:", updatedTask); // 检查是否有 progress
+    console.log("Updated Task Before Sending:", updatedTask); 
     if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
     
     try {

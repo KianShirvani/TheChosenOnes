@@ -27,7 +27,27 @@ const TaskBoard = () => {
 
   // Get setNotification from NotificationContext
   const { setNotification } = useContext(NotificationContext);
-
+  const formatDate = (isoDate) => {
+    if (!isoDate || isoDate === "0001-01-01" || isoDate === "0001-01-01T00:00:00.000Z") {
+      return "No upcoming tasks";
+    }
+  
+    const date = new Date(isoDate);
+    if (isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+  
+    return date.toISOString().split("T")[0]; 
+  };
+  const formatStatus = (status) => {
+    if (!status) return "to do"; 
+    const formatted = status.toLowerCase().trim();
+    if (formatted === "to do") return "to do";
+    if (formatted === "in progress") return "in progress";
+    if (formatted === "done") return "done";
+    return formatted;
+  };
+  
   // Fetch tasks from the backend
   const fetchTasks = async () => {
     try {
@@ -36,8 +56,16 @@ const TaskBoard = () => {
       const data = await response.json();
   
       console.log("Fetched data:", data); 
-      const tasks = data.tasks || [];
-  
+      const tasks = data.tasks.map(task => ({
+        ...task,
+        id: task.id || task.task_id,
+        progress: task.progress || 0,
+        status: formatStatus(task.status ?? "todo"), 
+        dueDate: formatDate(task.due_date), 
+      startDate: formatDate(task.start_date),
+      endDate: formatDate(task.end_date),
+      }));
+
       setTasks({
         todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
         inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
@@ -87,7 +115,7 @@ const TaskBoard = () => {
   const handleSaveTask = async (taskData) => {
     console.log("Raw taskData before sending:", taskData); 
   
-    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.due_date) {
       console.error("Missing fields:", taskData);
       return;
     }
@@ -99,9 +127,9 @@ const TaskBoard = () => {
       title: taskData.title,
       description: taskData.description,
       priority: taskData.priority,
-      due_date: new Date(taskData.dueDate).toISOString().split("T")[0],
-      start_date: new Date(taskData.startDate).toISOString().split("T")[0],
-      end_date: new Date(taskData.endDate).toISOString().split("T")[0],
+      due_date: formatDate(taskData.due_date), 
+      start_date: formatDate(taskData.start_date || new Date()), 
+      end_date: formatDate(taskData.end_date || taskData.due_date),
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
     };

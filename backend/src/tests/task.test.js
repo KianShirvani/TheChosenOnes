@@ -63,6 +63,9 @@ beforeEach(() => {
         due_date: values[5],
         status: values[6] || "todo",
         locked: false,
+        start_date: values[6] || null,
+        end_date: values[7] || null,
+        progress: values[8] || 0,
       };
       mockDatabase.tasks.push(newTask);
       return Promise.resolve({ rows: [newTask], rowCount: 1 });
@@ -135,6 +138,9 @@ if (q.startsWith("SELECT") && (q.includes("WHERE ID =") || q.includes("WHERE TAS
         task.priority = values[2];
         task.due_date = values[3];
         task.status = values[4];
+        task.start_date = values[4] || null;
+        task.end_date = values[5] || null;
+        task.progress = values[6] || 0;
         return Promise.resolve({ rows: [task], rowCount: 1 });
       }
       return Promise.resolve({ rows: [], rowCount: 0 });

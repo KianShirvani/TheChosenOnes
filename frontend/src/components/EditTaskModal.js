@@ -58,7 +58,7 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
       progress: parseInt(taskData.progress, 10) || 0,
       status: taskData.status,
     };
-  
+
     onSave(finalData);
     onSave({ ...taskData, id: task.task_id });
   };

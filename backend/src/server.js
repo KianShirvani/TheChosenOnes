@@ -75,23 +75,23 @@ const insertData = async () => {
       if (taskExists.rows.length === 0) {
         const sampleTasks = [
           // Tasks in "To Do" Column
-          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "To Do", priority: 3 },
-          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "To Do", priority: 2 },
+          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "To Do", priority: 3, progress: 10,start_date:"2025-12-05" ,end_date:"2025-12-20" },
+          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "To Do", priority: 2 , progress: 20,start_date:"2025-12-07" ,end_date:"2025-12-21" },
 
           // Tasks in "In Progress" Column
-          { title: "Task 3", description: "Developing backend", due_date: "2025-12-20", status: "In Progress", priority: 4 },
-          { title: "Task 4", description: "Building frontend", due_date: "2025-12-18", status: "In Progress", priority: 2 },
+          { title: "Task 3", description: "Developing backend", due_date: "2025-12-20", status: "In Progress", priority: 4, progress: 40 ,start_date:"2025-11-23" ,end_date:"2025-12-20"},
+          { title: "Task 4", description: "Building frontend", due_date: "2025-12-18", status: "In Progress", priority: 2 , progress: 50,start_date:"2025-11-05" ,end_date:"2025-12-15"},
 
           // Tasks in "Done" Column
-          { title: "Task 5", description: "Initial setup completed", due_date: "2025-12-10", status: "Done", priority: 5 },
-          { title: "Task 6", description: "Testing phase completed", due_date: "2025-12-05", status: "Done", priority: 3 }
+          { title: "Task 5", description: "Initial setup completed", due_date: "2025-12-10", status: "Done", priority: 5 , progress: 80,start_date:"2025-11-20" ,end_date:"2025-12-08"},
+          { title: "Task 6", description: "Testing phase completed", due_date: "2025-12-05", status: "Done", priority: 3 , progress: 90,start_date:"2025-11-12" ,end_date:"2025-12-03"}
         ];
 
         for (const task of sampleTasks) {
           await client.query(
-            `INSERT INTO tasks (kanban_id, user_id, title, description, due_date, status, priority, locked) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)`,
-            [kanbanId, adminUser.rows[0].user_id, task.title, task.description, task.due_date, task.status, task.priority]
+            `INSERT INTO tasks (kanban_id, user_id, title, description, due_date, status, priority, locked, progress,start_date,end_date) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11)`,
+            [kanbanId, adminUser.rows[0].user_id, task.title, task.description, task.due_date, task.status, task.priority,false, task.progress,task.start_date,task.end_date]
           );
         }
 
