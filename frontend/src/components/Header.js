@@ -58,6 +58,15 @@ const Header = () => {
                         My Tasks
                     </button>
                 )}
+                {isLoggedIn && role  === "admin" && (
+          <button
+            className="btn adminButton"
+            onClick={() => navigate("/admindashboard")}
+            style={{ marginRight: "15px" }}
+          >
+            Admin Dashboard
+          </button>
+        )}
 
                 {/* Chat icon directing users to the /chat page if logged in, otherwise to sign up */}
                 <FaComments 
