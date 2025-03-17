@@ -143,7 +143,7 @@ const MockAdminDashboard = () => {
   );
 };
 
-const renderMockAdminManagement = () => {
+const renderMockAdminDashboard = () => {
   render(
     <Router>
         <MockAdminDashboard />
@@ -158,7 +158,7 @@ describe("AdminDashboard Component", () => {
 
 
   test("adds a new task", async () => {
-    renderMockAdminManagement();
+    renderMockAdminDashboard();
 
     fireEvent.click(screen.getByText("+ Add Task"));
 
@@ -173,7 +173,7 @@ describe("AdminDashboard Component", () => {
 
   // test to ensure that the task is locked when toggled
   test("toggles task lock state", async () => {
-    renderMockAdminManagement();
+    renderMockAdminDashboard();
   
     await waitFor(() => expect(screen.getByText("Mock Task 1")).toBeInTheDocument());
   

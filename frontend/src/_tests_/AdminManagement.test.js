@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AdminManagement from "../pages/AdminManagement";
 import { MemoryRouter } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -24,17 +24,20 @@ const renderAdminManagement = () => {
     );
 };
 
-const MockAdminManagement = ({ users }) => {
+const MockAdminManagement = ({ users: initialUsers }) => {
     const navigate = useNavigate();
+    const [users, setUsers] = useState(initialUsers);
 
     const handlePromote = (userId) => {
-        users = users.map((user) =>
-            user.user_id === userId ? { ...user, is_admin: true } : user
+        setUsers((prevUsers) =>
+            prevUsers.map((user) =>
+                user.id === userId ? { ...user, is_admin: true } : user
+            )
         );
     };
 
     const handleDelete = (userId) => {
-        users = users.filter((user) => user.user_id !== userId);
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
     };
 
     return (
@@ -53,18 +56,18 @@ const MockAdminManagement = ({ users }) => {
                     </thead>
                     <tbody>
                         {users.map((user) => (
-                            <tr key={user.user_id}>
-                                <td>{user.first_name}</td>
-                                <td>{user.last_name}</td>
+                            <tr key={user.id}>
+                                <td>{user.firstName}</td>
+                                <td>{user.lastName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.is_admin ? "Admin" : "User"}</td>
                                 <td>
                                     {!user.is_admin && (
-                                        <button onClick={() => handlePromote(user.user_id)}>
+                                        <button onClick={() => handlePromote(user.id)}>
                                             Promote
                                         </button>
                                     )}
-                                    <button onClick={() => handleDelete(user.user_id)}>
+                                    <button onClick={() => handleDelete(user.id)}>
                                         Delete
                                     </button>
                                 </td>
@@ -97,9 +100,9 @@ describe("AdminManagement", () => {
         render(<MockAdminManagement users={mockUsers} />);
 
         // Check if the users' first names are rendered
-        expect(screen.getByText(/John/i)).toBeInTheDocument();
-        expect(screen.getByText(/Jane/i)).toBeInTheDocument();
-        expect(screen.getByText(/Alice/i)).toBeInTheDocument();
+        expect(screen.getByText(/^John$/i)).toBeInTheDocument();
+        expect(screen.getByText(/^Jane$/i)).toBeInTheDocument();
+        expect(screen.getByText(/^Alice$/i)).toBeInTheDocument();
 
         // Check if the admin role is shown for the first user
         const adminRoles = screen.getAllByText(/Admin/i);
@@ -132,6 +135,21 @@ describe("AdminManagement", () => {
         });
 
         expect(screen.getAllByText(/admin/i).length).toBeGreaterThan(0);
+    });
+
+    test("delete a user", async () => {
+        render(<MockAdminManagement users={mockUsers} />);
+
+        expect(screen.getByText(/^John$/i)).toBeInTheDocument();
+
+        const deleteButtons = screen.getAllByText(/Delete/i);
+        const firstDeleteButton = deleteButtons[0];
+
+        await userEvent.click(firstDeleteButton);
+
+        await waitFor(() => {
+            expect(screen.queryByText(/^John$/i)).not.toBeInTheDocument();
+        });
     });
 
     test("navigates to dashboard on button click", async () => {
