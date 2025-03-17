@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS kanbans(
         ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS tasks(
+CREATE TABLE IF NOT EXISTS tasks (
     task_id SERIAL PRIMARY KEY,
     kanban_id INT,
     user_id INT,
@@ -41,10 +41,11 @@ CREATE TABLE IF NOT EXISTS tasks(
     status VARCHAR(20),
     priority INT CHECK (priority BETWEEN 1 AND 5),
     locked BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (kanban_id) REFERENCES kanbans (kanban_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
-        ON UPDATE CASCADE ON DELETE SET NULL
+    progress INT CHECK (progress BETWEEN 0 AND 100) DEFAULT 0,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (kanban_id) REFERENCES kanbans (kanban_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS task_users (
