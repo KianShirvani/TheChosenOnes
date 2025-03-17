@@ -62,13 +62,21 @@ beforeEach(() => {
                 return Promise.resolve({ rows: [] });
             }
         }
+        if (values[0] === "valid@email.com" || values[0] === "bob@example.com") {
+            return Promise.resolve({
+                rows: [{ id: 1, email: values[0], password: "hashed_password" }]
+            });
+        }
+        
         return Promise.resolve({ rows: [] });
     });
 
     // mock password comparison
     bcrypt.compare.mockImplementation((password, hashedPassword) => {
-        if (password === "valid_password" && hashedPassword === "hashed_password") {
-            return Promise.resolve(true);
+        if (
+            (password === "valid_password" && hashedPassword === "hashed_password") ||
+            (password === "password123" && hashedPassword === "hashed_password")
+        ) { return Promise.resolve(true);
         }
         return Promise.resolve(false);
     });
