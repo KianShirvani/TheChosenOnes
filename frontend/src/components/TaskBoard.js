@@ -273,7 +273,7 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-        <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
+   
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 

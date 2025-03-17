@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route,Navigate } from "react-router-dom";
 import Header from "./components/Header";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
@@ -12,6 +12,19 @@ import ChatPage from "./pages/ChatPage";
 import axios from "axios";
 import { NotificationProvider } from "./components/NotificationContext";
 
+const ProtectedRoute = ({ element, adminOnly }) => {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  if (adminOnly && role !== "admin") {
+    return <Navigate to="/tasks" />;
+  }
+
+  return element;
+};
 function App() {
   useEffect(() => {
     // Load data when the app starts
@@ -27,10 +40,16 @@ function App() {
           <Route path="/" element={<MainPage />} />   {/* Home Page */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/tasks" element={<TaskBoard />} />  {/* Task Management Page */}
-          <Route path="/admindashboard" element={<AdminDashboard />} />
-          <Route path="/adminManagement" element={<AdminManagement />} /> {/* admin page to view users & promote them */}
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/tasks" element={<ProtectedRoute element={<TaskBoard />} />} />
+          <Route
+            path="/admindashboard"
+            element={<ProtectedRoute element={<AdminDashboard />} adminOnly />}
+          />
+          <Route
+            path="/adminManagement"
+            element={<ProtectedRoute element={<AdminManagement />} adminOnly />}
+          />
+          <Route path="/chat" element={<ProtectedRoute element={<ChatPage />} />} />
         </Routes>
         <Footer />
       </NotificationProvider>
