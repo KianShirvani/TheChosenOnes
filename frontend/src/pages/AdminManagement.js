@@ -119,7 +119,7 @@ const AdminManagement = () => {
             const currentUserId = getCurrentUserIdFromToken(token); // Implement this
             if (currentUserId === userId) {
                 localStorage.removeItem("token"); 
-                navigate('/signup'); // if all users has been deleted, logout and go to signup page 
+                navigate('/signup'); // if users has been deleted, logout and go to signup page 
                 return;
             }
     
