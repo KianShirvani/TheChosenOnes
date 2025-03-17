@@ -13,6 +13,7 @@ const Header = () => {
     const isLoggedIn = !!token && token !== "logged_out";
     // Get notification data from context
     const { notification } = useContext(NotificationContext);
+    
     const handleChatClick = () => {
         if (isLoggedIn) {
             navigate("/chat"); // Send to chat if logged in

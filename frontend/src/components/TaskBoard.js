@@ -4,6 +4,7 @@ import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "./NotificationContext";
+
 const TaskBoard = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState({

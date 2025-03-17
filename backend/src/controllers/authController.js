@@ -19,7 +19,7 @@ const loginUser = async (req, res) => {
   try {
     if (!email || !password) {
       console.log("Missing fields:", { email, password });
-      return res.status(400).json({ error: "缺少字段" });
+      return res.status(400).json({ error: "missing words" });
     }
 
     console.log("Querying user with email:", email);
