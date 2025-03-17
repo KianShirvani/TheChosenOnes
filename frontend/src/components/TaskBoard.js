@@ -7,7 +7,6 @@ import { NotificationContext } from "./NotificationContext";
 
 const TaskBoard = () => {
   const navigate = useNavigate();
-  const userRole = localStorage.getItem("role");
   const [tasks, setTasks] = useState({
     todo: [],
     inProgress: [],
@@ -274,11 +273,7 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-      {userRole === "admin" && (
-          <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>
-            Admin Dashboard
-          </button>
-        )}
+        <button onClick={() => navigate("/admindashboard")} style={styles.adminButton}>Admin Dashboard</button>
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 
