@@ -49,6 +49,7 @@ const AdminManagement = () => {
     
         } catch (error) {
             console.error("Error fetching users", error);
+            setUsers([]);
         }
     };
     
@@ -62,7 +63,7 @@ const AdminManagement = () => {
         try {
             const token = localStorage.getItem("token");
     
-            await fetch(`/api/admin/promote`, {
+            await fetch(`${apiUrl}/api/admin/promote`, { 
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,  
@@ -102,7 +103,7 @@ const AdminManagement = () => {
         try {
             const token = localStorage.getItem("token");
     
-            await fetch(`/api/admin/delete/${userId}`, {
+            const response= await fetch(`${apiUrl}/api/admin/delete/${userId}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`,  
@@ -110,10 +111,31 @@ const AdminManagement = () => {
                 },
                 credentials: "include",
             });
+            if (!response.ok) {
+                throw new Error("Failed to delete user");
+            }
+    
+            // If deleting self, logout
+            const currentUserId = getCurrentUserIdFromToken(token); // Implement this
+            if (currentUserId === userId) {
+                localStorage.removeItem("token"); 
+                navigate('/signup'); // if all users has been deleted, logout and go to signup page 
+                return;
+            }
     
             fetchUsers();
         } catch (error) {
             console.error("Error deleting user", error);
+        }
+    };
+    const getCurrentUserIdFromToken = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64));
+            return JSON.parse(jsonPayload).user_id;
+        } catch (e) {
+            return null;
         }
     };
 

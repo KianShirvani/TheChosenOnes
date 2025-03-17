@@ -6,8 +6,9 @@ const {
     updateUser,
     deleteUser
 } = require("../controllers/adminController");
+const { authenticatedUser } = require("../middlewares/authMiddleware"); // authenticatedUser must use before validateAdmin 
 const { validateAdmin } = require("../middlewares/validateAdmin");
-const { authenticatedUser } = require("../middlewares/authMiddleware");
+
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ const router = express.Router();
 router.get("/users", authenticatedUser, validateAdmin, getUsers);
 
 // Promote user to admin route with validation middleware
-router.post("/promote", validateAdmin, promoteToAdmin);
+router.post("/promote", authenticatedUser, validateAdmin, promoteToAdmin);// add authenticatedUser to ensure that the token is resolved
 
 // Get admin statistics
 router.get("/stats", validateAdmin, getAdminStats);
