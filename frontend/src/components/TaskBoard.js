@@ -4,9 +4,6 @@ import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "./NotificationContext";
- const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    const isLoggedIn = !!token && token !== "logged_out";
 const TaskBoard = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState({
@@ -275,7 +272,7 @@ const TaskBoard = () => {
       <h2>Task Board</h2>
       <SearchBar />
       <div style={styles.buttonContainer}>
-      
+   
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
 
