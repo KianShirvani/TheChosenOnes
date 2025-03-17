@@ -67,9 +67,8 @@ beforeEach(() => {
 
     // mock password comparison
     bcrypt.compare.mockImplementation((password, hashedPassword) => {
-        if (
-            (password === "valid_password" && hashedPassword === "hashed_password")
-        ) { return Promise.resolve(true);
+        if (password === "valid_password" && hashedPassword === "hashed_password") {
+            return Promise.resolve(true);
         }
         return Promise.resolve(false);
     });
