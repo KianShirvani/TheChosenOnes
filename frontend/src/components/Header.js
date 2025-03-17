@@ -8,11 +8,11 @@ import { NotificationContext } from './NotificationContext';
 
 const Header = () => {
     const navigate = useNavigate();  
-    const isLoggedIn = localStorage.getItem("userToken"); // Check if userToken exists from login
-
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const isLoggedIn = !!token && token !== "logged_out";
     // Get notification data from context
     const { notification } = useContext(NotificationContext);
-
     const handleChatClick = () => {
         if (isLoggedIn) {
             navigate("/chat"); // Send to chat if logged in
@@ -21,6 +21,10 @@ const Header = () => {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.setItem("token", "logged_out");
+        navigate("/login");
+      };
     const handleTasksClick = () => {
         navigate("/tasks"); // Navigate to My Tasks page
     };
@@ -80,10 +84,16 @@ const Header = () => {
                     }} 
                 />
 
-                <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
-                <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
-            </div>
-        </header>
+{!isLoggedIn ? (
+                    <>
+                        <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
+                        <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
+                    </>
+                ) : (
+                    <button className="btn logout" onClick={handleLogout}>Log Out</button>
+                )}
+      </div>
+    </header>
     );
 };
 

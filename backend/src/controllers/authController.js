@@ -12,36 +12,63 @@ const client = require('../database/db');
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({username: 'api', key: process.env.MAILGUN_API_KEY || 'key-yourkeyhere'});
 
-const loginUser = async(req, res) => {
-    const {email, password} = req.body;
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Received request body:", req.body);
 
-    try {
-        // if no email or no password, the login attempt is invalid
-        if (!email || !password) {
-            return res.status(400).json({error: "Missing fields"});
-        }
-        // compare the email provided with the database
-        const sqlQuery = await client.query("SELECT * FROM users WHERE email = $1", [email]);
-        if (!sqlQuery.rows || sqlQuery.rows.length === 0) {
-            return res.status(400).json({error: "Invalid Credentials"}); // HTTP/1.1 400 Bad Request
-        }
-
-        // check the password
-        const user = sqlQuery.rows[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({error: "Invalid Credentials"});
-        }
-
-        // generate a token for the user that will expire (security measure)
-        const token = jsonWebToken.sign({ user_id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-        return res.status(200).json({token});
-    } catch (error) {
-        console.error("error in loginUser:", error);
-        return res.status(500).json({error: "Internal Server Error"}); // HTTP/1.1 500 Internal Server Error
+  try {
+    if (!email || !password) {
+      console.log("Missing fields:", { email, password });
+      return res.status(400).json({ error: "缺少字段" });
     }
-}
+
+    console.log("Querying user with email:", email);
+    const sqlQuery = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    console.log("User query result:", sqlQuery.rows);
+    if (!sqlQuery.rows || sqlQuery.rows.length === 0) {
+      console.log("User not found for email:", email);
+      return res.status(400).json({ error: "Invalid Credentials" });
+    }
+
+    const user = sqlQuery.rows[0];
+    console.log("Comparing passwords...");
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match result:", isMatch);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid Credentials" });
+    }
+
+    let role = "user";
+    try {
+      console.log("Checking admin status for user_id:", user.user_id);
+      const isAdmin = await client.query("SELECT * FROM admins WHERE admin_id = $1", [user.user_id]);
+      console.log("Admin check result:", isAdmin.rows);
+      if (isAdmin.rows.length > 0) {
+        role = "admin";
+      }
+    } catch (adminError) {
+      console.warn("Admin check failed, defaulting to user role:", adminError.message);
+    }
+
+    console.log("Generating JWT token with role:", role);
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables");
+      return res.status(500).json({ error: "Internal Server Error", details: "JWT_SECRET not configured" });
+    }
+
+    const token = jsonWebToken.sign(
+      { user_id: user.user_id, role: role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    console.log("Token generated:", token);
+
+    return res.status(200).json({ token, role });
+  } catch (error) {
+    console.error("Error in loginUser:", error.stack);
+    return res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
 
 const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
