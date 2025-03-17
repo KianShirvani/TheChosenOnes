@@ -130,3 +130,4 @@ describe("POST /auth/reset-password", () => {
         expect(res.body).toHaveProperty("message", "Password has been reset");
     });
 });
+
