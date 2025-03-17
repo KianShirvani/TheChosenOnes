@@ -8,8 +8,7 @@ import { NotificationContext } from './NotificationContext';
 
 const Header = () => {
     const navigate = useNavigate();  
-    const isLoggedIn = Boolean(localStorage.getItem("userToken")); 
-    const userRole = localStorage.getItem("role");
+    const isLoggedIn = localStorage.getItem("userToken"); // Check if userToken exists from login
 
     // Get notification data from context
     const { notification } = useContext(NotificationContext);
@@ -24,13 +23,6 @@ const Header = () => {
 
     const handleTasksClick = () => {
         navigate("/tasks"); // Navigate to My Tasks page
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem("userToken");
-        localStorage.removeItem("role");
-        navigate("/login"); // Redirect to login after logout
-        window.location.reload();
     };
 
     // When notification icon is clicked, show the message if available
@@ -62,16 +54,7 @@ const Header = () => {
                         My Tasks
                     </button>
                 )}
-                {/* Admin Dashboard Button (Only for Admins) */}
-                {isLoggedIn && userRole === "admin" && (
-                    <button 
-                        className="btn admin-dashboard" 
-                        onClick={() => navigate("/admindashboard")} 
-                        style={{ marginRight: "15px" }}
-                    >
-                        Admin Dashboard
-                    </button>
-                )}
+
                 {/* Chat icon directing users to the /chat page if logged in, otherwise to sign up */}
                 <FaComments 
                     className="icon chat-icon" 
@@ -97,14 +80,8 @@ const Header = () => {
                     }} 
                 />
 
-                {!isLoggedIn ? (
-                    <>
-                        <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
-                        <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
-                    </>
-                ) : (
-                    <button className="btn logout" onClick={handleLogout}>Log Out</button>
-                )}
+                <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
+                <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
             </div>
         </header>
     );
