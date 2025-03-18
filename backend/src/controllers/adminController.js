@@ -162,4 +162,37 @@ const getAdminStats = async (req, res) => {
     }
 };
 
-module.exports = { promoteToAdmin, getAdminStats, getUsers, updateUser, deleteUser };
+// add demoteAdmin function to change an admin user's role from admin to user.
+const demoteAdmin = async (req, res) => {
+    const { userId } = req.body;
+    try {
+        // Check if the user exists
+        const userCheckQuery = await client.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+        if (userCheckQuery.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Check if the user is actually an admin
+        const adminCheckQuery = await client.query('SELECT * FROM admins WHERE admin_id = $1', [userId]);
+        if (adminCheckQuery.rows.length === 0) {
+            return res.status(400).json({ error: 'User is not an admin' });
+        }
+        // Demote the user: remove from admins table
+        const demoteUserQuery = await client.query('DELETE FROM admins WHERE admin_id = $1 RETURNING *', [userId]);
+        const demotedAdmin = demoteUserQuery.rows[0];
+        // Respond with success
+        return res.status(200).json({
+            message: 'User demoted from admin successfully',
+            admin: {
+                id: demotedAdmin.admin_id
+            }
+        });
+    } catch (error) {
+        console.error('Error in demoteAdmin:', error);
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'An unexpected error occurred while processing your request. Please try again later.'
+        });
+    }
+};
+
+module.exports = { promoteToAdmin, getAdminStats, getUsers, updateUser, deleteUser, demoteAdmin };
