@@ -13,6 +13,15 @@ const TaskBoard = () => {
     done: [],
   });
 
+  // Connect front-back filter: added `filters` state to store selected filter values
+  const [filters, setFilters] = useState({
+    date: "",
+    users: [],
+    priorities: [],
+    status: [],
+  });
+
+
   const [taskListColors, setTaskListColors] = useState({
     todo: "#e0e0e0",
     inProgress: "#e0e0e0",
@@ -296,10 +305,33 @@ const TaskBoard = () => {
     }));
   };
 
+  // add a helper function to normalize status strings.
+  const normalizeStatus = (status) =>
+    status.toLowerCase().replace(/-/g, ' ').trim();
+
+  // Connect front-back filter: function to apply filters dynamically
+  const applyFilters = (taskList) => {
+    return taskList.filter(task => {
+      return (
+        (filters.date === "" || task.dueDate === filters.date) &&
+        (filters.users.length === 0 ||
+          filters.users.some(u =>
+            task.assignedUsers 
+              ? task.assignedUsers.some(id => String(id) === u)
+              : String(task.user_id) === u
+          )
+        ) &&
+        (filters.priorities.length === 0 || filters.priorities.includes(String(task.priority))) &&
+        (filters.status.length === 0 ||
+          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
+      );
+    });
+  };
+
   return (
     <div style={styles.container}>
       <h2>Task Board</h2>
-      <SearchBar />
+      <SearchBar filters={filters} setFilters={setFilters} />
       <div style={styles.buttonContainer}>
    
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
@@ -310,7 +342,7 @@ const TaskBoard = () => {
       <div style={styles.board}>
         <TaskList
           title="To-Do"
-          tasks={tasks.todo}
+          tasks={applyFilters(tasks.todo)} // Apply Filter changes on the TaskList
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
           onMoveTask={fetchTasks}
@@ -322,7 +354,7 @@ const TaskBoard = () => {
         />
         <TaskList
           title="In Progress"
-          tasks={tasks.inProgress}
+          tasks={applyFilters(tasks.inProgress)}  // Apply Filter changes on the TaskList
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
           onMoveTask={fetchTasks}
@@ -334,7 +366,7 @@ const TaskBoard = () => {
         />
         <TaskList
           title="Done"
-          tasks={tasks.done}
+          tasks={applyFilters(tasks.done)}  // Apply Filter changes on the TaskList
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
           onMoveTask={fetchTasks}

@@ -16,6 +16,14 @@ const AdminDashboard = () => {
     done: []
   });
 
+  // Connect front-back filter: added `filters` state to store selected filter values
+  const [filters, setFilters] = useState({
+    date: "",
+    users: [],
+    priorities: [],
+    status: [],
+  });
+
   const [taskStats, setTaskStats] = useState({
     todo: 0,
     inProgress: 0,
@@ -301,6 +309,66 @@ const AdminDashboard = () => {
     }
   };
 
+  // Add additional useEffect hook to recalculate the admin dashboard-stats given filtering.
+  useEffect(() => {
+    // Apply filters to each category
+    const filteredTodo = applyFilters(tasks.todo);
+    const filteredInProgress = applyFilters(tasks.inProgress);
+    const filteredDone = applyFilters(tasks.done);
+  
+    // Calculate total tasks and overall progress for completion rate
+    const allFilteredTasks = [...filteredTodo, ...filteredInProgress, ...filteredDone];
+    const totalTasks = allFilteredTasks.length;
+    const totalProgress = allFilteredTasks.reduce((sum, task) => {
+      return sum + (task.progress || 0);
+    }, 0);
+    const completedRate = totalTasks > 0 ? (totalProgress / totalTasks).toFixed(1) : "0";
+  
+    // Compute upcoming due date: get the earliest due date from filtered tasks
+    const upcomingDueRaw = allFilteredTasks
+      .filter(task => new Date(task.due_date) >= new Date())
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0]?.due_date || "No upcoming tasks";
+    let upcomingDue;
+    if (upcomingDueRaw === "No upcoming tasks") {
+      upcomingDue = upcomingDueRaw;
+    } else {
+      upcomingDue = new Date(upcomingDueRaw).toISOString().split("T")[0];
+    }
+  
+    setTaskStats({
+      todo: filteredTodo.length,
+      inProgress: filteredInProgress.length,
+      done: filteredDone.length,
+      completedRate,
+      upcomingDue,
+    });
+  }, [tasks, filters]); // This effect runs whenever tasks or filters change.
+  
+
+  // add a helper function to normalize status strings.
+  const normalizeStatus = (status) =>
+    status.toLowerCase().replace(/-/g, ' ').trim();
+
+  // Connect front-back filter: function to apply filters dynamically
+  const applyFilters = (taskList) => {
+    return taskList.filter(task => {
+      return (
+        (filters.date === "" || task.dueDate === filters.date) &&
+        (filters.users.length === 0 ||
+          filters.users.some(u =>
+            task.assignedUsers 
+              ? task.assignedUsers.some(id => String(id) === u)
+              : String(task.user_id) === u
+          )
+        ) &&
+        (filters.priorities.length === 0 || filters.priorities.includes(String(task.priority))) &&
+        (filters.status.length === 0 ||
+          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
+      );
+    });
+  };
+  
+
   return (
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
@@ -347,14 +415,14 @@ const AdminDashboard = () => {
         <div className="stat-card"><h3>Upcoming Due</h3><p>{taskStats.upcomingDue}</p></div>
       </div>
 
-      <SearchBar />
+      <SearchBar filters={filters} setFilters={setFilters} />
 
       <div className="task-board">
         {Object.keys(tasks).map((status) => (
           <AdminTaskList
             key={status}
             title={status}
-            tasks={tasks[status]}
+            tasks={applyFilters(tasks[status])} // Apply the Task Filter to tasks.
             onMoveTask={handleMoveTask}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}

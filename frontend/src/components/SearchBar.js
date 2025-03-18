@@ -5,25 +5,30 @@ import PriorityFilter from './PriorityFilter';
 import StatusFilter from './StatusFilter';
 import '../css/SearchBar.css';
 
-const SearchBar = () => {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [users, setUsers] = useState([]);
-  const [priorities, setPriorities] = useState([]);
-  const [status, setStatus] = useState([]);
-  
+const SearchBar = ({ filters = {}, setFilters = () => {} }) => {
   const resetFilters = () => {
-    setDate(new Date().toISOString().split('T')[0]);
-    setUsers([]);
-    setPriorities([]);
-    setStatus([]);
+    setFilters({ date: "", users: [], priorities: [], status: [] });
   };
+
 
   return (
     <div className="search-bar">
-      <DateFilter date={date} setDate={setDate} />
-      <UserFilter users={users} setUsers={setUsers} />
-      <PriorityFilter priorities={priorities} setPriorities={setPriorities} />
-      <StatusFilter status={status} setStatus={setStatus} />
+      <DateFilter 
+        date={filters.date} 
+        setDate={(date) => setFilters(prev => ({ ...prev, date }))}
+      />
+      <UserFilter 
+        users={filters.users} 
+        setUsers={(users) => setFilters(prev => ({ ...prev, users }))}
+      />
+      <PriorityFilter 
+        priorities={filters.priorities} 
+        setPriorities={(priorities) => setFilters(prev => ({ ...prev, priorities }))}
+      />
+      <StatusFilter 
+        status={filters.status} 
+        setStatus={(status) => setFilters(prev => ({ ...prev, status }))}
+      />
       <button onClick={resetFilters} className="clear-button">Clear Filtering</button>
     </div>
   );
