@@ -1,29 +1,40 @@
 import React, { useState,  useEffect } from "react";
 
 const EditTaskModal = ({ task, onSave, onClose }) => {
+  const formatDate = (date) => {
+    return date ? new Date(date).toISOString().split("T")[0] : ""; 
+  };
   const [taskData, setTaskData] = useState({
-    title: task.title || "",
-    description: task.description || "",
-    priority: task.priority || "Medium",
-    dueDate: task.dueDate || "",
-    startDate: task.startDate || "", 
-    endDate: task.endDate || "", 
-    progress: task.progress || 0, 
-    status: task.status || "todo",
-  });
-
-  useEffect(() => {
-    setTaskData({
+      id: task.id || null, 
+      kanban_id: task.kanban_id ?? null, 
+       user_id: task.user_id ?? null,
       title: task.title || "",
       description: task.description || "",
       priority: task.priority || "Medium",
-      dueDate: task.dueDate || "",
-      startDate: task.startDate || "",
-      endDate: task.endDate || "",
-      progress: task.progress || 0,
+      dueDate: formatDate(task.due_date)|| "",
+      startDate: formatDate(task.start_date) || "", 
+      endDate: formatDate(task.end_date) || "", 
+      progress: task.progress || 0, 
       status: task.status || "todo",
-    });
-  }, [task]);
+    }); 
+    useEffect(() => {
+       
+       setTaskData((prevData) => ({
+         ...prevData,  
+         id: task.id || null,
+         kanban_id: task.kanban_id ?? null,
+         user_id: task.user_id ?? null,
+         title: task.title || "",
+         description: task.description || "",
+         priority: task.priority || "Medium",
+         dueDate: formatDate(task.due_date),
+         startDate: formatDate(task.start_date),
+         endDate: formatDate(task.end_date),
+         progress: task.progress || 0,
+         status: task.status || "todo",
+       }));
+       console.log("Updated taskData in EditTaskModal:", taskData);
+     }, [task]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,7 +45,22 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
   };
 
   const handleSave = () => {
-    onSave({ ...taskData, id: task.id });
+    const finalData = {
+      id: task.id,  //  ensure id is passed
+      kanban_id: task.kanban_id ?? 1,
+      user_id: task.user_id ?? 1,
+      title: taskData.title,
+      description: taskData.description,
+      priority: taskData.priority,
+      dueDate: taskData.dueDate ? taskData.dueDate : null,
+      startDate: taskData.startDate ? taskData.startDate : null,
+    endDate: taskData.endDate ? taskData.endDate : null,
+      progress: parseInt(taskData.progress, 10) || 0,
+      status: taskData.status,
+    };
+
+    onSave(finalData);
+    onSave({ ...taskData, id: task.task_id });
   };
 
   return (

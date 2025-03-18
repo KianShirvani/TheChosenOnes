@@ -27,7 +27,27 @@ const TaskBoard = () => {
 
   // Get setNotification from NotificationContext
   const { setNotification } = useContext(NotificationContext);
-
+  const formatDate = (isoDate) => {
+    if (!isoDate || isoDate === "0001-01-01" || isoDate === "0001-01-01T00:00:00.000Z") {
+      return "No upcoming tasks";
+    }
+  
+    const date = new Date(isoDate);
+    if (isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+  
+    return date.toISOString().split("T")[0]; 
+  };
+  const formatStatus = (status) => {
+    if (!status) return "to do"; 
+    const formatted = status.toLowerCase().trim();
+    if (formatted === "to do") return "to do";
+    if (formatted === "in progress") return "in progress";
+    if (formatted === "done") return "done";
+    return formatted;
+  };
+  
   // Fetch tasks from the backend
   const fetchTasks = async () => {
     try {
@@ -36,8 +56,16 @@ const TaskBoard = () => {
       const data = await response.json();
   
       console.log("Fetched data:", data); 
-      const tasks = data.tasks || [];
-  
+      const tasks = data.tasks.map(task => ({
+        ...task,
+        id: task.id || task.task_id,
+        progress: task.progress || 0,
+        status: formatStatus(task.status ?? "todo"), 
+        dueDate: formatDate(task.due_date), 
+      startDate: formatDate(task.start_date),
+      endDate: formatDate(task.end_date),
+      }));
+
       setTasks({
         todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
         inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
@@ -59,7 +87,7 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
-      const response = await fetch("/api/admin/users", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/users`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -87,7 +115,7 @@ const TaskBoard = () => {
   const handleSaveTask = async (taskData) => {
     console.log("Raw taskData before sending:", taskData); 
   
-    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.due_date) {
       console.error("Missing fields:", taskData);
       return;
     }
@@ -99,9 +127,9 @@ const TaskBoard = () => {
       title: taskData.title,
       description: taskData.description,
       priority: taskData.priority,
-      due_date: new Date(taskData.dueDate).toISOString().split("T")[0],
-      start_date: new Date(taskData.startDate).toISOString().split("T")[0],
-      end_date: new Date(taskData.endDate).toISOString().split("T")[0],
+      due_date: formatDate(taskData.due_date), 
+      start_date: formatDate(taskData.start_date || new Date()), 
+      end_date: formatDate(taskData.end_date || taskData.due_date),
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
     };
@@ -134,7 +162,7 @@ const TaskBoard = () => {
 
       // If adding a new task with assignedUsers, call assignUsersToTask endpoint.
       if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
-        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.id}/assign-users`, {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.task_id}/assign-users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -166,7 +194,7 @@ const TaskBoard = () => {
       } else {
         // Trigger notification on successful user addition
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id === taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
@@ -194,7 +222,7 @@ const TaskBoard = () => {
       } else {
         // Trigger notification on successful user removal
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id === taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,

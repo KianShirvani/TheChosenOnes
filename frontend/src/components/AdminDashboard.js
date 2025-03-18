@@ -38,34 +38,54 @@ const AdminDashboard = () => {
     fetchTasks();
     fetchAvailableUsers(); // Fetch users from database
   }, []);
-
+  const formatDate = (isoDate) => {
+    if (!isoDate || isoDate === "0001-01-01") {
+      return "No upcoming tasks";  
+    }
+    return new Date(isoDate).toISOString().split("T")[0];
+  };
+  const formatStatus = (status) => {
+    if (!status) return "to do"; 
+    const formatted = status.toLowerCase().trim();
+    if (formatted === "to do") return "to do";
+    if (formatted === "in progress") return "in progress";
+    if (formatted === "done") return "done";
+    return formatted;
+  };
+  
   const fetchTasks = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
-  
       const data = await response.json();
-      console.log("Fetched Tasks:", data);
-  
-      const tasks = data.tasks || [];
 
-      setTasks({
+  
+     
+      const tasks = data.tasks.map(task => ({
+        ...task,
+        id: task.id || task.task_id,
+        progress: task.progress || 0,
+        status: formatStatus(task.status ?? "todo"), 
+        dueDate: task.due_date ? new Date(task.due_date).toISOString().split("T")[0] : "N/A",
+        startDate: task.start_date ? new Date(task.start_date).toISOString().split("T")[0] : "N/A",
+        endDate: task.end_date ? new Date(task.end_date).toISOString().split("T")[0] : "N/A",
+      }));
+  
+      console.log("Processed Tasks:", tasks);
+      const filteredTasks = {
         todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
         inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
         done: tasks.filter(task => task.status.toLowerCase().includes("done")),
-      });
-
-      console.log("Updated tasks:", {
-        todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
-        inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
-        done: tasks.filter(task => task.status.toLowerCase().includes("done")),
-      });
-
-
-      updateTaskStats(data);
+      };
   
+      setTasks(filteredTasks); 
+      console.log("Updated tasks:", filteredTasks);
+  
+      updateTaskStats(filteredTasks); 
+      return filteredTasks;
     } catch (error) {
       console.error(" Error fetching tasks:", error);
+      return null;
     }
   };
 
@@ -88,24 +108,40 @@ const AdminDashboard = () => {
     const inProgress = taskData.inProgress.length;
     const done = taskData.done.length;
     const totalTasks = [...taskData.todo, ...taskData.inProgress, ...taskData.done].length;
-    const totalProgress = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
-      .reduce((sum, task) => sum + Number(task.progress || 0), 0);  
+    const totalProgress = [...taskData.todo, ...taskData.inProgress, ...taskData.done].reduce((sum, task) => {
+      const progress = task.progress;
+      console.log(`Task ${task.title}: Inferred Progress = ${progress}`);
+      return sum + progress;
+    }, 0); 
     
     const completedRate = totalTasks > 0 ? (totalProgress / totalTasks).toFixed(1) : "0";
   
     const today = new Date();
-    const upcomingDue = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
-      .filter(task => new Date(task.dueDate) >= today)
-      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0]?.dueDate || "No upcoming tasks";
-  
-    setTaskStats({ todo, inProgress, done, completedRate, upcomingDue });
+    const upcomingDueRaw = [...taskData.todo, ...taskData.inProgress, ...taskData.done]
+      .filter(task => new Date(task.due_date) >= today)
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0]?.due_date || "No upcoming tasks";
+      let upcomingDue;
+      if (upcomingDueRaw === "No upcoming tasks") {
+        upcomingDue = upcomingDueRaw;
+      } else {
+        const date = new Date(upcomingDueRaw);
+        upcomingDue = date.toISOString().split("T")[0]; 
+      }
+    setTaskStats(prevStats => ({
+    ...prevStats,
+    todo,
+    inProgress,
+    done,
+    completedRate,
+    upcomingDue,
+  }));
   };
   
   const handleMoveTask = async (task, direction) => {
     if (task.locked) return alert("This task is locked and cannot be moved.");
   
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${task.id}/move`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${task.task_id}/move`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ direction }),
@@ -165,10 +201,11 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateTask = async (updatedTask) => {
+    console.log("Updated Task Before Sending:", updatedTask); 
     if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
     
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.task_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedTask),
@@ -223,7 +260,7 @@ const AdminDashboard = () => {
       } else {
         // Notification: Trigger notification on successful user addition
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id === taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
@@ -251,7 +288,7 @@ const AdminDashboard = () => {
       } else {
         // Notification: Trigger notification on successful user removal
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
-        const taskFound = allTasks.find(task => task.id === taskId);
+        const taskFound = allTasks.find(task => task.task_id=== taskId);
         const userFound = availableUsers.find(user => user.id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,

@@ -6,7 +6,7 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
   const [editedTask, setEditedTask] = useState(task);
 
   const handleEdit = () => {
-    onEditTask(status, task.id, editedTask);
+    onEditTask(status, task.task_id, editedTask);
     setIsEditing(false);
     setIsOpen(false);
   };
@@ -33,7 +33,7 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
           ) : (
             <>
               <button onClick={() => setIsEditing(true)} style={styles.option}>Edit</button>
-              <button onClick={() => onDeleteTask(status, task.id)} style={styles.deleteButton}>Delete</button>
+              <button onClick={() => onDeleteTask(status, task.task_id)} style={styles.deleteButton}>Delete</button>
             </>
           )}
         </div>
