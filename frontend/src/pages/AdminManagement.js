@@ -79,6 +79,27 @@ const AdminManagement = () => {
         }
     };
 
+    // Add function demoteAdmin function for admin users to be demoted to user.
+    const demoteAdmin = async (userId) => {
+        try {
+            const token = localStorage.getItem("token");
+    
+            await fetch(`${apiUrl}/api/admin/demote`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,  
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId }),
+                credentials: "include",
+            });
+    
+            fetchUsers();
+        } catch (error) {
+            console.error("Error demoting user", error);
+        }
+    };
+
     const updateUser = async (userId, firstName, lastName, email) => {
         try {
             const token = localStorage.getItem("token");
@@ -162,6 +183,9 @@ const AdminManagement = () => {
                                 <td>{user.email}</td>
                                 <td>{user.is_admin ? "Admin" : "User"}</td>
                                 <td>
+                                    {user.is_admin && (
+                                        <Button onClick={() => demoteAdmin(user.user_id)}>Demote</Button>
+                                    )}
                                     {!user.is_admin && (
                                         <Button onClick={() => promoteToAdmin(user.user_id)}>Promote</Button>
                                     )}
