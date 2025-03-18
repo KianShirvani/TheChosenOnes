@@ -1,50 +1,56 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-/* Temporary list for all status as demo in frontend UI */
-const statusList = ["All", "To-Do", "In Progress", "Done"];
+// UPDATE: Removed the unused hardcoded statusList
 
-
-/**
- * PriorityFilter component to filter tasks by the priority
- * @param {Array} status The status list
- * @param {Function} setStatus The function to update the selected status 
- * @returns {JSX.Element} The StatusFilter component with checkbox
- */
 const StatusFilter = ({ status, setStatus }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownRef = useRef(null);
-  const inputRef = useRef(null); // Reference for the input textbox
-  
+  const inputRef = useRef(null);
+
+  // UPDATE: Ensure that status is always an array.
+  const selectedStatus = Array.isArray(status) ? status : [];
+
   /**
    * Handles the event for checkbox selection of status
-   * @param {*} e change event that triggered by checkbox selection
-   * @returns {void}
    */
   const handleCheckboxChange = (e) => {
     const value = e.target.value;
-    setStatus(prev => 
-      e.target.checked ? [...prev, value] : prev.filter(stat => stat !== value)
-    );
+    console.log("Status checkbox changed:", value, e.target.checked); // UPDATE: Debug log
+    // UPDATE: Compute new selected statuses and pass the new array directly
+    const newSelected = e.target.checked
+      ? [...selectedStatus, value]
+      : selectedStatus.filter(s => s !== value);
+    setStatus(newSelected);
   };
 
-  // Close dropdown when clicking outside of both the dropdown and the input
+  // UPDATE: Fetch statuses dynamically from backend
+  const [statusOptions, setStatusOptions] = useState([]);
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/api/statuses`)
+      .then(response => response.json())
+      .then(data => {
+        console.log("Fetched statuses:", data.statuses); // UPDATE: Debug log
+        setStatusOptions(data.statuses);
+      })
+      .catch(error => console.error("Error fetching statuses:", error));
+  }, []);
+  
+  // UPDATE: Close dropdown when clicking outside using mousedown for better UX
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close dropdown only if the click is outside both the input and dropdown
       if (
-        dropdownRef.current && 
-        !dropdownRef.current.contains(event.target) && 
-        inputRef.current && 
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        inputRef.current &&
         !inputRef.current.contains(event.target)
       ) {
         setDropdownVisible(false);
       }
     };
-
-    document.addEventListener('click', handleClickOutside);
-
+  
+    document.addEventListener("mousedown", handleClickOutside); // UPDATE: Use mousedown
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -52,26 +58,30 @@ const StatusFilter = ({ status, setStatus }) => {
     <div className="filter-container">
       <label>Filter by Status</label>
       <input 
-        ref={inputRef}  // Add reference to input box
-        type="text" 
-        value={status.join(", ") || "All"} 
+        ref={inputRef}
+        type="text"
+        value={selectedStatus.join(", ") || "All"}
         readOnly
-        onClick={() => setDropdownVisible(!dropdownVisible)} 
-        className="filter-input" 
+        onClick={() => setDropdownVisible(!dropdownVisible)}
+        className="filter-input"
       />
       {dropdownVisible && (
         <div className="dropdown" ref={dropdownRef}>
-          {statusList.map((stat) => (
-            <label key={stat}>
-              <input 
-                type="checkbox" 
-                value={stat} 
-                onChange={handleCheckboxChange} 
-                checked={status.includes(stat)} 
-              />
-              {stat}
-            </label>
-          ))}
+          {statusOptions.length > 0 ? (
+            statusOptions.map((stat) => (
+              <label key={stat}>
+                <input 
+                  type="checkbox" 
+                  value={stat} 
+                  onChange={handleCheckboxChange} 
+                  checked={selectedStatus.includes(stat)}
+                />
+                {stat}
+              </label>
+            ))
+          ) : (
+            <p className="no-options">No statuses available</p> // UPDATE: Fallback display
+          )}
         </div>
       )}
     </div>

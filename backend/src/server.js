@@ -138,6 +138,55 @@ app.get("/", (req, res) => {
   res.send("Hello from backend");
 });
 
+// Fetch distinct users for UserFilter.js
+app.get("/api/users", async (req, res) => {
+  try {
+    const result = await client.query("SELECT DISTINCT user_id, display_name FROM users");
+    res.json({ users: result.rows });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Error fetching users" });
+  }
+});
+
+// Fetch available priority levels for PriorityFilter.js
+app.get("/api/priorities", async (req, res) => {
+  try {
+    const priorityLabelMap = {
+      1: "Low",
+      2: "Medium",
+      3: "High",
+      4: "Critical",
+      5: "Urgent",
+    };
+    res.json({ priorities: priorityLabelMap });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching priorities" });
+  }
+});
+
+// Fetch distinct statuses for StatusFilter.js
+app.get("/api/statuses", async (req, res) => {
+  try {
+    const result = await client.query("SELECT DISTINCT status FROM tasks");
+    res.json({ statuses: result.rows.map(row => row.status) });
+  } catch (error) {
+    console.error("Error fetching statuses:", error);
+    res.status(500).json({ message: "Error fetching statuses" });
+  }
+});
+
+// Fetch distinct due dates for DateFilter.js
+app.get("/api/dates", async (req, res) => {
+  try {
+    const result = await client.query("SELECT DISTINCT due_date FROM tasks ORDER BY due_date");
+    res.json({ dates: result.rows.map(row => row.due_date) });
+  } catch (error) {
+    console.error("Error fetching due dates:", error);
+    res.status(500).json({ message: "Error fetching due dates" });
+  }
+});
+
 // Start the Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
