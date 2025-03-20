@@ -176,7 +176,12 @@ const AdminDashboard = () => {
         throw new Error(`Failed to toggle lock: ${response.statusText}`);
       }
   
-      fetchTasks();
+      setTasks((prevTasks) => ({
+        todo: prevTasks.todo.map(task => task.task_id === taskId ? { ...task, locked: !task.locked } : task),
+        inProgress: prevTasks.inProgress.map(task => task.task_id === taskId ? { ...task, locked: !task.locked } : task),
+        done: prevTasks.done.map(task => task.task_id === taskId ? { ...task, locked: !task.locked } : task),
+      }));
+  
     } catch (error) {
       console.error(" Error toggling lock:", error);
     }
