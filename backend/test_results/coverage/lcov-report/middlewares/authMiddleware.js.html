@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for routes/taskRoutes.js</title>
+    <title>Code coverage report for middlewares/authMiddleware.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">routes</a> taskRoutes.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">middlewares</a> authMiddleware.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>16/16</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>16/16</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -86,53 +86,68 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const express = require("express");
-const router = express.Router();
-const taskController = require("../controllers/taskController");
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">// Verify JSON Web Tokens
 &nbsp;
-router.get("/", taskController.getTasks);
-router.get("/filter", taskController.getFilteredTasks); // to filter the tasks based on the parameters
-router.post("/", taskController.createTask);
-router.put("/:taskId/move", taskController.moveTask);
-router.put("/:taskId/lock", taskController.toggleLock);
-router.put("/:taskId", taskController.updateTask);
-router.delete("/:taskId", taskController.deleteTask);
-// Get tasks assigned to a user
-router.get("/assigned/:userId", taskController.getAssignedTasks);
+// the JSON Web Token dependency
+const jsonWebToken = require("jsonwebtoken");
 &nbsp;
-// Update a specific assigned task
-router.put("/assigned/:taskId", taskController.updateAssignedTask);
+const authenticatedUser = (req, res, next) =&gt; {
+    // Extract token from "Authorization" header
+    const token = req.header("Authorization")?.replace("Bearer ", "");  
+    console.log("Received Token:", token); 
 &nbsp;
-// Added router for the task assignment, get users, and remove users from tasks functionality
-router.post("/:taskId/assign-users", taskController.assignUsersToTask);
-router.get("/:taskId/users", taskController.getUsersForTask);
-router.delete("/:taskId/remove-users", taskController.removeUsersFromTask);
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!token) {
+<span class="cstat-no" title="statement not covered" >        return res.status(401).json({ error: "Access denied. No token provided" });</span>
+    }
 &nbsp;
-module.exports = router;
-&nbsp;</pre></td></tr></table></pre>
+    try {
+        const decoded = jsonWebToken.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded User:", decoded); 
+        req.user = decoded;
+        next();
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >        console.error("Token verification failed:", error);</span>
+<span class="cstat-no" title="statement not covered" >        res.status(400).json({ error: "Invalid token" });</span>
+    }
+};
+&nbsp;
+&nbsp;
+&nbsp;
+// export for use elsewhere in the application
+module.exports = {authenticatedUser};</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

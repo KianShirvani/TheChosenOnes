@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for middlewares/validateRegistration.js</title>
+    <title>Code coverage report for src/components/CallToAction.js</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">middlewares</a> validateRegistration.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> CallToAction.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/8</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">50% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/2</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/8</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -111,8 +111,20 @@
 <a name='L46'></a><a href='#L46'>46</a>
 <a name='L47'></a><a href='#L47'>47</a>
 <a name='L48'></a><a href='#L48'>48</a>
-<a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L49'></a><a href='#L49'>49</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -147,86 +159,71 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const { check, validationResult } = require('express-validator');
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
 &nbsp;
-// Middleware to validate registration data
-const validateRegistration = [
-  // Validate that firstN is not empty
-  check('firstName').notEmpty().withMessage('First name is required'),
+const CallToAction = () =&gt; {
+  return (
+    &lt;section style={styles.container}&gt;
+      &lt;h2&gt;Ready to Boost Your Productivity?&lt;/h2&gt;
+      &lt;div style={styles.formContainer}&gt;
+        &lt;input type="email" placeholder="Email" style={styles.input} /&gt;
+        &lt;button style={styles.button} onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >alert("Sign Up Now!")}</span>&gt;
+        Sign Up Now
+      &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+  );
+};
 &nbsp;
-  // Validate that lastN is not empty
-  check('lastName').notEmpty().withMessage('Last name is required'),
+const styles = {
+  container: {
+    textAlign: "center",
+    padding: "50px 20px",
+    background: "#ffcc00",
+  },
+  button: {
+    padding: "12px 24px",
+    fontSize: "18px",
+    background: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  formContainer: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px", // Adds space between input and button
+    marginTop: "20px",
+  },
+  input: {
+    padding: "12px",
+    fontSize: "16px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    outline: "none",
+    width: "250px",
+  },
+};
 &nbsp;
-  // Validate that email is in a proper email format
-  check('email').isEmail().withMessage('Invalid email format'),
-&nbsp;
-  // Validate that phoneNum is not empty
-  check('phoneNum').notEmpty().withMessage('Phone number is required'),
-&nbsp;
-  // Validate the phoneNum is valid
-  check('phoneNum').isMobilePhone().withMessage('Invalid phone number format'),
-&nbsp;
-  // Validate that country is not empty
-  check('country').notEmpty().withMessage('Country is required'),
-&nbsp;
-  // Validate that display_name is not empty
-  check('displayName').notEmpty().withMessage('Display name is required'),
-&nbsp;
-  // Validate that password is at least 8 characters long
-  check('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
-&nbsp;
-  // Check that password contains at least one number
-  check('password').matches(/\d/).withMessage('Password must contain a number'),
-&nbsp;
-  // Check that password contains at least one uppercase letter
-  check('password').matches(/[A-Z]/).withMessage('Password must contain an uppercase letter'),
-&nbsp;
-  // Custom validation: Ensure that password and confirmPassword match
-  check('confirmPassword')
-    .custom((value, { req }) =&gt; value === req.body.password)
-    .withMessage('Passwords do not match'),
-&nbsp;
-  // Handle any validation errors and send a response
-  (req, res, next) =&gt; {
-    const errors = validationResult(req);
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() }); // Send the validation errors back to the client
-    }
-<span class="cstat-no" title="statement not covered" >    next(); </span>// Move on to the next middleware or controller
-  }
-];
-&nbsp;
-module.exports = { validateRegistration };</pre></td></tr></table></pre>
+export default CallToAction;
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-21T20:21:18.987Z
+                at 2025-03-21T20:19:54.756Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>
     
