@@ -283,7 +283,6 @@ const TaskBoard = () => {
   const handleDeleteTask = async (taskId) => {
     const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
     const task = allTasks.find(t => t.task_id === taskId);
-    
     if (task.locked) {
       window.Toastify({
         text: "This task is locked and cannot be deleted.",
@@ -291,7 +290,7 @@ const TaskBoard = () => {
         gravity: "bottom",
         position: "center",
         style: {
-          background: "#F62424",
+          background: "#F62424", 
         },
       }).showToast();
       return;
