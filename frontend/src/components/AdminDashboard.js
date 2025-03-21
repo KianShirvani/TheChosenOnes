@@ -146,7 +146,6 @@ const AdminDashboard = () => {
   };
   
   const handleMoveTask = async (task, direction) => {
-    if (task.locked) return alert("This task is locked and cannot be moved.");
   
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${task.task_id}/move`, {
