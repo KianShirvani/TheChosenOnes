@@ -335,8 +335,35 @@ const TaskBoard = () => {
         body: JSON.stringify({ direction }),
       });
 
-      if (!response.ok) throw new Error("Failed to move task");
-
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to move task: ${errorData.message}`);
+      }
+  
+      const updatedTask = await response.json().then(data => data.task);
+      console.log("Moved task:", updatedTask);
+  
+      // Immediately update the tasks state
+      setTasks(prevTasks => {
+        const newTasks = {
+          todo: prevTasks.todo.filter(t => t.task_id !== task.task_id),
+          inProgress: prevTasks.inProgress.filter(t => t.task_id !== task.task_id),
+          done: prevTasks.done.filter(t => t.task_id !== task.task_id),
+        };
+        const formattedTask = {
+          ...updatedTask,
+          id: updatedTask.task_id,
+          status: formatStatus(updatedTask.status),
+          dueDate: formatDate(updatedTask.due_date),
+          startDate: formatDate(updatedTask.start_date),
+          endDate: formatDate(updatedTask.end_date),
+          progress: updatedTask.progress || 0,
+        };
+        if (formattedTask.status.toLowerCase() === "to do") newTasks.todo.push(formattedTask);
+        else if (formattedTask.status.toLowerCase() === "in progress") newTasks.inProgress.push(formattedTask);
+        else if (formattedTask.status.toLowerCase() === "done") newTasks.done.push(formattedTask);
+        return newTasks;
+      });
       fetchTasks(); // Refresh UI
     } catch (error) {
       console.error(" Error moving task:", error);

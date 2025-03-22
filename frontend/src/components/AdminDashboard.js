@@ -66,7 +66,7 @@ const AdminDashboard = () => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
       const data = await response.json();
-
+      console.log("Raw data from backend:", data);
       const priorityMapReverse = {
         1: "Low",
         2: "Medium",
@@ -166,16 +166,30 @@ const AdminDashboard = () => {
         throw new Error(`Failed to move task: ${response.statusText}`);
       }
         const updatedTask = await response.json().then(data => data.task);
+        const priorityMapReverse = {
+          1: "Low",
+          2: "Medium",
+          3: "High",
+          4: "Critical",
+          5: "Urgent",
+        };
+        const formattedTask = {
+          ...task,
+          ...updatedTask, 
+          id: updatedTask.task_id,
+          task_id: updatedTask.task_id,
+          progress: updatedTask.progress || 0,
+          status: formatStatus(updatedTask.status ?? "todo"),
+          dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          priority: priorityMapReverse[updatedTask.priority] || "Medium",
+        };
       setTasks(prevTasks => {
         const newTasks = {
           todo: prevTasks.todo.filter(t => t.task_id !== task.task_id),
           inProgress: prevTasks.inProgress.filter(t => t.task_id !== task.task_id),
           done: prevTasks.done.filter(t => t.task_id !== task.task_id),
-        };
-      
-        const formattedTask = {
-          ...task,
-          status: updatedTask.status,
         };
   
         if (updatedTask.status.toLowerCase() === "to do") {
@@ -244,20 +258,58 @@ const AdminDashboard = () => {
 
   const handleUpdateTask = async (updatedTask) => {
     console.log("Updated Task Before Sending:", updatedTask); 
-    if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
-    
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.task_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedTask),
       });
+      const responseData = await response.json();
+      console.log("Updated task from backend:", JSON.stringify(responseData, null, 2)); 
+  
+      const priorityMapReverse = {
+        1: "Low",
+        2: "Medium",
+        3: "High",
+        4: "Critical",
+        5: "Urgent",
+      };
 
-      if (!response.ok) {
-        throw new Error(`Failed to update task: ${response.statusText}`);
-      }
+      setTasks((prevTasks) => {
+        const updatedTaskWithStringPriority = {
+          ...updatedTask,
+          priority: priorityMapReverse[updatedTask.priority] || "Medium",
+          dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          status: formatStatus(updatedTask.status),
+        };
+  
+        const statusKey = updatedTask.status.toLowerCase().includes("to do")
+          ? "todo"
+          : updatedTask.status.toLowerCase().includes("in progress")
+          ? "inProgress"
+          : "done";const otherStatusKeys = Object.keys(prevTasks).filter((key) => key !== statusKey);
+
       
-      fetchTasks();
+          const updatedStatusTasks = prevTasks[statusKey].map((task) =>
+            task.task_id === updatedTask.task_id ? updatedTaskWithStringPriority : task
+          );
+    
+  
+          const newTasks = {
+            ...prevTasks,
+            [statusKey]: updatedStatusTasks,
+          };
+    
+
+          otherStatusKeys.forEach((key) => {
+            newTasks[key] = prevTasks[key].filter((task) => task.task_id !== updatedTask.task_id);
+          });
+  
+          return newTasks;
+        });
     } catch (error) {
       console.error(" Error updating task:", error);
     }
@@ -266,11 +318,22 @@ const AdminDashboard = () => {
   const handleAddTask = async (newTask) => {
     try {
       console.log("New Task Before Sending:", newTask);
-  
+      const priorityMap = {
+        "Low": 1,
+        "Medium": 2,
+        "High": 3,
+        "Critical": 4,
+        "Urgent": 5,
+      };
+      
+      const newTaskWithNumericPriority = {
+        ...newTask,
+        priority: priorityMap[newTask.priority] || 2,
+      };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask),
+        body: JSON.stringify(newTaskWithNumericPriority),
       });
   
       if (!response.ok) {
@@ -393,7 +456,7 @@ const AdminDashboard = () => {
       "Urgent": 5,
     };
     return taskList.filter(task => {
-      const taskPriorityValue = String(priorityMap[task.priority] || 2);
+      const taskPriorityValue = priorityMap[task.priority] || 2;
       return (
         (filters.date === "" || task.dueDate === filters.date) &&
         (filters.users.length === 0 ||
@@ -403,13 +466,12 @@ const AdminDashboard = () => {
               : String(task.user_id) === u
           )
         ) &&
-        (filters.priorities.length === 0 || filters.priorities.includes(taskPriorityValue)) &&
+        (filters.priorities.length === 0 || filters.priorities.includes(String(taskPriorityValue)) /* 修复：将 taskPriorityValue 转换为字符串 */) &&
         (filters.status.length === 0 ||
           filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
       );
     });
   };
-  
 
   return (
     <div className="admin-dashboard">

@@ -66,9 +66,11 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
 
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
+            <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+        <option value="Critical">Critical</option>
+        <option value="Urgent">Urgent</option>
           </select>
 
           <label>Move to:</label>

@@ -14,11 +14,11 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   };
 
   const priorityLabelMap = {
-    1: "Low",
-    2: "Medium",
-    3: "High",
-    4: "Critical",
-    5: "Urgent"
+   "Low": "Low",
+    "Medium": "Medium",
+    "High": "High",
+    "Critical": "Critical",
+    "Urgent": "Urgent"
   };
   useEffect(() => {
     const link = document.createElement("link");
