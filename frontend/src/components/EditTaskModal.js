@@ -5,7 +5,7 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
     return date ? new Date(date).toISOString().split("T")[0] : ""; 
   };
   const [taskData, setTaskData] = useState({
-      id: task.id || null, 
+    task_id: task.task_id || task.id || null,
       kanban_id: task.kanban_id ?? null, 
        user_id: task.user_id ?? null,
       title: task.title || "",
@@ -15,13 +15,13 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
       startDate: formatDate(task.start_date) || "", 
       endDate: formatDate(task.end_date) || "", 
       progress: task.progress || 0, 
-      status: task.status || "todo",
+      status: task.status || "to do",
     }); 
     useEffect(() => {
        
        setTaskData((prevData) => ({
          ...prevData,  
-         id: task.id || null,
+         task_id: task.task_id || task.id || null,
          kanban_id: task.kanban_id ?? null,
          user_id: task.user_id ?? null,
          title: task.title || "",
@@ -45,22 +45,28 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
   };
 
   const handleSave = () => {
+    const priorityMap = {
+      "Low": 1,
+      "Medium": 2,
+      "High": 3,
+      "Critical": 4,
+      "Urgent": 5,
+    };
     const finalData = {
-      id: task.id,  //  ensure id is passed
+      task_id: task.task_id || task.id,//  ensure id is passed
       kanban_id: task.kanban_id ?? 1,
       user_id: task.user_id ?? 1,
       title: taskData.title,
       description: taskData.description,
-      priority: taskData.priority,
-      dueDate: taskData.dueDate ? taskData.dueDate : null,
-      startDate: taskData.startDate ? taskData.startDate : null,
-    endDate: taskData.endDate ? taskData.endDate : null,
+      priority: priorityMap[taskData.priority] || 2,
+      due_date: taskData.dueDate || null, 
+    start_date: taskData.startDate || null,
+    end_date: taskData.endDate || null,
       progress: parseInt(taskData.progress, 10) || 0,
       status: taskData.status,
     };
 
     onSave(finalData);
-    onSave({ ...taskData, id: task.task_id });
   };
 
   return (
@@ -84,15 +90,17 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
         />
         <label>Priority:</label>
         <select
-          name="priority"
-          value={taskData.priority}
-          onChange={handleChange}
-          style={styles.input}
-        >
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
+        name="priority"
+        value={taskData.priority}
+        onChange={handleChange}
+        style={styles.input}
+      >
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+        <option value="Critical">Critical</option>
+        <option value="Urgent">Urgent</option>
+      </select>
         <label>Move to:</label>
         <select
           name="status"
@@ -100,8 +108,8 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
           onChange={handleChange}
           style={styles.input}
         >
-          <option value="todo">To-Do</option>
-          <option value="inProgress">In Progress</option>
+          <option value="to do">To-Do</option>
+          <option value="in progress">In Progress</option>
           <option value="done">Done</option>
         </select>
 

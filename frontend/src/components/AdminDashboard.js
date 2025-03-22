@@ -67,16 +67,24 @@ const AdminDashboard = () => {
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
       const data = await response.json();
 
-  
+      const priorityMapReverse = {
+        1: "Low",
+        2: "Medium",
+        3: "High",
+        4: "Critical",
+        5: "Urgent",
+      };
      
       const tasks = data.tasks.map(task => ({
         ...task,
-        id: task.id || task.task_id,
+        id: task.task_id, 
+        task_id: task.task_id,
         progress: task.progress || 0,
         status: formatStatus(task.status ?? "todo"), 
         dueDate: task.due_date ? new Date(task.due_date).toISOString().split("T")[0] : "N/A",
         startDate: task.start_date ? new Date(task.start_date).toISOString().split("T")[0] : "N/A",
         endDate: task.end_date ? new Date(task.end_date).toISOString().split("T")[0] : "N/A",
+        priority: priorityMapReverse[task.priority] || "Medium",
       }));
   
       console.log("Processed Tasks:", tasks);
@@ -157,7 +165,29 @@ const AdminDashboard = () => {
       if (!response.ok) {
         throw new Error(`Failed to move task: ${response.statusText}`);
       }
+        const updatedTask = await response.json().then(data => data.task);
+      setTasks(prevTasks => {
+        const newTasks = {
+          todo: prevTasks.todo.filter(t => t.task_id !== task.task_id),
+          inProgress: prevTasks.inProgress.filter(t => t.task_id !== task.task_id),
+          done: prevTasks.done.filter(t => t.task_id !== task.task_id),
+        };
+      
+        const formattedTask = {
+          ...task,
+          status: updatedTask.status,
+        };
   
+        if (updatedTask.status.toLowerCase() === "to do") {
+          newTasks.todo.push(formattedTask);
+        } else if (updatedTask.status.toLowerCase() === "in progress") {
+          newTasks.inProgress.push(formattedTask);
+        } else if (updatedTask.status.toLowerCase() === "done") {
+          newTasks.done.push(formattedTask);
+        }
+  
+        return newTasks;
+      });
       fetchTasks();
     } catch (error) {
       console.error("Error moving task:", error);
@@ -355,7 +385,15 @@ const AdminDashboard = () => {
 
   // Connect front-back filter: function to apply filters dynamically
   const applyFilters = (taskList) => {
+    const priorityMap = {
+      "Low": 1,
+      "Medium": 2,
+      "High": 3,
+      "Critical": 4,
+      "Urgent": 5,
+    };
     return taskList.filter(task => {
+      const taskPriorityValue = String(priorityMap[task.priority] || 2);
       return (
         (filters.date === "" || task.dueDate === filters.date) &&
         (filters.users.length === 0 ||
@@ -365,7 +403,7 @@ const AdminDashboard = () => {
               : String(task.user_id) === u
           )
         ) &&
-        (filters.priorities.length === 0 || filters.priorities.includes(String(task.priority))) &&
+        (filters.priorities.length === 0 || filters.priorities.includes(taskPriorityValue)) &&
         (filters.status.length === 0 ||
           filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
       );

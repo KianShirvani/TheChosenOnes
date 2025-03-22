@@ -77,7 +77,7 @@ const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["To do", "In Progress", "Done"];
+    const columnOrder = ["to do", "In Progress", "done"];
 
     // Use the proper field name and variable (id instead of task_id)
     const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
@@ -89,7 +89,9 @@ const moveTask = async (req, res) => {
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be moved" });
     }
-
+    
+    const normalizedStatus = task.status.toLowerCase().trim();
+    const normalizedColumnOrder = columnOrder.map(status => status.toLowerCase().trim());
     const currentIndex = columnOrder.indexOf(task.status);
     const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
 
