@@ -89,9 +89,18 @@ const AdminDashboard = () => {
   
       console.log("Processed Tasks:", tasks);
       const filteredTasks = {
-        todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
-        inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
-        done: tasks.filter(task => task.status.toLowerCase().includes("done")),
+        todo: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "todo" || status.includes("to do");
+        }),
+        inProgress: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "inprogress" || status.includes("in progress");
+        }),
+        done: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "done" || status.includes("done");
+        }),
       };
   
       setTasks(filteredTasks); 
@@ -113,11 +122,23 @@ const AdminDashboard = () => {
       });
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
-      setAvailableUsers(data.users);
-    } catch (error) {
-      console.error("Error fetching available users:", error);
-    }
-  };
+      console.log("Raw availableUsers:", data.users);
+    const seenIds = new Set();
+    const validUsers = (data.users || []).filter(user => {
+      if (!user.user_id || seenIds.has(user.user_id)) {
+        console.warn("Invalid or duplicate user:", user);
+        return false;
+      }
+      seenIds.add(user.user_id);
+      return true;
+    });
+    console.log("Filtered availableUsers:", validUsers);
+    setAvailableUsers(validUsers);
+  } catch (error) {
+    console.error("Error fetching available users:", error);
+    setAvailableUsers([]);
+  }
+};
 
   const updateTaskStats = (taskData) => {
     const todo = taskData.todo.length;
@@ -329,6 +350,11 @@ const AdminDashboard = () => {
       const newTaskWithNumericPriority = {
         ...newTask,
         priority: priorityMap[newTask.priority] || 2,
+      due_date: newTask.dueDate,       
+      start_date: newTask.startDate,   
+      end_date: newTask.endDate,       
+      progress: Number(newTask.progress), 
+      user_id: newTask.userId,
       };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
@@ -366,7 +392,7 @@ const AdminDashboard = () => {
         // Notification: Trigger notification on successful user addition
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
         const taskFound = allTasks.find(task => task.task_id === taskId);
-        const userFound = availableUsers.find(user => user.id === userId);
+        const userFound = availableUsers.find(user => user.user_id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
           color: "green"
@@ -394,7 +420,7 @@ const AdminDashboard = () => {
         // Notification: Trigger notification on successful user removal
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
         const taskFound = allTasks.find(task => task.task_id=== taskId);
-        const userFound = availableUsers.find(user => user.id === userId);
+        const userFound = availableUsers.find(user => user.user_id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
           color: "red"
