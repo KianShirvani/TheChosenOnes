@@ -1,15 +1,13 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 const CallToAction = () => {
+  const navigate = useNavigate();
   return (
     <section style={styles.container}>
       <h2>Ready to Boost Your Productivity?</h2>
-      <div style={styles.formContainer}>
-        <input type="email" placeholder="Email" style={styles.input} />
-        <button style={styles.button} onClick={() => alert("Sign Up Now!")}>
-        Sign Up Now
+      <button style={styles.button} onClick={() => navigate("/signup")}>
+       Get started
       </button>
-      </div>
     </section>
   );
 };

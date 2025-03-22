@@ -76,11 +76,7 @@ const Header = () => {
                     style={{ cursor: "pointer", fontSize: "1.2rem", marginRight: "15px" }} 
                 />
 
-                <div className="search-container">
-                    <input type="text" placeholder="Search..." className="search-input" />
-                    <FaSearch className="search-icon" />
-                </div>
-                
+               
 
                 {/* Updated notification icon with color from notification and click handler */}
                 <FaBell 
