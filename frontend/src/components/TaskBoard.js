@@ -90,19 +90,24 @@ const TaskBoard = () => {
       endDate: formatDate(task.end_date),
       }));
 
-      setTasks({
-        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
-        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
-        done: tasks.filter(task => task.status.toLowerCase() === "done"),
-      });
-      
+      const filteredTasks = {
+        todo: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "todo" || status === "to do";
+        }),
+        inProgress: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "inprogress" || status === "in progress";
+        }),
+        done: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "done";
+        }),
+      };
   
-      console.log("Updated tasks:", {
-        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
-        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
-        done: tasks.filter(task => task.status.toLowerCase() === "done"),
-      });
-  
+      setTasks(filteredTasks);
+      console.log("Updated tasks:", filteredTasks);
+      console.log("Todo tasks:", filteredTasks.todo);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -139,7 +144,7 @@ const TaskBoard = () => {
   const handleSaveTask = async (taskData) => {
     console.log("Raw taskData before sending:", taskData); 
   
-    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.due_date) {
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
       console.error("Missing fields:", taskData);
       return;
     }
@@ -153,8 +158,8 @@ const TaskBoard = () => {
     const priorityValue = priorityMap[taskData.priority] || parseInt(taskData.priority, 10) || null;
     const formattedTaskData = {
       id: taskData.id || null, 
-      kanban_id: taskData.kanban_id, 
-      user_id: taskData.user_id,
+      kanban_id: taskData.kanbanId, 
+    user_id: taskData.userId,
       title: taskData.title,
       description: taskData.description,
       priority: priorityValue,
@@ -163,6 +168,7 @@ const TaskBoard = () => {
       end_date: formatDate(taskData.endDate || taskData.dueDate),
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
+      assignedUsers: taskData.assignedUsers || [],
     };
   
     console.log("Final data sent to backend:", formattedTaskData); 
