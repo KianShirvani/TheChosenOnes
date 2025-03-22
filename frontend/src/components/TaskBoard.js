@@ -20,7 +20,22 @@ const TaskBoard = () => {
     priorities: [],
     status: [],
   });
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
 
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const [taskListColors, setTaskListColors] = useState({
     todo: "#e0e0e0",
@@ -248,7 +263,15 @@ const TaskBoard = () => {
   // Edit task
   const handleEditTask = (task) => {
     if (task.locked) {
-      alert("This task is locked and cannot be edited.");
+      window.Toastify({
+        text: "This task is locked and cannot be edited.",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424", 
+        },
+      }).showToast();
       return;
     }
     setEditingTask(task);
@@ -258,6 +281,20 @@ const TaskBoard = () => {
 
   // Delete task from the backend
   const handleDeleteTask = async (taskId) => {
+    const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
+    const task = allTasks.find(t => t.task_id === taskId);
+    if (task.locked) {
+      window.Toastify({
+        text: "This task is locked and cannot be deleted.",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424", 
+        },
+      }).showToast();
+      return;
+    }
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}`, {
         method: "DELETE",

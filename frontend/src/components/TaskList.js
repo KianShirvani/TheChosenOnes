@@ -22,7 +22,22 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
     5: "Urgent"
   };
 
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
 
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
   const getSelectedColorName = () => {
     return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
   };
@@ -96,7 +111,15 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
 
   const handleMoveTask = async (task, direction) => {
     if (task.locked) {
-      alert("This task is locked and cannot be moved.");
+      window.Toastify({
+        text: "This task is locked and cannot be moved.",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424",
+        },
+      }).showToast();
       return;
     }
     console.log("handleMoveTask is clicked");
@@ -149,14 +172,14 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit}>✏️</button>
+            <button onClick={() => onEditTask(task)} style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} >✏️</button>
             {title !== "To-Do" && (
-              <button onClick={() => handleMoveTask(task, "left")} style={styles.arrow}>←</button>
+              <button onClick={() => handleMoveTask(task, "left")} style={task.locked  ? { ...styles.arrow, opacity: 0.5 } : styles.arrow} >←</button>
             )}
             {title !== "Done" && (
-              <button onClick={() => handleMoveTask(task, "right")} style={styles.arrow}>→</button>
+              <button onClick={() => handleMoveTask(task, "right")} style={task.locked ? { ...styles.arrow, opacity: 0.5 } : styles.arrow} >→</button>
             )}
-            <button onClick={() => onDeleteTask(task.task_id)} style={styles.delete}>🗑</button>
+            <button onClick={() => onDeleteTask(task.task_id)}  style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} >🗑</button>
           </div>
         </div>
       ))}

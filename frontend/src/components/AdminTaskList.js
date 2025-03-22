@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useEffect } from "react";
 const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock }) => {
   const renderTitle = (status) => {
     switch (status) {
@@ -21,7 +20,53 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     4: "Critical",
     5: "Urgent"
   };
-  
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true; 
+    document.body.appendChild(script);
+
+
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
+  const handleDeleteClick = (task) => {
+    if (task.locked) {
+      window.Toastify({
+        text: "This task has been locked, can not deleted",
+        duration: 6000, 
+        gravity: "bottom", 
+        position: "center",
+        style: {
+          background: "#F62424", 
+        },
+      }).showToast();
+      return;
+    }
+    onDeleteTask(task.task_id);
+  };
+  const handleEditClick = (task) => {
+    if (task.locked) {
+      window.Toastify({
+        text: "This task has been locked, cannot be edited",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424",
+        },
+      }).showToast();
+      return;
+    }
+    onEditTask(task);
+  };
   return (
     <div style={styles.list}>
       <h3>{renderTitle(title)}</h3>
@@ -58,8 +103,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
           )}
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button" disabled={task.locked}>✏️</button>
-            
+          <button
+              onClick={() => handleEditClick(task)} 
+              style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} 
+              data-testid="edit-button"
+
+            >
+              ✏️
+            </button>
             {title !== "To-Do" && !task.locked && (
   <button
     onClick={() => onMoveTask(task, "left")}
@@ -90,10 +141,9 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   </button>
 
   <button
-    onClick={() => onDeleteTask(task.task_id)}
-    style={styles.delete}
-    data-testid="delete-button"
-    disabled={task.locked}  // Disable the delete button when the task is locked
+              onClick={() => handleDeleteClick(task)}
+              style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} 
+              data-testid="delete-button"         
   >
   🗑
   </button>
