@@ -151,9 +151,9 @@ const TaskBoard = () => {
       title: taskData.title,
       description: taskData.description,
       priority: taskData.priority,
-      due_date: formatDate(taskData.due_date), 
-      start_date: formatDate(taskData.start_date || new Date()), 
-      end_date: formatDate(taskData.end_date || taskData.due_date),
+      due_date: formatDate(taskData.dueDate), 
+      start_date: formatDate(taskData.startDate || new Date()), 
+      end_date: formatDate(taskData.endDate || taskData.dueDate),
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
     };
@@ -162,7 +162,7 @@ const TaskBoard = () => {
   
     try {
       const url = editingTask
-        ? `${process.env.REACT_APP_API_URL}/api/tasks/${formattedTaskData.id}`
+        ? `${process.env.REACT_APP_API_URL}/api/tasks/${taskData.id}`
         : `${process.env.REACT_APP_API_URL}/api/tasks`;
       const method = editingTask ? "PUT" : "POST";
   

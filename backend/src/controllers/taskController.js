@@ -29,10 +29,10 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: "All fields except status are required" });
     }
 
-    const result = await client.query(
-      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
-      [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
-    );
+const result = await client.query(
+  "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false) RETURNING *",
+  [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), moment(start_date).format('YYYY-MM-DD'), moment(end_date).format('YYYY-MM-DD'), progress || 0, status]
+);
 
     if (!result || !result.rows || result.rows.length === 0) {
       console.error("Error: Task was not created.");
@@ -135,7 +135,7 @@ const updateTask = async (req, res) => {
     }
 
     const result = await client.query(
-      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
+      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
       [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
 
