@@ -116,7 +116,7 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/users`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -446,7 +446,6 @@ const TaskBoard = () => {
    
         <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
-
       {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
 
       <div style={styles.board}>
