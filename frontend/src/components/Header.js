@@ -18,12 +18,12 @@ const Header = () => {
         if (isLoggedIn) {
             navigate("/chat"); // Send to chat if logged in
         } else {
-            navigate("/signup"); // Redirect to sign-up if not logged in
+            navigate("/login"); // Redirect to sign-up if not logged in
         }
     };
 
     const handleLogout = () => {
-        localStorage.setItem("token", "logged_out");
+        localStorage.removeItem("token"); // remove authentication once logged out
         navigate("/login");
       };
     const handleTasksClick = () => {
