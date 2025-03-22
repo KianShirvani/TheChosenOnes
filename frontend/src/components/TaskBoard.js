@@ -196,25 +196,58 @@ const TaskBoard = () => {
       const responseData = await response.json();
 
       console.log("Task saved successfully");
-
-      // If adding a new task with assignedUsers, call assignUsersToTask endpoint.
-      if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
-        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.task_id}/assign-users`, {
+      if (taskData.assignedUsers && taskData.assignedUsers.length > 0) {
+        const taskId = editingTask ? taskData.id : responseData.task.task_id;
+        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ userIds: taskData.assignedUsers }),
         });
       }
-
-      setIsModalOpen(false);
-      setEditingTask(null);
-      fetchTasks(); 
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
   
+    setTasks(prevTasks => {
+      const updatedTask = {
+        ...formattedTaskData,
+        task_id: editingTask ? taskData.id : responseData.task.task_id,
+        id: editingTask ? taskData.id : responseData.task.task_id,
+        dueDate: taskData.dueDate,
+        startDate: taskData.startDate || formatDate(new Date()),
+        endDate: taskData.endDate || taskData.dueDate,
+        status: taskData.status || "todo",
+      };
+      
+      const statusKey = updatedTask.status.toLowerCase() === "todo" || updatedTask.status.toLowerCase() === "to do" ? "todo" :
+      updatedTask.status.toLowerCase() === "inprogress" || updatedTask.status.toLowerCase() === "in progress" ? "inProgress" :
+      "done";
+
+      if (editingTask) {
+        const oldStatusKey = prevTasks.todo.some(t => t.task_id === updatedTask.task_id) ? "todo" :
+        prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
+        "done";
+       
+        return {
+          ...prevTasks,
+          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
+          [statusKey]: [
+            ...prevTasks[statusKey].filter(t => t.task_id !== updatedTask.task_id), 
+            updatedTask
+          ],
+        };
+      } else {
+        return {
+          ...prevTasks,
+          [statusKey]: [updatedTask, ...prevTasks[statusKey]],
+        };
+      }
+    });
+
+    setIsModalOpen(false);
+    setEditingTask(null);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+};
 
   // Function to add a user to an existing task from TaskList
   const handleAddUserToTask = async (taskId, userId) => {

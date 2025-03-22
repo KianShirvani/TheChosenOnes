@@ -278,16 +278,37 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateTask = async (updatedTask) => {
-    console.log("Updated Task Before Sending:", updatedTask); 
-
+    console.log("Updated Task Before Sending:", updatedTask);
+  
     try {
+      const priorityMap = {
+        "Low": 1,
+        "Medium": 2,
+        "High": 3,
+        "Critical": 4,
+        "Urgent": 5,
+      };
+      const taskToSend = {
+        ...updatedTask,
+        priority: priorityMap[updatedTask.priority] || updatedTask.priority,
+        dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          status: formatStatus(updatedTask.status),
+      };
+  
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.task_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedTask),
+        body: JSON.stringify(taskToSend),
       });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update task: ${response.statusText}`);
+      }
+  
       const responseData = await response.json();
-      console.log("Updated task from backend:", JSON.stringify(responseData, null, 2)); 
+      console.log("Updated task from backend:", JSON.stringify(responseData, null, 2));
   
       const priorityMapReverse = {
         1: "Low",
@@ -306,35 +327,28 @@ const AdminDashboard = () => {
           endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
           status: formatStatus(updatedTask.status),
         };
+        const newStatusKey = updatedTask.status.toLowerCase().includes("to do") ? "todo" :
+                             updatedTask.status.toLowerCase().includes("in progress") ? "inProgress" :
+                             "done";
   
-        const statusKey = updatedTask.status.toLowerCase().includes("to do")
-          ? "todo"
-          : updatedTask.status.toLowerCase().includes("in progress")
-          ? "inProgress"
-          : "done";const otherStatusKeys = Object.keys(prevTasks).filter((key) => key !== statusKey);
-
-      
-          const updatedStatusTasks = prevTasks[statusKey].map((task) =>
-            task.task_id === updatedTask.task_id ? updatedTaskWithStringPriority : task
-          );
-    
+        const oldStatusKey = prevTasks.todo.some(t => t.task_id === updatedTask.task_id) ? "todo" :
+                             prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
+                             "done";
   
-          const newTasks = {
-            ...prevTasks,
-            [statusKey]: updatedStatusTasks,
-          };
-    
-
-          otherStatusKeys.forEach((key) => {
-            newTasks[key] = prevTasks[key].filter((task) => task.task_id !== updatedTask.task_id);
-          });
+        return {
+          ...prevTasks,
+          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
+          [newStatusKey]: [
+            ...prevTasks[newStatusKey].filter(t => t.task_id !== updatedTask.task_id), 
+            updatedTaskWithStringPriority
+          ],
+        };
+      });
   
-          return newTasks;
-        });
+      setIsEditModalOpen(false);
     } catch (error) {
-      console.error(" Error updating task:", error);
+      console.error("Error updating task:", error);
     }
-    setIsEditModalOpen(false);
   };
   const handleAddTask = async (newTask) => {
     try {
