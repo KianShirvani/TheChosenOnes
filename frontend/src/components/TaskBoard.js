@@ -143,14 +143,21 @@ const TaskBoard = () => {
       console.error("Missing fields:", taskData);
       return;
     }
-  
+    const priorityMap = {
+      "Low": 1,
+      "Medium": 2,
+      "High": 3,
+      "Critical": 4,
+      "Urgent": 5
+    };
+    const priorityValue = priorityMap[taskData.priority] || parseInt(taskData.priority, 10) || null;
     const formattedTaskData = {
       id: taskData.id || null, 
-      kanban_id: taskData.kanbanId, 
-      user_id: taskData.userId, 
+      kanban_id: taskData.kanban_id, 
+      user_id: taskData.user_id,
       title: taskData.title,
       description: taskData.description,
-      priority: taskData.priority,
+      priority: priorityValue,
       due_date: formatDate(taskData.dueDate), 
       start_date: formatDate(taskData.startDate || new Date()), 
       end_date: formatDate(taskData.endDate || taskData.dueDate),

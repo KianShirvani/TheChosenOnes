@@ -120,7 +120,11 @@ const updateTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
-
+    
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : null;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
 
     // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
