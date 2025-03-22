@@ -14,11 +14,11 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   };
 
   const priorityLabelMap = {
-    1: "Low",
-    2: "Medium",
-    3: "High",
-    4: "Critical",
-    5: "Urgent"
+   "Low": "Low",
+    "Medium": "Medium",
+    "High": "High",
+    "Critical": "Critical",
+    "Urgent": "Urgent"
   };
   useEffect(() => {
     const link = document.createElement("link");
@@ -137,7 +137,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     style={task.locked ? styles.locked : styles.unlock} 
     data-testid="lock-button"
   >
-    {task.locked ? "Locked" : "Lock"}
+    {task.locked ? "Unlock" : "Lock"}
   </button>
 
   <button

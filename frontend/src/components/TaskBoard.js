@@ -90,19 +90,24 @@ const TaskBoard = () => {
       endDate: formatDate(task.end_date),
       }));
 
-      setTasks({
-        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
-        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
-        done: tasks.filter(task => task.status.toLowerCase() === "done"),
-      });
-      
+      const filteredTasks = {
+        todo: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "todo" || status === "to do";
+        }),
+        inProgress: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "inprogress" || status === "in progress";
+        }),
+        done: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "done";
+        }),
+      };
   
-      console.log("Updated tasks:", {
-        todo: tasks.filter(task => task.status.toLowerCase() === "to do"),
-        inProgress: tasks.filter(task => task.status.toLowerCase() === "in progress"),
-        done: tasks.filter(task => task.status.toLowerCase() === "done"),
-      });
-  
+      setTasks(filteredTasks);
+      console.log("Updated tasks:", filteredTasks);
+      console.log("Todo tasks:", filteredTasks.todo);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -139,30 +144,38 @@ const TaskBoard = () => {
   const handleSaveTask = async (taskData) => {
     console.log("Raw taskData before sending:", taskData); 
   
-    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.due_date) {
+    if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
       console.error("Missing fields:", taskData);
       return;
     }
-  
+    const priorityMap = {
+      "Low": 1,
+      "Medium": 2,
+      "High": 3,
+      "Critical": 4,
+      "Urgent": 5
+    };
+    const priorityValue = priorityMap[taskData.priority] || parseInt(taskData.priority, 10) || null;
     const formattedTaskData = {
       id: taskData.id || null, 
       kanban_id: taskData.kanbanId, 
-      user_id: taskData.userId, 
+    user_id: taskData.userId,
       title: taskData.title,
       description: taskData.description,
-      priority: taskData.priority,
-      due_date: formatDate(taskData.due_date), 
-      start_date: formatDate(taskData.start_date || new Date()), 
-      end_date: formatDate(taskData.end_date || taskData.due_date),
+      priority: priorityValue,
+      due_date: formatDate(taskData.dueDate), 
+      start_date: formatDate(taskData.startDate || new Date()), 
+      end_date: formatDate(taskData.endDate || taskData.dueDate),
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
+      assignedUsers: taskData.assignedUsers || [],
     };
   
     console.log("Final data sent to backend:", formattedTaskData); 
   
     try {
       const url = editingTask
-        ? `${process.env.REACT_APP_API_URL}/api/tasks/${formattedTaskData.id}`
+        ? `${process.env.REACT_APP_API_URL}/api/tasks/${taskData.id}`
         : `${process.env.REACT_APP_API_URL}/api/tasks`;
       const method = editingTask ? "PUT" : "POST";
   
@@ -183,25 +196,58 @@ const TaskBoard = () => {
       const responseData = await response.json();
 
       console.log("Task saved successfully");
-
-      // If adding a new task with assignedUsers, call assignUsersToTask endpoint.
-      if (!editingTask && taskData.assignedUsers && taskData.assignedUsers.length > 0) {
-        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${responseData.task.task_id}/assign-users`, {
+      if (taskData.assignedUsers && taskData.assignedUsers.length > 0) {
+        const taskId = editingTask ? taskData.id : responseData.task.task_id;
+        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ userIds: taskData.assignedUsers }),
         });
       }
-
-      setIsModalOpen(false);
-      setEditingTask(null);
-      fetchTasks(); 
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
   
+    setTasks(prevTasks => {
+      const updatedTask = {
+        ...formattedTaskData,
+        task_id: editingTask ? taskData.id : responseData.task.task_id,
+        id: editingTask ? taskData.id : responseData.task.task_id,
+        dueDate: taskData.dueDate,
+        startDate: taskData.startDate || formatDate(new Date()),
+        endDate: taskData.endDate || taskData.dueDate,
+        status: taskData.status || "todo",
+      };
+      
+      const statusKey = updatedTask.status.toLowerCase() === "todo" || updatedTask.status.toLowerCase() === "to do" ? "todo" :
+      updatedTask.status.toLowerCase() === "inprogress" || updatedTask.status.toLowerCase() === "in progress" ? "inProgress" :
+      "done";
+
+      if (editingTask) {
+        const oldStatusKey = prevTasks.todo.some(t => t.task_id === updatedTask.task_id) ? "todo" :
+        prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
+        "done";
+       
+        return {
+          ...prevTasks,
+          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
+          [statusKey]: [
+            ...prevTasks[statusKey].filter(t => t.task_id !== updatedTask.task_id), 
+            updatedTask
+          ],
+        };
+      } else {
+        return {
+          ...prevTasks,
+          [statusKey]: [updatedTask, ...prevTasks[statusKey]],
+        };
+      }
+    });
+
+    setIsModalOpen(false);
+    setEditingTask(null);
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+};
 
   // Function to add a user to an existing task from TaskList
   const handleAddUserToTask = async (taskId, userId) => {
@@ -328,8 +374,35 @@ const TaskBoard = () => {
         body: JSON.stringify({ direction }),
       });
 
-      if (!response.ok) throw new Error("Failed to move task");
-
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to move task: ${errorData.message}`);
+      }
+  
+      const updatedTask = await response.json().then(data => data.task);
+      console.log("Moved task:", updatedTask);
+  
+      // Immediately update the tasks state
+      setTasks(prevTasks => {
+        const newTasks = {
+          todo: prevTasks.todo.filter(t => t.task_id !== task.task_id),
+          inProgress: prevTasks.inProgress.filter(t => t.task_id !== task.task_id),
+          done: prevTasks.done.filter(t => t.task_id !== task.task_id),
+        };
+        const formattedTask = {
+          ...updatedTask,
+          id: updatedTask.task_id,
+          status: formatStatus(updatedTask.status),
+          dueDate: formatDate(updatedTask.due_date),
+          startDate: formatDate(updatedTask.start_date),
+          endDate: formatDate(updatedTask.end_date),
+          progress: updatedTask.progress || 0,
+        };
+        if (formattedTask.status.toLowerCase() === "to do") newTasks.todo.push(formattedTask);
+        else if (formattedTask.status.toLowerCase() === "in progress") newTasks.inProgress.push(formattedTask);
+        else if (formattedTask.status.toLowerCase() === "done") newTasks.done.push(formattedTask);
+        return newTasks;
+      });
       fetchTasks(); // Refresh UI
     } catch (error) {
       console.error(" Error moving task:", error);

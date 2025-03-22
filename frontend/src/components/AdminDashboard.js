@@ -66,24 +66,41 @@ const AdminDashboard = () => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`);
       if (!response.ok) throw new Error(`Failed to fetch tasks: ${response.statusText}`);
       const data = await response.json();
-
-  
+      console.log("Raw data from backend:", data);
+      const priorityMapReverse = {
+        1: "Low",
+        2: "Medium",
+        3: "High",
+        4: "Critical",
+        5: "Urgent",
+      };
      
       const tasks = data.tasks.map(task => ({
         ...task,
-        id: task.id || task.task_id,
+        id: task.task_id, 
+        task_id: task.task_id,
         progress: task.progress || 0,
         status: formatStatus(task.status ?? "todo"), 
         dueDate: task.due_date ? new Date(task.due_date).toISOString().split("T")[0] : "N/A",
         startDate: task.start_date ? new Date(task.start_date).toISOString().split("T")[0] : "N/A",
         endDate: task.end_date ? new Date(task.end_date).toISOString().split("T")[0] : "N/A",
+        priority: priorityMapReverse[task.priority] || "Medium",
       }));
   
       console.log("Processed Tasks:", tasks);
       const filteredTasks = {
-        todo: tasks.filter(task => task.status.toLowerCase().includes("to do")),
-        inProgress: tasks.filter(task => task.status.toLowerCase().includes("in progress")),
-        done: tasks.filter(task => task.status.toLowerCase().includes("done")),
+        todo: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "todo" || status.includes("to do");
+        }),
+        inProgress: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "inprogress" || status.includes("in progress");
+        }),
+        done: tasks.filter(task => {
+          const status = task.status.toLowerCase();
+          return status === "done" || status.includes("done");
+        }),
       };
   
       setTasks(filteredTasks); 
@@ -105,11 +122,23 @@ const AdminDashboard = () => {
       });
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
-      setAvailableUsers(data.users);
-    } catch (error) {
-      console.error("Error fetching available users:", error);
-    }
-  };
+      console.log("Raw availableUsers:", data.users);
+    const seenIds = new Set();
+    const validUsers = (data.users || []).filter(user => {
+      if (!user.user_id || seenIds.has(user.user_id)) {
+        console.warn("Invalid or duplicate user:", user);
+        return false;
+      }
+      seenIds.add(user.user_id);
+      return true;
+    });
+    console.log("Filtered availableUsers:", validUsers);
+    setAvailableUsers(validUsers);
+  } catch (error) {
+    console.error("Error fetching available users:", error);
+    setAvailableUsers([]);
+  }
+};
 
   const updateTaskStats = (taskData) => {
     const todo = taskData.todo.length;
@@ -157,7 +186,43 @@ const AdminDashboard = () => {
       if (!response.ok) {
         throw new Error(`Failed to move task: ${response.statusText}`);
       }
+        const updatedTask = await response.json().then(data => data.task);
+        const priorityMapReverse = {
+          1: "Low",
+          2: "Medium",
+          3: "High",
+          4: "Critical",
+          5: "Urgent",
+        };
+        const formattedTask = {
+          ...task,
+          ...updatedTask, 
+          id: updatedTask.task_id,
+          task_id: updatedTask.task_id,
+          progress: updatedTask.progress || 0,
+          status: formatStatus(updatedTask.status ?? "todo"),
+          dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          priority: priorityMapReverse[updatedTask.priority] || "Medium",
+        };
+      setTasks(prevTasks => {
+        const newTasks = {
+          todo: prevTasks.todo.filter(t => t.task_id !== task.task_id),
+          inProgress: prevTasks.inProgress.filter(t => t.task_id !== task.task_id),
+          done: prevTasks.done.filter(t => t.task_id !== task.task_id),
+        };
   
+        if (updatedTask.status.toLowerCase() === "to do") {
+          newTasks.todo.push(formattedTask);
+        } else if (updatedTask.status.toLowerCase() === "in progress") {
+          newTasks.inProgress.push(formattedTask);
+        } else if (updatedTask.status.toLowerCase() === "done") {
+          newTasks.done.push(formattedTask);
+        }
+  
+        return newTasks;
+      });
       fetchTasks();
     } catch (error) {
       console.error("Error moving task:", error);
@@ -213,34 +278,102 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateTask = async (updatedTask) => {
-    console.log("Updated Task Before Sending:", updatedTask); 
-    if (updatedTask.locked) return alert("This task is locked and cannot be edited.");
-    
+    console.log("Updated Task Before Sending:", updatedTask);
+  
     try {
+      const priorityMap = {
+        "Low": 1,
+        "Medium": 2,
+        "High": 3,
+        "Critical": 4,
+        "Urgent": 5,
+      };
+      const taskToSend = {
+        ...updatedTask,
+        priority: priorityMap[updatedTask.priority] || updatedTask.priority,
+        dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          status: formatStatus(updatedTask.status),
+      };
+  
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${updatedTask.task_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedTask),
+        body: JSON.stringify(taskToSend),
       });
-
+  
       if (!response.ok) {
         throw new Error(`Failed to update task: ${response.statusText}`);
       }
-      
-      fetchTasks();
+  
+      const responseData = await response.json();
+      console.log("Updated task from backend:", JSON.stringify(responseData, null, 2));
+  
+      const priorityMapReverse = {
+        1: "Low",
+        2: "Medium",
+        3: "High",
+        4: "Critical",
+        5: "Urgent",
+      };
+
+      setTasks((prevTasks) => {
+        const updatedTaskWithStringPriority = {
+          ...updatedTask,
+          priority: priorityMapReverse[updatedTask.priority] || "Medium",
+          dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
+          startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
+          endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
+          status: formatStatus(updatedTask.status),
+        };
+        const newStatusKey = updatedTask.status.toLowerCase().includes("to do") ? "todo" :
+                             updatedTask.status.toLowerCase().includes("in progress") ? "inProgress" :
+                             "done";
+  
+        const oldStatusKey = prevTasks.todo.some(t => t.task_id === updatedTask.task_id) ? "todo" :
+                             prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
+                             "done";
+  
+        return {
+          ...prevTasks,
+          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
+          [newStatusKey]: [
+            ...prevTasks[newStatusKey].filter(t => t.task_id !== updatedTask.task_id), 
+            updatedTaskWithStringPriority
+          ],
+        };
+      });
+  
+      setIsEditModalOpen(false);
     } catch (error) {
-      console.error(" Error updating task:", error);
+      console.error("Error updating task:", error);
     }
-    setIsEditModalOpen(false);
   };
   const handleAddTask = async (newTask) => {
     try {
       console.log("New Task Before Sending:", newTask);
-  
+      const priorityMap = {
+        "Low": 1,
+        "Medium": 2,
+        "High": 3,
+        "Critical": 4,
+        "Urgent": 5,
+      };
+      
+      const newTaskWithNumericPriority = {
+        ...newTask,
+        priority: priorityMap[newTask.priority] || 2,
+      due_date: newTask.dueDate,       
+      start_date: newTask.startDate,   
+      end_date: newTask.endDate,       
+      progress: Number(newTask.progress), 
+      user_id: newTask.userId,
+      };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask),
+        body: JSON.stringify(newTaskWithNumericPriority),
       });
   
       if (!response.ok) {
@@ -273,7 +406,7 @@ const AdminDashboard = () => {
         // Notification: Trigger notification on successful user addition
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
         const taskFound = allTasks.find(task => task.task_id === taskId);
-        const userFound = availableUsers.find(user => user.id === userId);
+        const userFound = availableUsers.find(user => user.user_id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is added to Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
           color: "green"
@@ -301,7 +434,7 @@ const AdminDashboard = () => {
         // Notification: Trigger notification on successful user removal
         const allTasks = [...tasks.todo, ...tasks.inProgress, ...tasks.done];
         const taskFound = allTasks.find(task => task.task_id=== taskId);
-        const userFound = availableUsers.find(user => user.id === userId);
+        const userFound = availableUsers.find(user => user.user_id === userId);
         setNotification({
           message: `User ID: ${userFound ? userFound.id : userId} User Name: ${userFound ? userFound.first_name + " " + userFound.last_name : ""} is removed from Task ID: ${taskId} Task Title: ${taskFound ? taskFound.title : "Unknown"}`,
           color: "red"
@@ -355,7 +488,15 @@ const AdminDashboard = () => {
 
   // Connect front-back filter: function to apply filters dynamically
   const applyFilters = (taskList) => {
+    const priorityMap = {
+      "Low": 1,
+      "Medium": 2,
+      "High": 3,
+      "Critical": 4,
+      "Urgent": 5,
+    };
     return taskList.filter(task => {
+      const taskPriorityValue = priorityMap[task.priority] || 2;
       return (
         (filters.date === "" || task.dueDate === filters.date) &&
         (filters.users.length === 0 ||
@@ -365,13 +506,12 @@ const AdminDashboard = () => {
               : String(task.user_id) === u
           )
         ) &&
-        (filters.priorities.length === 0 || filters.priorities.includes(String(task.priority))) &&
+        (filters.priorities.length === 0 || filters.priorities.includes(String(taskPriorityValue)) /* 修复：将 taskPriorityValue 转换为字符串 */) &&
         (filters.status.length === 0 ||
           filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
       );
     });
   };
-  
 
   return (
     <div className="admin-dashboard">

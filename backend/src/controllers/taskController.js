@@ -28,10 +28,13 @@ const createTask = async (req, res) => {
       console.log("Missing required fields:", req.body);
       return res.status(400).json({ message: "All fields except status are required" });
     }
-
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
     const result = await client.query(
-      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
-      [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
+      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false) RETURNING *",
+      [kanban_id, user_id, title, description, parsedPriority, moment(due_date).format('YYYY-MM-DD'), moment(start_date).format('YYYY-MM-DD'), moment(end_date).format('YYYY-MM-DD'), progress || 0, status]
     );
 
     if (!result || !result.rows || result.rows.length === 0) {
@@ -77,7 +80,7 @@ const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["To do", "In Progress", "Done"];
+    const columnOrder = ["to do", "In Progress", "done"];
 
     // Use the proper field name and variable (id instead of task_id)
     const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
@@ -89,6 +92,7 @@ const moveTask = async (req, res) => {
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be moved" });
     }
+    
 
     const currentIndex = columnOrder.indexOf(task.status);
     const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
@@ -120,8 +124,15 @@ const updateTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
-
-
+    
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+if (priority !== undefined && isNaN(parsedPriority)) {
+  return res.status(400).json({ message: "Priority must be a valid integer" });
+}
+const result = await client.query(
+  "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
+  [title, description, parsedPriority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
+);
     // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
       console.error(`Task with ID ${taskId} not found.`);
@@ -133,11 +144,6 @@ const updateTask = async (req, res) => {
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
-
-    const result = await client.query(
-      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
-      [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
-    );
 
     if (!result || result.rowCount === 0) {
       return res.status(500).json({ message: "Failed to update task" });
@@ -187,10 +193,14 @@ const updateAssignedTask = async (req, res) => {
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
 
     const updatedTask = await client.query(
       "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE task_id = $6 RETURNING *",
-      [title, description, priority, due_date, status, taskId]
+      [title, description, parsedPriority, due_date, status, taskId]
     );
     
   

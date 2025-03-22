@@ -58,7 +58,7 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
             style={styles.input}
           >
             {availableUsers && availableUsers.map(user => (
-              <option key={user.id} value={user.id}>
+              <option key={user.user_id} value={user.user_id}>
                 {user.display_name || `${user.first_name} ${user.last_name}`}
               </option>
             ))}
@@ -66,9 +66,11 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
 
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
+            <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+        <option value="Critical">Critical</option>
+        <option value="Urgent">Urgent</option>
           </select>
 
           <label>Move to:</label>
