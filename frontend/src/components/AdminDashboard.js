@@ -525,14 +525,14 @@ const AdminDashboard = () => {
     todo: "#e0e0e0",
     inProgress: "#e0e0e0",
     done: "#e0e0e0",
-  }); // ✅ NEW UPDATE
+  }); 
 
   // Optional: control dropdown toggle per column if needed
   const [colorDropdowns, setColorDropdowns] = useState({
     todo: false,
     inProgress: false,
     done: false,
-  }); // ✅ NEW UPDATE
+  }); 
 
   // Handle Assign Color function
   const handleAssignColor = (status, color) => {
