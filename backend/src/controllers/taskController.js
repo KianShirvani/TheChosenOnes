@@ -346,7 +346,7 @@ const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
   try {
     // Query the database to get users assigned to the given task
-    const result = await db.query(
+    const result = await client.query(
       `SELECT users.user_id FROM users JOIN task_users ON users.user_id = task_users.user_id WHERE task_users.task_id = $1`, 
       [taskId]
     );
