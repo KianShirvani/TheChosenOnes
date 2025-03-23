@@ -335,17 +335,29 @@ const AdminDashboard = () => {
                              prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
                              "done";
   
+        const oldTaskIndex = prevTasks[oldStatusKey].findIndex(t => t.task_id === updatedTask.task_id);
+
+        // If the status hasn't changed, update the task in place
+        if (oldStatusKey === newStatusKey) {
+          const updatedList = [...prevTasks[oldStatusKey]];
+          updatedList[oldTaskIndex] = updatedTaskWithStringPriority; // Replace at the original index
+          return {
+            ...prevTasks,
+            [oldStatusKey]: updatedList,
+          };
+        }
+  
+        // If the status has changed, remove from old list and insert into new list at a preserved position
+        const oldList = prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id);
+        const newList = [...prevTasks[newStatusKey]];
+        newList.splice(oldTaskIndex < newList.length ? oldTaskIndex : newList.length, 0, updatedTaskWithStringPriority); // Insert at original index or end if out of bounds
+  
         return {
           ...prevTasks,
-          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
-          [newStatusKey]: [
-            ...prevTasks[newStatusKey].filter(t => t.task_id !== updatedTask.task_id), 
-            updatedTaskWithStringPriority
-          ],
+          [oldStatusKey]: oldList,
+          [newStatusKey]: newList,
         };
-      });
-  
-      setIsEditModalOpen(false);
+      });setIsEditModalOpen(false);
     } catch (error) {
       console.error("Error updating task:", error);
     }
