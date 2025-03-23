@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 
 const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
-  const formatDateForInput = (date) => {
-    if (!date) return "";
-    return new Date(date).toISOString().split("T")[0];
-  };
+  const formatDateForInput = (date) => (date ? new Date(date).toISOString().split("T")[0] : "");
 
-  const [taskData, setTaskData] = useState(task || {
+  const [taskData, setTaskData] = useState({
     title: "",
     description: "",
-    assignedUsers: task?.assignedUsers ?? [],
+    assignedUsers: [],
     priority: "Medium",
     dueDate: "",
     startDate: "",
@@ -36,16 +33,19 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     setTaskData({ ...taskData, [e.target.name]: e.target.value });
   };
 
-  const handleAssignedUsersChange = (e) => {
-    const selectedUsers = Array.from(e.target.selectedOptions, (option) => option.value);
-    setTaskData((prevData) => ({
-      ...prevData,
-      assignedUsers: selectedUsers,
-    }));
+  // **Handle user assignment using checkboxes**
+  const handleUserCheck = (userId) => {
+    setTaskData((prevData) => {
+      const isAlreadyAssigned = prevData.assignedUsers.includes(userId);
+      return {
+        ...prevData,
+        assignedUsers: isAlreadyAssigned
+          ? prevData.assignedUsers.filter((id) => id !== userId) // Remove user if already assigned
+          : [...prevData.assignedUsers, userId], // Add user if not assigned
+      };
+    });
   };
 
-  console.log("Assigned users:", Array.isArray(taskData.assignedUsers) ? taskData.assignedUsers : []);
-    
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -54,23 +54,21 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
           <input type="text" name="title" placeholder="Task Title" value={taskData.title} onChange={handleChange} style={styles.input} />
           <textarea name="description" placeholder="Task Description" value={taskData.description} onChange={handleChange} style={styles.input} />
 
-          {/* TO-DO: Implement checkboxes to assign users properly */}
-          {/* For some reason, taskData.assignedUsers appears undefined for a few miliseconds then is initialized. */}
+          {/* GitHub-style checklist for assigned users */}
           <label>Assign Users:</label>
-          <select
-            multiple
-            value={taskData.assignedUsers}
-            onChange={handleAssignedUsersChange}
-            style={styles.input}
-          >
-            {availableUsers &&
-              availableUsers.map((user) => (
-                <option key={user.user_id} value={user.user_id}>
-                  {user.display_name || `${user.first_name} ${user.last_name}`}
-                </option>
-              ))}
-          </select>
-            
+          <div style={styles.checkboxContainer}>
+            {availableUsers.map((user) => (
+              <label key={user.user_id} style={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={taskData.assignedUsers.includes(user.user_id)}
+                  onChange={() => handleUserCheck(user.user_id)}
+                />
+                {user.display_name || `${user.first_name} ${user.last_name}`}
+              </label>
+            ))}
+          </div>
+
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
             <option value="Low">Low</option>
@@ -152,6 +150,17 @@ const styles = {
     borderRadius: "5px", 
     fontSize: "14px",
     boxSizing: "border-box"
+  },
+  checkboxContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
+    marginBottom: "10px"
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px"
   },
   buttonContainer: { 
     display: "flex", 
