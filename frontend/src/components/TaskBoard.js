@@ -43,6 +43,14 @@ const TaskBoard = () => {
     done: "#e0e0e0",
   });
 
+  // bug fix: Import useEffect for loading from localStorage
+useEffect(() => {
+  const savedColors = localStorage.getItem("taskListColors");
+  if (savedColors) {
+    setTaskListColors(JSON.parse(savedColors));
+  }
+}, []);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -420,10 +428,14 @@ const TaskBoard = () => {
     }
   };
   const handleAssignColor = (status, color) => {
-    setTaskListColors((prevColors) => ({
-      ...prevColors,
-      [status]: color,
-    }));
+    setTaskListColors((prevColors) => {
+      const updatedColors = {
+        ...prevColors,
+        [status]: color,
+      };
+      localStorage.setItem("taskListColors", JSON.stringify(updatedColors)); // NEW UPDATE
+      return updatedColors;
+    });
   };
 
   // add a helper function to normalize status strings.

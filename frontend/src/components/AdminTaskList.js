@@ -1,5 +1,8 @@
-import React, { useEffect } from "react";
-const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock }) => {
+import React, { useEffect, useState } from "react";
+const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock, selectedColor = "#e0e0e0", onAssignColor, }) => {
+  
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const renderTitle = (status) => {
     switch (status) {
       case "todo":
@@ -11,6 +14,21 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
       default:
         return status;
     }
+  };
+
+  const colors = {
+    Default: "#e0e0e0",
+    Red: "red",
+    Green: "green",
+    Yellow: "yellow",
+    Purple: "purple",
+    Black: "black",
+    White: "white",
+    Grey: "grey",
+  };
+
+  const getSelectedColorName = () => {
+    return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
   };
 
   const priorityLabelMap = {
@@ -68,8 +86,32 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     onEditTask(task);
   };
   return (
-    <div style={styles.list}>
+    <div style={{...styles.list, background: selectedColor }}>
       <h3>{renderTitle(title)}</h3>
+
+      {/* Assign Color Dropdown */}
+      <div style={{ marginBottom: "10px" }}>
+        <button onClick={() => setShowDropdown((prev) => !prev)} style={styles.assignColorButton}>
+          Assign Color
+        </button>
+        {showDropdown && (
+          <select
+            value={getSelectedColorName()}
+            onChange={(e) => {
+              const selectedOption = e.target.value;
+              const newColor = colors[selectedOption] || "#e0e0e0";
+              onAssignColor && onAssignColor(newColor);
+              setShowDropdown(false);
+            }}
+            style={styles.dropdown}
+          >
+            {Object.keys(colors).map((color) => (
+              <option key={color} value={color}>{color}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
       {tasks.map((task) => (
         <div key={task.task_id} style={styles.task} data-testid="task-card">
           <strong>{task.title}</strong>
