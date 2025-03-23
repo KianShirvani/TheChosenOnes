@@ -117,66 +117,39 @@ const moveTask = async (req, res) => {
 // Update a task
 const updateTask = async (req, res) => {
   try {
-    const { title, description, priority, due_date, start_date, end_date, progress, status, assignedUsers } = req.body;
+    const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
     const { taskId } = req.params;
-
-    // Check for valid taskId
     if (!taskId || isNaN(taskId)) {
       console.error(`Invalid Task ID: ${taskId}`);
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
-
-    // Fetch the task and its lock status
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
-
-    // Validate priority field
+    
     const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
     if (priority !== undefined && isNaN(parsedPriority)) {
       return res.status(400).json({ message: "Priority must be a valid integer" });
     }
-
-    // Update the task details
     const result = await client.query(
       "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
       [title, description, parsedPriority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
-
-    // Check if task exists and is locked
-    if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {
+    // Fix: Prevent accessing 'locked' on undefined rows
+    if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
       console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
     const task = taskCheck.rows[0];
 
-    // Prevent updates on locked tasks
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
 
-    // If there are assigned users, update the task_users table
-    if (assignedUsers && Array.isArray(assignedUsers)) {
-      // Step 1: Remove current user-task associations
-      await client.query("DELETE FROM task_users WHERE task_id = $1", [taskId]);
-
-      // Step 2: Insert new user-task associations
-      const insertPromises = assignedUsers.map(userId => {
-        return client.query(
-          "INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)",
-          [taskId, userId]
-        );
-      });
-
-      // Wait for all insert operations to complete
-      await Promise.all(insertPromises);
-    }
-
-    // If no task was updated, return an error
     if (!result || result.rowCount === 0) {
       return res.status(500).json({ message: "Failed to update task" });
     }
 
-    console.log(`Task ${taskId} updated successfully.`);
+    console.log(`Task ${taskId} updated.`);
     res.status(200).json({ message: "Task updated successfully", task: result.rows[0] });
   } catch (error) {
     console.error("Error in updateTask:", error);
