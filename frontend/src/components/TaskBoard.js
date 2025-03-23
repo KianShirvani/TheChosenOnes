@@ -225,30 +225,41 @@ const TaskBoard = () => {
         const oldStatusKey = prevTasks.todo.some(t => t.task_id === updatedTask.task_id) ? "todo" :
         prevTasks.inProgress.some(t => t.task_id === updatedTask.task_id) ? "inProgress" :
         "done";
-       
-        return {
-          ...prevTasks,
-          [oldStatusKey]: prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id),
-          [statusKey]: [
-            ...prevTasks[statusKey].filter(t => t.task_id !== updatedTask.task_id), 
-            updatedTask
-          ],
-        };
-      } else {
-        return {
-          ...prevTasks,
-          [statusKey]: [updatedTask, ...prevTasks[statusKey]],
-        };
-      }
-    });
+        const oldTaskIndex = prevTasks[oldStatusKey].findIndex(t => t.task_id === updatedTask.task_id);
 
-    setIsModalOpen(false);
-    setEditingTask(null);
-  } catch (error) {
-    console.error("Fetch error:", error);
-  }
+        // If the status hasn't changed, update the task in place
+        if (oldStatusKey === statusKey) {
+          const updatedList = [...prevTasks[oldStatusKey]];
+          updatedList[oldTaskIndex] = updatedTask; // Replace at the original index
+          return {
+            ...prevTasks,
+            [oldStatusKey]: updatedList,
+          };
+        }
+
+        // If the status has changed, remove from old list and insert into new list at preserved position
+        const oldList = prevTasks[oldStatusKey].filter(t => t.task_id !== updatedTask.task_id);
+        const newList = [...prevTasks[statusKey]];
+        newList.splice(oldTaskIndex < newList.length ? oldTaskIndex : newList.length, 0, updatedTask); // Insert at original index or end if out of bounds
+
+        return {
+          ...prevTasks,
+          [oldStatusKey]: oldList,
+          [statusKey]: newList,
+        };
+      } else {return {
+        ...prevTasks,
+        [statusKey]: [updatedTask, ...prevTasks[statusKey]],
+      };
+    }
+  });
+
+  setIsModalOpen(false);
+  setEditingTask(null);
+} catch (error) {
+  console.error("Fetch error:", error);
+}
 };
-
   // Function to add a user to an existing task from TaskList
   const handleAddUserToTask = async (taskId, userId) => {
     try {
