@@ -41,6 +41,17 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     setTaskData({ ...taskData, assignedUsers: selectedOptions });
   };
 
+    // Handle checkbox changes for assigning users
+    const handleUserCheckboxChange = (e) => {
+      const userId = e.target.value;
+      setTaskData((prevData) => {
+        const newAssignedUsers = e.target.checked
+          ? [...prevData.assignedUsers, userId]
+          : prevData.assignedUsers.filter((id) => id !== userId);
+        return { ...prevData, assignedUsers: newAssignedUsers };
+      });
+    };
+
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -49,20 +60,22 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
           <input type="text" name="title" placeholder="Task Title" value={taskData.title} onChange={handleChange} style={styles.input} />
           <textarea name="description" placeholder="Task Description" value={taskData.description} onChange={handleChange} style={styles.input} />
 
+          {/* TO-DO: Implement checkboxes to assign users properly */}
           <label>Assign Users:</label>
-          <select 
-            multiple
-            name="assignedUsers"
-            value={taskData.assignedUsers}
-            onChange={handleAssignedUsersChange}
-            style={styles.input}
-          >
-            {availableUsers && availableUsers.map(user => (
-              <option key={user.user_id} value={user.user_id}>
-                {user.display_name || `${user.first_name} ${user.last_name}`}
-              </option>
+          <div style={styles.userList}>
+            {availableUsers && availableUsers.map((user) => (
+              <div key={user.user_id} style={styles.userItem}>
+                <input
+                  type="checkbox"
+                  value={user.user_id}
+                  onChange={handleUserCheckboxChange}
+                  checked={taskData.assignedUsers.includes(user.user_id)}
+                  style={styles.checkbox}
+                />
+                <span>{user.display_name || `${user.first_name} ${user.last_name}`}</span>
+              </div>
             ))}
-          </select>
+          </div>
 
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>

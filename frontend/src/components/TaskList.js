@@ -170,6 +170,7 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
           <p>{task.description}</p>
           <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
+          <p><strong>Assigned Users:</strong></p>
 
           <div style={styles.actions}>
             <button onClick={() => onEditTask(task)} style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} >✏️</button>
