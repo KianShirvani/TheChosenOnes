@@ -51,6 +51,8 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
       return { ...prevData, assignedUsers: newAssignedUsers };
     });
   };
+
+  console.log("Assigned users:", Array.isArray(taskData.assignedUsers) ? taskData.assignedUsers : []);
     
   return (
     <div style={styles.overlay}>
@@ -61,6 +63,7 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
           <textarea name="description" placeholder="Task Description" value={taskData.description} onChange={handleChange} style={styles.input} />
 
           {/* TO-DO: Implement checkboxes to assign users properly */}
+          {/* For some reason, taskData.assignedUsers appears undefined for a few miliseconds then is initialized. */}
           <label>Assign Users:</label>
           <div style={styles.userList}>
             {availableUsers && availableUsers.map((user) => (
@@ -69,14 +72,14 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
                   type="checkbox"
                   value={user.user_id}
                   onChange={handleUserCheckboxChange}
-                  checked={taskData.assignedUsers.includes(user.user_id)}
+                  checked={taskData.assignedUsers === undefined || taskData.assignedUsers.includes(user.user_id)}
                   style={styles.checkbox}
                 />
                 <span>{user.display_name || `${user.first_name} ${user.last_name}`}</span>
               </div>
             ))}
           </div>
-
+            
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
             <option value="Low">Low</option>
