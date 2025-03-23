@@ -126,13 +126,13 @@ const updateTask = async (req, res) => {
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
     
     const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
-if (priority !== undefined && isNaN(parsedPriority)) {
-  return res.status(400).json({ message: "Priority must be a valid integer" });
-}
-const result = await client.query(
-  "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
-  [title, description, parsedPriority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
-);
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
+    const result = await client.query(
+      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
+      [title, description, parsedPriority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
+    );
     // Fix: Prevent accessing 'locked' on undefined rows
     if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
       console.error(`Task with ID ${taskId} not found.`);
