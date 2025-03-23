@@ -356,7 +356,8 @@ const getUsersForTask = async (req, res) => {
       return res.status(200).json({ assignedUsers: result.rows });
     } else {
       // If no users are found, return an empty array or an appropriate message
-      return res.status(404).json({ message: "No users assigned to this task" });
+      // return res.status(404).json({ message: "No users assigned to this task" });
+      return res.status(200).json({ assignedUsers: [] });
     }
   } catch (error) {
     // Handle any errors that occur during the query
