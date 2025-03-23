@@ -41,17 +41,17 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     setTaskData({ ...taskData, assignedUsers: selectedOptions });
   };
 
-    // Handle checkbox changes for assigning users
-    const handleUserCheckboxChange = (e) => {
-      const userId = e.target.value;
-      setTaskData((prevData) => {
-        const newAssignedUsers = e.target.checked
-          ? [...prevData.assignedUsers, userId]
-          : prevData.assignedUsers.filter((id) => id !== userId);
-        return { ...prevData, assignedUsers: newAssignedUsers };
-      });
-    };
-
+  // Handle checkbox changes for assigning users
+  const handleUserCheckboxChange = (e) => {
+    const userId = e.target.value;
+    setTaskData((prevData) => {
+      const newAssignedUsers = e.target.checked
+        ? [...prevData.assignedUsers, userId]
+        : prevData.assignedUsers.filter((id) => id !== userId);
+      return { ...prevData, assignedUsers: newAssignedUsers };
+    });
+  };
+    
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -80,10 +80,10 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
             <option value="Low">Low</option>
-        <option value="Medium">Medium</option>
-        <option value="High">High</option>
-        <option value="Critical">Critical</option>
-        <option value="Urgent">Urgent</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+            <option value="Urgent">Urgent</option>
           </select>
 
           <label>Move to:</label>
