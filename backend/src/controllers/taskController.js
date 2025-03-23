@@ -249,11 +249,30 @@ const deleteTask = async (req, res) => {
 const assignUsersToTask = async (req, res) => {
   const { taskId } = req.params;
   const { userIds } = req.body;
+
+  // Check if userIds is a non-empty array
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     return res.status(400).json({ message: "User IDs must be a non-empty array" });
   }
-  // For now, simply return a success response.
-  return res.status(201).json({ message: "Users assigned to task successfully" });
+
+  try {
+    // Insert each userId-taskId pair into the task_users table
+    const insertPromises = userIds.map(userId => {
+      return client.query(
+        "INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)",
+        [taskId, userId]
+      );
+    });
+
+    // Wait for all insertions to complete
+    await Promise.all(insertPromises);
+
+    // Return success message
+    return res.status(201).json({ message: "Users assigned to task successfully" });
+  } catch (error) {
+    console.error("Error assigning users to task:", error);
+    return res.status(500).json({ message: "Server error", error });
+  }
 };
 
 
