@@ -344,7 +344,7 @@ describe("GET /api/tasks/:taskId/users", () => {
     const res = await request(app).get("/api/tasks/1/users");
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("users");
+    expect(res.body).toHaveProperty("assignedUsers");
   });
 });
 
