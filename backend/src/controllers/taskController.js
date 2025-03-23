@@ -120,7 +120,7 @@ const updateTask = async (req, res) => {
     const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
     const { taskId } = req.params;
     if (!taskId || isNaN(taskId)) {
-      console.error(`❌ Invalid Task ID: ${taskId}`);
+      console.error(`Invalid Task ID: ${taskId}`);
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
     const taskCheck = await client.query("SELECT locked FROM tasks WHERE task_id = $1", [taskId]);
