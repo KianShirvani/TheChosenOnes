@@ -116,6 +116,7 @@ const TaskBoard = () => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
+      // For now, this shows a list of all users. Eventually, we should only include users that are part of the team.
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
         method: "GET",
         headers: {

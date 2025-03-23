@@ -203,8 +203,6 @@ const updateAssignedTask = async (req, res) => {
       [title, description, parsedPriority, due_date, status, taskId]
     );
     
-  
-  
     res.status(200).json({ message: "Task updated successfully", task: updatedTask.rows[0] });
   } catch (error) {
     console.error("Error in updateAssignedTask:", error);
@@ -249,8 +247,28 @@ const assignUsersToTask = async (req, res) => {
 // Get users assigned to a task
 const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
-  // Return a dummy list of users for testing purposes.
-  return res.status(200).json({ users: [{ id: 1, name: "User One" }, { id: 2, name: "User Two" }] });
+  try {
+    // Query the database to get users assigned to the given task
+    const result = await db.query(
+      `SELECT u.id, u.name
+       FROM users u
+       JOIN task_users tu ON u.id = tu.user_id
+       WHERE tu.task_id = $1`, 
+      [taskId]
+    );
+
+    // If users are found, return them in the response
+    if (result.rows.length > 0) {
+      return res.status(200).json({ users: result.rows });
+    } else {
+      // If no users are found, return an empty array or an appropriate message
+      return res.status(404).json({ message: "No users assigned to this task" });
+    }
+  } catch (error) {
+    // Handle any errors that occur during the query
+    console.error("Error fetching users for task:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
