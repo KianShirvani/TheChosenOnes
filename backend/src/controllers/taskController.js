@@ -117,7 +117,7 @@ const moveTask = async (req, res) => {
 // Update a task
 const updateTask = async (req, res) => {
   try {
-    const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
+    const { title, description, priority, due_date, start_date, end_date, progress, status, assignedUsers } = req.body;
     const { taskId } = req.params;
     if (!taskId || isNaN(taskId)) {
       console.error(`Invalid Task ID: ${taskId}`);
