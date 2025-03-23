@@ -43,6 +43,13 @@ const AdminDashboard = () => {
   const { setNotification } = useContext(NotificationContext);
 
   useEffect(() => {
+    const savedColors = localStorage.getItem("taskListColors");
+    if (savedColors) {
+      setTaskListColors(JSON.parse(savedColors));
+    }
+  }, []); // for persisting TaskList color (bug fix)
+
+  useEffect(() => {
     fetchTasks();
     fetchAvailableUsers(); // Fetch users from database
   }, []);
@@ -513,6 +520,30 @@ const AdminDashboard = () => {
     });
   };
 
+  // TaskList color state
+  const [taskListColors, setTaskListColors] = useState({
+    todo: "#e0e0e0",
+    inProgress: "#e0e0e0",
+    done: "#e0e0e0",
+  }); // ✅ NEW UPDATE
+
+  // Optional: control dropdown toggle per column if needed
+  const [colorDropdowns, setColorDropdowns] = useState({
+    todo: false,
+    inProgress: false,
+    done: false,
+  }); // ✅ NEW UPDATE
+
+  // Handle Assign Color function
+  const handleAssignColor = (status, color) => {
+    setTaskListColors((prevColors) => {
+      const updated = { ...prevColors, [status]: color };
+      localStorage.setItem("taskListColors", JSON.stringify(updated));
+      return updated;
+    });
+    setColorDropdowns(prev => ({ ...prev, [status]: false }));
+  };
+
   return (
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
@@ -574,6 +605,8 @@ const AdminDashboard = () => {
             // Notification: If needed, you can pass handleAddUserToTask and handleRemoveUserFromTask as props here.
             onAddUser={handleAddUserToTask} // Notification:
             onRemoveUser={handleRemoveUserFromTask} // Notification:
+            selectedColor={taskListColors[status]}
+            onAssignColor={(color) => handleAssignColor(status, color)}
           />
         ))}
       </div>
