@@ -9,7 +9,7 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
   const [taskData, setTaskData] = useState(task || {
     title: "",
     description: "",
-    assignedUsers: [],
+    assignedUsers: task?.assignedUsers ?? [],
     priority: "Medium",
     dueDate: "",
     startDate: "",
@@ -24,7 +24,7 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     if (task) {
       setTaskData({
         ...task,
-        assignedUsers: task.assignedUsers || [],
+        assignedUsers: Array.isArray(task.assignedUsers) ? task.assignedUsers : [],
         dueDate: formatDateForInput(task.due_date),
         startDate: formatDateForInput(task.start_date),
         endDate: formatDateForInput(task.end_date),
@@ -37,19 +37,11 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
   };
 
   const handleAssignedUsersChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
-    setTaskData({ ...taskData, assignedUsers: selectedOptions });
-  };
-
-  // Handle checkbox changes for assigning users
-  const handleUserCheckboxChange = (e) => {
-    const userId = e.target.value;
-    setTaskData((prevData) => {
-      const newAssignedUsers = e.target.checked
-        ? [...prevData.assignedUsers, userId]
-        : prevData.assignedUsers.filter((id) => id !== userId);
-      return { ...prevData, assignedUsers: newAssignedUsers };
-    });
+    const selectedUsers = Array.from(e.target.selectedOptions, (option) => option.value);
+    setTaskData((prevData) => ({
+      ...prevData,
+      assignedUsers: selectedUsers,
+    }));
   };
 
   console.log("Assigned users:", Array.isArray(taskData.assignedUsers) ? taskData.assignedUsers : []);
@@ -65,20 +57,19 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
           {/* TO-DO: Implement checkboxes to assign users properly */}
           {/* For some reason, taskData.assignedUsers appears undefined for a few miliseconds then is initialized. */}
           <label>Assign Users:</label>
-          <div style={styles.userList}>
-            {availableUsers && availableUsers.map((user) => (
-              <div key={user.user_id} style={styles.userItem}>
-                <input
-                  type="checkbox"
-                  value={user.user_id}
-                  onChange={handleUserCheckboxChange}
-                  checked={taskData.assignedUsers === undefined || taskData.assignedUsers.includes(user.user_id)}
-                  style={styles.checkbox}
-                />
-                <span>{user.display_name || `${user.first_name} ${user.last_name}`}</span>
-              </div>
-            ))}
-          </div>
+          <select
+            multiple
+            value={taskData.assignedUsers}
+            onChange={handleAssignedUsersChange}
+            style={styles.input}
+          >
+            {availableUsers &&
+              availableUsers.map((user) => (
+                <option key={user.user_id} value={user.user_id}>
+                  {user.display_name || `${user.first_name} ${user.last_name}`}
+                </option>
+              ))}
+          </select>
             
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
