@@ -353,7 +353,7 @@ const getUsersForTask = async (req, res) => {
 
     // If users are found, return them in the response
     if (result.rows.length > 0) {
-      return res.status(200).json({ users: result.rows });
+      return res.status(200).json({ assignedUsers: result.rows });
     } else {
       // If no users are found, return an empty array or an appropriate message
       return res.status(404).json({ message: "No users assigned to this task" });
