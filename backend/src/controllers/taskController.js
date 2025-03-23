@@ -162,13 +162,26 @@ const updateTask = async (req, res) => {
 const getAssignedTasks = async (req, res) => {
   try {
     const { userId } = req.params;
-    const result = await client.query("SELECT * FROM tasks WHERE user_id = $1", [userId]);
 
-    if (result.rowCount === 0) {
+    // Query task_users table to get task IDs for the given user
+    const taskUserResult = await client.query("SELECT task_id FROM task_users WHERE user_id = $1", [userId]);
+
+    if (taskUserResult.rowCount === 0) {
       return res.status(404).json({ message: "No assigned tasks found for this user." });
     }
 
-    res.status(200).json({ assignedTasks: result.rows });
+    // Extract task_ids from the result
+    const taskIds = taskUserResult.rows.map(row => row.task_id);
+
+    // Now fetch the tasks from the tasks table using the task_ids
+    const taskResult = await client.query("SELECT * FROM tasks WHERE id = ANY($1::int[])", [taskIds]);
+
+    if (taskResult.rowCount === 0) {
+      return res.status(404).json({ message: "No tasks found for this user." });
+    }
+
+    // Return the assigned tasks
+    res.status(200).json({ assignedTasks: taskResult.rows });
   } catch (error) {
     console.error("Error in getAssignedTasks:", error);
     res.status(500).json({ message: "Server error", error });
@@ -250,10 +263,7 @@ const getUsersForTask = async (req, res) => {
   try {
     // Query the database to get users assigned to the given task
     const result = await db.query(
-      `SELECT u.id, u.name
-       FROM users u
-       JOIN task_users tu ON u.id = tu.user_id
-       WHERE tu.task_id = $1`, 
+      `SELECT users.user_id FROM users JOIN task_users ON users.user_id = task_users.user_id WHERE task_users.task_id = $1`, 
       [taskId]
     );
 
