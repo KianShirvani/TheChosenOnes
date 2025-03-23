@@ -203,7 +203,7 @@ const getAssignedTasks = async (req, res) => {
     const taskResult = await client.query("SELECT * FROM tasks WHERE id = ANY($1::int[])", [taskIds]);
 
     if (taskResult.rowCount === 0) {
-      return res.status(404).json({ message: "No tasks found for this user." });
+      return res.status(200).json({ assignedTasks: [] }); // Return an empty array for assignedTasks
     }
 
     // Return the assigned tasks
