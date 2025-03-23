@@ -160,6 +160,9 @@ const AdminManagement = () => {
         }
     };
 
+    // Get the current user's id from the token so that we can hide self promote/demote buttons.
+    const currentUserId = getCurrentUserIdFromToken(localStorage.getItem("token"));
+
     return (
         <div style={styles.container}>
             <h1 style={styles.heading}>Admin Management</h1>
@@ -183,10 +186,11 @@ const AdminManagement = () => {
                                 <td>{user.email}</td>
                                 <td>{user.is_admin ? "Admin" : "User"}</td>
                                 <td>
-                                    {user.is_admin && (
+                                    {/* Only show promote/demote buttons if this is not the current user */}
+                                    {user.user_id !== currentUserId && user.is_admin && (
                                         <Button onClick={() => demoteAdmin(user.user_id)}>Demote</Button>
                                     )}
-                                    {!user.is_admin && (
+                                    {user.user_id !== currentUserId && !user.is_admin && (
                                         <Button onClick={() => promoteToAdmin(user.user_id)}>Promote</Button>
                                     )}
                                     <Button onClick={() => deleteUser(user.user_id)}>Delete</Button>

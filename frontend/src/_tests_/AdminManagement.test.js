@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import AdminManagement from "../pages/AdminManagement";
 import { MemoryRouter } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const mockUsers = [
@@ -161,5 +161,62 @@ describe("AdminManagement", () => {
         await waitFor(() => {
             expect(navigate).toHaveBeenCalledWith("/tasks");
         });
+    });
+});
+
+// Unit testing to verify the bug fix where the admin cannot promote/demote himself.
+describe("AdminManagement - Self Promote/Demote Protection", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        localStorage.clear();
+    });
+
+    test("does not render promote/demote buttons for the current admin user", async () => {
+        // Create a fake token with user_id = 1.
+        // The payload is base64 encoded JSON: {"user_id": 1}
+        const fakeToken = "header." + btoa(JSON.stringify({ user_id: 1 })) + ".signature";
+        localStorage.setItem("token", fakeToken);
+
+        // Mock user data including the current user (id 1) and others.
+        const mockUserData = [
+            { user_id: 1, first_name: "Current", last_name: "Admin", email: "current@example.com", is_admin: true },
+            { user_id: 2, first_name: "Other", last_name: "User", email: "other@example.com", is_admin: false },
+            { user_id: 3, first_name: "Another", last_name: "Admin", email: "another@example.com", is_admin: true }
+        ];
+
+        // Mock the fetch call in useEffect to return our mockUserData.
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            text: async () => JSON.stringify(mockUserData),
+            url: "mockUrl",
+            status: 200,
+        });
+
+        render(
+            <MemoryRouter>
+                <AdminManagement />
+            </MemoryRouter>
+        );
+
+        // Wait for the users to be rendered.
+        await waitFor(() => {
+            expect(screen.getByText("Current")).toBeInTheDocument();
+            expect(screen.getByText("Other")).toBeInTheDocument();
+            expect(screen.getByText("Another")).toBeInTheDocument();
+        });
+
+        // For the current user row (id 1), verify that neither Promote nor Demote buttons are rendered.
+        const currentUserRow = screen.getByText("Current").closest("tr");
+        expect(currentUserRow).toBeInTheDocument();
+        expect(within(currentUserRow).queryByText(/Promote/i)).toBeNull();
+        expect(within(currentUserRow).queryByText(/Demote/i)).toBeNull();
+
+        // For a non-admin user (id 2), the Promote button should be visible.
+        const otherUserRow = screen.getByText("Other").closest("tr");
+        expect(within(otherUserRow).queryByText(/Promote/i)).toBeInTheDocument();
+
+        // For another admin (id 3) who is not the current user, the Demote button should be visible.
+        const anotherUserRow = screen.getByText("Another").closest("tr");
+        expect(within(anotherUserRow).queryByText(/Demote/i)).toBeInTheDocument();
     });
 });
