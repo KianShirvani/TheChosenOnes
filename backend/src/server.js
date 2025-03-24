@@ -88,11 +88,17 @@ const insertData = async () => {
         ];
 
         for (const task of sampleTasks) {
-          await client.query(
+          const result = await client.query(
             `INSERT INTO tasks (kanban_id, user_id, title, description, due_date, status, priority, locked, progress,start_date,end_date) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11)`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11)
+            RETURNING task_id`,
             [kanbanId, adminUser.rows[0].user_id, task.title, task.description, task.due_date, task.status, task.priority,false, task.progress,task.start_date,task.end_date]
           );
+
+          // Assign the admin user to the task
+          await client.query(
+            `INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)`, [result.rows[0].task_id, adminUser.rows[0].user_id]
+          )
         }
 
         console.log("Successfully inserted 6 sample tasks into 'Sample Kanban' board.");
@@ -100,8 +106,6 @@ const insertData = async () => {
         console.log("ℹTasks already exist in 'Sample Kanban', skipping insert.");
       }
     }
-
-
 
     console.log('Data inserted successfully.');
     return { success: true };
