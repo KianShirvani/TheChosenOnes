@@ -5,18 +5,19 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
     return date ? new Date(date).toISOString().split("T")[0] : ""; 
   };
   const [taskData, setTaskData] = useState({
-    task_id: task.task_id || task.id || null,
-      kanban_id: task.kanban_id ?? null, 
-       user_id: task.user_id ?? null,
-      title: task.title || "",
-      description: task.description || "",
-      priority: task.priority || "Medium",
-      dueDate: formatDate(task.due_date)|| "",
-      startDate: formatDate(task.start_date) || "", 
-      endDate: formatDate(task.end_date) || "", 
-      progress: task.progress || 0, 
-      status: task.status || "to do",
-    }); 
+    id: task.task_id || task.id || null,
+    kanbanId: task.kanban_id ?? null,
+    userId: task.user_id ?? null,
+    title: task.title || "",
+    description: task.description || "",
+    priority: task.priority || "Medium",
+    dueDate: formatDate(task.due_date) || "",
+    startDate: formatDate(task.start_date) || "",
+    endDate: formatDate(task.end_date) || "",
+    progress: task.progress || 0,
+    status: task.status || "to do",
+  });
+  
     useEffect(() => {
        
        setTaskData((prevData) => ({
@@ -53,26 +54,28 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
       "Urgent": 5,
     };
     const finalData = {
-      task_id: task.task_id || task.id,//  ensure id is passed
-      kanban_id: task.kanban_id ?? 1,
-      user_id: task.user_id ?? 1,
+      id: taskData.id,
+      kanban_id: taskData.kanbanId ?? 1,
+      user_id: taskData.userId ?? 1,
       title: taskData.title,
       description: taskData.description,
       priority: priorityMap[taskData.priority] || 2,
-      due_date: taskData.dueDate || null, 
-    start_date: taskData.startDate || null,
-    end_date: taskData.endDate || null,
+      due_date: taskData.dueDate || null,
+      start_date: taskData.startDate || null,
+      end_date: taskData.endDate || null,
       progress: parseInt(taskData.progress, 10) || 0,
       status: taskData.status,
     };
+    
 
     onSave(finalData);
   };
 
   return (
-    <div style={styles.overlay}>
+      <div style={styles.overlay}>
       <div style={styles.modal}>
         <h2>Edit Task</h2>
+        <div style={styles.content}>
         <input
           type="text"
           name="title"
@@ -163,6 +166,7 @@ const EditTaskModal = ({ task, onSave, onClose }) => {
         </button>
       </div>
     </div>
+    </div>
   );
 };
 
@@ -183,11 +187,20 @@ const styles = {
     background: "white",
     padding: "20px",
     borderRadius: "8px",
-    width: "400px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+    width: "450px",
+    maxHeight: "500px",
+    overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    boxSizing: "border-box",
+  },
+  content: {
+    width: "100%",
+    maxHeight: "350px",
+    overflowY: "auto",
+    overflowX: "hidden",
+    boxSizing: "border-box",
   },
   input: {
     width: "100%",
@@ -195,7 +208,8 @@ const styles = {
     marginBottom: "10px",
     border: "1px solid #ccc",
     borderRadius: "5px",
-    fontSize: "16px",
+    fontSize: "14px",
+    boxSizing: "border-box",
   },
   saveButton: {
     width: "100%",
@@ -205,7 +219,7 @@ const styles = {
     border: "none",
     cursor: "pointer",
     borderRadius: "5px",
-    fontSize: "16px",
+    fontSize: "14px",
     marginBottom: "10px",
   },
   closeButton: {
@@ -216,8 +230,10 @@ const styles = {
     border: "none",
     cursor: "pointer",
     borderRadius: "5px",
-    fontSize: "16px",
+    fontSize: "14px",
   },
 };
+
+
 
 export default EditTaskModal;
