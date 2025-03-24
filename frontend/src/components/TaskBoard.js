@@ -94,8 +94,8 @@ useEffect(() => {
         progress: task.progress || 0,
         status: formatStatus(task.status ?? "todo"), 
         dueDate: formatDate(task.due_date), 
-      startDate: formatDate(task.start_date),
-      endDate: formatDate(task.end_date),
+        startDate: formatDate(task.start_date),
+        endDate: formatDate(task.end_date),
       }));
 
       const filteredTasks = {
@@ -124,6 +124,7 @@ useEffect(() => {
   // Fetch available users from the backend
   const fetchAvailableUsers = async () => {
     try {
+      // For now, this shows a list of all users. Eventually, we should only include users that are part of the team.
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
         method: "GET",
         headers: {
@@ -166,8 +167,8 @@ useEffect(() => {
     const priorityValue = priorityMap[taskData.priority] || parseInt(taskData.priority, 10) || null;
     const formattedTaskData = {
       id: taskData.id || null, 
-      kanban_id: taskData.kanbanId, 
-    user_id: taskData.userId,
+      kanban_id: taskData.kanban_id, 
+      user_id: taskData.user_id,
       title: taskData.title,
       description: taskData.description,
       priority: priorityValue,
@@ -180,6 +181,8 @@ useEffect(() => {
     };
   
     console.log("Final data sent to backend:", formattedTaskData); 
+    console.log("Kanban ID: ", formattedTaskData.kanban_id);
+    console.log("Assigned users: ", taskData.assignedUsers);
   
     try {
       const url = editingTask
@@ -204,15 +207,15 @@ useEffect(() => {
       const responseData = await response.json();
 
       console.log("Task saved successfully");
-      if (taskData.assignedUsers && taskData.assignedUsers.length > 0) {
-        const taskId = editingTask ? taskData.id : responseData.task.task_id;
-        await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ userIds: taskData.assignedUsers }),
-        });
-      }
+      // if (taskData.assignedUsers && taskData.assignedUsers.length > 0) {
+      //   const taskId = editingTask ? taskData.id : responseData.task.task_id;
+      //   await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/assign-users`, {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     credentials: "include",
+      //     body: JSON.stringify({ userIds: taskData.assignedUsers }),
+      //   });
+      // }
   
     setTasks(prevTasks => {
       const updatedTask = {
