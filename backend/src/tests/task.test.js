@@ -195,7 +195,7 @@ describe("POST /api/tasks", () => {
       .send(newTask);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("message", "All fields except status are required");
+    expect(res.body).toHaveProperty("message", "The 'title' field is required.");
   });
 });
 
