@@ -624,8 +624,8 @@ const AdminDashboard = () => {
       </div>
 
       {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} availableUsers={availableUsers} />}
-      {isEditModalOpen && <EditTaskModal task={editingTask} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateTask} />}
-    </div>
+      {isEditModalOpen && ( <EditTaskModal task={editingTask} onClose={() => 
+      setIsEditModalOpen(false)} onSave={handleUpdateTask} availableUsers={availableUsers} /> )}    </div>
   );
 };
 
