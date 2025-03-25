@@ -24,10 +24,27 @@ const createTask = async (req, res) => {
   try {
     const { kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
 
-    if (!title || !description || !progress || !due_date || !start_date || !end_date ) {
-      console.log("Missing required fields:", req.body);
-      return res.status(400).json({ message: "All fields except status are required" });
+    if (!title) {
+      console.log("Missing required field: title", req.body);
+      return res.status(400).json({ message: "The 'title' field is required." });
     }
+    if (!description) {
+      console.log("Missing required field: description", req.body);
+      return res.status(400).json({ message: "The 'description' field is required." });
+    }
+    if (!due_date) {
+      console.log("Missing required field: due_date", req.body);
+      return res.status(400).json({ message: "The 'due_date' field is required." });
+    }
+    if (!start_date) {
+      console.log("Missing required field: start_date", req.body);
+      return res.status(400).json({ message: "The 'start_date' field is required." });
+    }
+    if (!end_date) {
+      console.log("Missing required field: end_date", req.body);
+      return res.status(400).json({ message: "The 'end_date' field is required." });
+    }
+    
     const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
     if (priority !== undefined && isNaN(parsedPriority)) {
       return res.status(400).json({ message: "Priority must be a valid integer" });
