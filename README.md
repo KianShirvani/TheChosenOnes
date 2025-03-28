@@ -14,8 +14,8 @@ It is dedicated to building and enhancing various features for both frontend and
 | **Done**          | 121               |
 
 - Development for the frontend UI is complete  
-- Backend functionality and database development are in progress  
-- Integration between frontend and backend is expected to start soon  
+- Backend functionality and database development are complete
+- Integration between frontend and backend is completed but just minor bug fixes remaining
 
 ## Description
 
