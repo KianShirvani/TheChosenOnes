@@ -167,7 +167,7 @@ useEffect(() => {
     const priorityValue = priorityMap[taskData.priority] || parseInt(taskData.priority, 10) || null;
     const formattedTaskData = {
       id: taskData.id || null, 
-      kanban_id: taskData.kanban_id, 
+      kanban_id: taskData.kanban_id || 1, 
       user_id: taskData.user_id,
       title: taskData.title,
       description: taskData.description,
