@@ -13,7 +13,7 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     endDate: "",
     progress: 0,
     status: "todo",
-    kanbanId: null,
+    kanbanId: 1, // Set default kanbanId to 1 because we are assuming only 1 kanban board exists
     userId: null,
   });
 
