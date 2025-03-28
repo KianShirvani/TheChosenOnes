@@ -71,6 +71,11 @@ const loginUser = async (req, res) => {
 };
 
 const requestPasswordReset = async (req, res) => {
+  if (!process.env.MAILGUN_API_KEY) {
+    console.error('Missing Mailgun configuration in environment variables');
+    return res.status(500).json({ error: 'Internal server error: Mailgun not configured' });
+  }
+  
   const { email } = req.body;
 
   try {
@@ -95,12 +100,12 @@ const requestPasswordReset = async (req, res) => {
       subject: 'Password Reset',
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
       Please click on the following link, or paste this into your browser to complete the process:\n\n
-      http://${req.headers.host}/reset/${token}\n\n
+      http://${req.headers.host}/reset-password/${token}\n\n
       If you did not request this, please ignore this email and your password will remain unchanged.\n`
     };
 
     // Send email
-    mg.messages.create(process.env.MAILGUN_DOMAIN, data)
+    await mg.messages.create(process.env.MAILGUN_DOMAIN, data)
       .then(body => {
         console.log(body);
         res.status(200).json({ message: 'Password reset email sent' });

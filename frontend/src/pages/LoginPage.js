@@ -118,7 +118,7 @@ const LoginPage = () => {
         Don't have an account? <span onClick={() => navigate("/signup")} style={styles.signupLink}>Sign up here</span>
       </p>
       <p style={styles.link}>
-        <span onClick={() => navigate("/signup")} style={styles.signupLink}>Forgot password</span>
+        <span onClick={() => navigate("/forgot-password")} style={styles.signupLink}>Forgot password</span>
       </p>
     </div>
   );
