@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const TaskList = ({ title, 
-                    tasks, 
-                    onEditTask, 
-                    onDeleteTask, 
-                    onMoveTask, 
-                    selectedColor, 
-                    onAssignColor,
-                    availableUsers,    // NEW: passed from TaskBoard
-                    onAddUser,         // NEW: function to add a user to a task
-                    onRemoveUser       // NEW: function to remove a user from a task
-                  }) => {
+const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selectedColor, onAssignColor, availableUsers, onAddUser, onRemoveUser }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const colors = {
@@ -23,27 +14,46 @@ const TaskList = ({ title,
     White: "white",
     Grey: "grey"
   };
+  const priorityLabelMap = {
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Critical",
+    5: "Urgent"
+  };
 
-  // Find the color name from the colors object based on the current selectedColor
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
   const getSelectedColorName = () => {
     return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
   };
 
-  // NEW: Inner component to manage and display assigned users for a task
   const TaskUsers = ({ taskId }) => {
     const [assignedUsers, setAssignedUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState("");
 
     useEffect(() => {
-      // Fetch assigned users for this task
       const fetchAssignedUsers = async () => {
         try {
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/users`, {
-            credentials: "include"
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/${taskId}/users`, {
+            withCredentials: true
           });
-          if (response.ok) {
-            const data = await response.json();
-            setAssignedUsers(data.users);
+          if (response.status === 200) {
+            setAssignedUsers(response.data.users);
           }
         } catch (error) {
           console.error("Error fetching users for task:", error);
@@ -56,18 +66,15 @@ const TaskList = ({ title,
       if (selectedUser) {
         onAddUser(taskId, selectedUser);
         setSelectedUser("");
-        // Refresh local list after adding (in a real app, you might refetch)
         setAssignedUsers(prev => [...prev, availableUsers.find(u => u.id === selectedUser)]);
       }
     };
 
     const handleRemoveUser = (userId) => {
       onRemoveUser(taskId, userId);
-      // Remove locally (in a real app, you might refetch)
       setAssignedUsers(prev => prev.filter(user => user.id !== userId));
     };
 
-    // Filter available users to show only those not already assigned
     const availableToAdd = availableUsers.filter(
       user => !assignedUsers.find(assigned => assigned.id === user.id)
     );
@@ -102,6 +109,37 @@ const TaskList = ({ title,
     );
   };
 
+  const handleMoveTask = async (task, direction) => {
+    if (task.locked) {
+      window.Toastify({
+        text: "This task is locked and cannot be moved.",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424",
+        },
+      }).showToast();
+      return;
+    }
+    console.log("handleMoveTask is clicked");
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/tasks/${task.task_id}/move`, {
+        direction
+      }, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (response.status !== 200) throw new Error("Failed to move task");
+      console.log("Response data: ", response.data);
+      // Refresh the task list after moving the task
+      onMoveTask(task, direction);
+    } catch (error) {
+      console.error("Error moving task:", error);
+    }
+  };
+
   return (
     <div style={{ ...styles.list, background: selectedColor }}>
       <div style={styles.header}>
@@ -111,10 +149,10 @@ const TaskList = ({ title,
 
       {showDropdown && (
         <select
-          value={getSelectedColorName()}  // Set value dynamically to match the selected color
+          value={getSelectedColorName()}
           onChange={(e) => {
             const selectedOption = e.target.value;
-            const newColor = colors[selectedOption] || "#e0e0e0"; // Ensure it resets to default grey
+            const newColor = colors[selectedOption] || "#e0e0e0";
             onAssignColor(newColor);
             setShowDropdown(false);
           }}
@@ -127,28 +165,27 @@ const TaskList = ({ title,
       )}
 
       {tasks.map((task) => (
-        <div key={task.id} style={styles.task}>
+        <div key={task.task_id} style={styles.task}>
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {task.priority}</p>
+          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit}>✏️</button>
+            <button onClick={() => onEditTask(task)} style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} >✏️</button>
             {title !== "To-Do" && (
-              <button onClick={() => onMoveTask(task, "left")} style={styles.arrow}>←</button>
+              <button onClick={() => handleMoveTask(task, "left")} style={task.locked  ? { ...styles.arrow, opacity: 0.5 } : styles.arrow} >←</button>
             )}
             {title !== "Done" && (
-              <button onClick={() => onMoveTask(task, "right")} style={styles.arrow}>→</button>
+              <button onClick={() => handleMoveTask(task, "right")} style={task.locked ? { ...styles.arrow, opacity: 0.5 } : styles.arrow} >→</button>
             )}
-            <button onClick={() => onDeleteTask(task.id)} style={styles.delete}>🗑</button>
+            <button onClick={() => onDeleteTask(task.task_id)}  style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} >🗑</button>
           </div>
         </div>
       ))}
     </div>
   );
 };
-
 
 const styles = {
   list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px" },

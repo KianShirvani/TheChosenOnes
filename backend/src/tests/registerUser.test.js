@@ -31,7 +31,7 @@ jest.mock('bcryptjs', () => ({
 
 beforeEach(() => {
     // Setup mock implementation for pg client queries
-    const mockClient = new (require('pg').Client)(); // Mock Client instance
+    const mockClient = require("../database/db"); // Mock Client instance
     mockClient.query.mockReset(); // Reset before each query
 
     // Mock database query to check if email already exists

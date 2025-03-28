@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "../components/ui/input";
@@ -11,6 +11,18 @@ const LoginPage = () => {
     password: "",
   });
 
+  // dynamically load Toastify CSS + JS from CDN at runtime, no install required
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    document.body.appendChild(script);
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -20,34 +32,56 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!formData.email.trim() || !formData.password.trim()) {
-      alert("All fields must be filled!");
+      window.Toastify({ text: "Please enter your email and password.", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"} }).showToast();
       return;
     }
-
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      alert("Invalid email format");
+      window.Toastify({ text: "Please enter a valid email address", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"} }).showToast();
       return;
     }
-
+  
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const requestData = {
         email: formData.email,
         password: formData.password,
-      });
-      alert("Login successful!");
-      navigate("/dashboard");
+      };
+      console.log("Sending login request:", requestData); 
+  
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/auth/login`,
+        requestData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("role", response.data.role);
+        console.log("Token saved:", response.data.token);
+        console.log("Role saved:", response.data.role);
+        window.Toastify({ text: "Login Successful!", duration: 6000, gravity: "top", position: "center" }).showToast();
+        navigate("/tasks");
+      } else {
+        console.error("Login successful but no token received.");
+      }
     } catch (error) {
-      alert("Login failed! Please try again later.");
+      const errorMessage = error.response?.data?.error || "Login failed! Please try again later.";
+      window.Toastify({ text: "Email or password is incorrect.", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"} }).showToast();
+      console.error("Login error:", error.response?.data || error.message);
     }
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Login</h2>
-      <form style={styles.form} onSubmit={handleSubmit}>
+      <form noValidate style={styles.form} onSubmit={handleSubmit}> {/* use noValiddate to turn off form alert */}
         <label style={styles.label}>
           <Input
             type="email"

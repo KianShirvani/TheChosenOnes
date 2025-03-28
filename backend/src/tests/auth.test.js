@@ -5,7 +5,6 @@ const request = require("supertest");
 const express = require("express");
 const { loginUser, resetPassword } = require("../controllers/authController");
 const bcrypt = require("bcryptjs");
-const { Client } = require("pg");
 require('dotenv').config();
 
 // setup for testing
@@ -38,7 +37,7 @@ jest.mock("bcryptjs", () => ({
 
 beforeEach(() => {
     // setup mock implementation for the query method
-    const mockClient = new (require("pg").Client)(); // mock Client instance
+    const mockClient = require("../database/db"); // mock Client instance
     mockClient.query.mockReset(); // reset before each query
 
     // mock database query to return a user
@@ -131,3 +130,4 @@ describe("POST /auth/reset-password", () => {
         expect(res.body).toHaveProperty("message", "Password has been reset");
     });
 });
+

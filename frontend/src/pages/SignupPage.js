@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -17,6 +17,18 @@ const SignupPage = () => {
     confirmPassword: "",
   });
 
+  // dynamically load Toastify CSS + JS from CDN at runtime, no install required
+    useEffect(() => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+      document.head.appendChild(link);
+  
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+      document.body.appendChild(script);
+    }, []);
+
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
@@ -28,31 +40,50 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim() || !formData.confirmPassword.trim()) {
-      alert("All fields must be filled!");
+
+    if (!formData.username.trim()){
+      window.Toastify({ text: "Please enter a username", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.firstName.trim()){
+      window.Toastify({ text: "Please enter your first name", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.lastName.trim()){
+      window.Toastify({ text: "Please enter your last name", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.email.trim()){
+      window.Toastify({ text: "Please enter your email address", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.phoneNum.trim()){
+      window.Toastify({ text: "Please enter your phone number", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.country){
+      window.Toastify({ text: "Please select a country", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if (!formData.password.trim()){
+      window.Toastify({ text: "Please enter a password", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
+      return;
+    }else if(!formData.confirmPassword.trim()){
+      window.Toastify({ text: "Please confirm the password", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
       return;
     }
   
     //  Add email validation using regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      alert("Invalid email format");
+      // alert("Invalid email format");
+      window.Toastify({ text: "Please enter a valid email address", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
       return;
     }
 
-    if(formData.country === "Select a country") {
-      alert("Please select a country");
-      return;
-    }
-  
     if (formData.password.length < 8) {
-      alert("Password must be at least 8 characters long");
+      // alert("Password must be at least 8 characters long");
+      window.Toastify({ text: "Password must be at least 8 characters long", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
       return;
     }
   
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      // alert("Passwords do not match");
+      window.Toastify({ text: "Passwords do not match", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
       return;
     }
   
@@ -68,11 +99,13 @@ const SignupPage = () => {
         confirmPassword: formData.confirmPassword,
       });
       setMessage(response.data.message);
-      alert("Sign up successful!");
+      // alert("Sign up successful!");
+      window.Toastify({ text: "Sign up successful, please log in", duration: 6000, gravity: "top", position: "center"}).showToast();
       navigate("/login");
     } catch (error) {
       setMessage(error.response.data.error || 'An error occurred');
-      alert("Sign up failed!");
+      // alert("Sign up failed!");
+      window.Toastify({ text: "Sign up failed", duration: 6000, gravity: "bottom", position: "center", style: { background: "#F62424"}}).showToast();
     }
   };
   
@@ -82,7 +115,7 @@ const SignupPage = () => {
     <>
       <div style={styles.container}>
         <h2 style={styles.title}>Create Account</h2>
-        <form style={styles.form} onSubmit={handleSubmit}>
+        <form noValidate style={styles.form} onSubmit={handleSubmit}> {/* noValidate turn off the form alert to use Toastify-js */}
           <label style={styles.label}>
             <Input
               type="text"

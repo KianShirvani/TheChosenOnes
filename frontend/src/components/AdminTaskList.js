@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock, selectedColor = "#e0e0e0", onAssignColor, }) => {
+  
+  const [showDropdown, setShowDropdown] = useState(false);
 
-const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onToggleLock }) => {
   const renderTitle = (status) => {
     switch (status) {
       case "todo":
@@ -13,15 +15,108 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
         return status;
     }
   };
-  
+
+  const colors = {
+    Default: "#e0e0e0",
+    Red: "red",
+    Green: "green",
+    Yellow: "yellow",
+    Purple: "purple",
+    Black: "black",
+    White: "white",
+    Grey: "grey",
+  };
+
+  const getSelectedColorName = () => {
+    return Object.keys(colors).find((key) => colors[key] === selectedColor) || "Default";
+  };
+
+  const priorityLabelMap = {
+   "Low": "Low",
+    "Medium": "Medium",
+    "High": "High",
+    "Critical": "Critical",
+    "Urgent": "Urgent"
+  };
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true; 
+    document.body.appendChild(script);
+
+
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
+  const handleDeleteClick = (task) => {
+    if (task.locked) {
+      window.Toastify({
+        text: "This task has been locked, can not deleted",
+        duration: 6000, 
+        gravity: "bottom", 
+        position: "center",
+        style: {
+          background: "#F62424", 
+        },
+      }).showToast();
+      return;
+    }
+    onDeleteTask(task.task_id);
+  };
+  const handleEditClick = (task) => {
+    if (task.locked) {
+      window.Toastify({
+        text: "This task has been locked, cannot be edited",
+        duration: 6000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: "#F62424",
+        },
+      }).showToast();
+      return;
+    }
+    onEditTask(task);
+  };
   return (
-    <div style={styles.list}>
+    <div style={{...styles.list, background: selectedColor }}>
       <h3>{renderTitle(title)}</h3>
+
+      {/* Assign Color Dropdown */}
+      <div style={{ marginBottom: "10px" }}>
+        <button onClick={() => setShowDropdown((prev) => !prev)} style={styles.assignColorButton}>
+          Assign Color
+        </button>
+        {showDropdown && (
+          <select
+            value={getSelectedColorName()}
+            onChange={(e) => {
+              const selectedOption = e.target.value;
+              const newColor = colors[selectedOption] || "#e0e0e0";
+              onAssignColor && onAssignColor(newColor);
+              setShowDropdown(false);
+            }}
+            style={styles.dropdown}
+          >
+            {Object.keys(colors).map((color) => (
+              <option key={color} value={color}>{color}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
       {tasks.map((task) => (
-        <div key={task.id} style={styles.task} data-testid="task-card">
+        <div key={task.task_id} style={styles.task} data-testid="task-card">
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {task.priority}</p>
+          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.progressBar} data-testid="progress-bar">
@@ -50,8 +145,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
           )}
 
           <div style={styles.actions}>
-            <button onClick={() => onEditTask(task)} style={styles.edit} data-testid="edit-button" disabled={task.locked}>✏️</button>
-            
+          <button
+              onClick={() => handleEditClick(task)} 
+              style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} 
+              data-testid="edit-button"
+
+            >
+              ✏️
+            </button>
             {title !== "To-Do" && !task.locked && (
   <button
     onClick={() => onMoveTask(task, "left")}
@@ -74,19 +175,19 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 
            
   <button 
-    onClick={() => onToggleLock(task.id)} 
+    onClick={() => onToggleLock(task.task_id)} 
     style={task.locked ? styles.locked : styles.unlock} 
     data-testid="lock-button"
   >
-    {task.locked ? "Locked" : "Lock"}
+    {task.locked ? "Unlock" : "Lock"}
   </button>
 
   <button
-    onClick={() => onDeleteTask(task.id)}
-    style={styles.delete}
-    data-testid="delete-button"
-    disabled={task.locked}  // Disable the delete button when the task is locked
+              onClick={() => handleDeleteClick(task)}
+              style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} 
+              data-testid="delete-button"         
   >
+  🗑
   </button>
 
           </div>

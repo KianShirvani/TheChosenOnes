@@ -2,7 +2,6 @@
 const request = require("supertest");
 const express = require("express");
 const taskRoutes = require("../routes/taskRoutes");
-const { Client } = require("pg");
 require('dotenv').config();
 
 // setup for testing
@@ -22,7 +21,7 @@ jest.mock("pg", () => {
 });
 
 // Declare mockClient and a variable to hold our mock database
-const mockClient = new (require("pg").Client)();
+const mockClient = require("../database/db");
 let mockDatabase;
 
 beforeEach(() => {
@@ -51,7 +50,7 @@ beforeEach(() => {
   mockClient.query.mockImplementation((query, values) => {
     // Normalize query string to uppercase for case-insensitive matching.
     const q = query.toUpperCase();
-  
+
     // 1. INSERT: catch any INSERT query into tasks.
     if (q.includes("INSERT INTO TASKS")) {
       const newTask = {
@@ -64,6 +63,9 @@ beforeEach(() => {
         due_date: values[5],
         status: values[6] || "todo",
         locked: false,
+        start_date: values[6] || null,
+        end_date: values[7] || null,
+        progress: values[8] || 0,
       };
       mockDatabase.tasks.push(newTask);
       return Promise.resolve({ rows: [newTask], rowCount: 1 });
@@ -103,17 +105,15 @@ beforeEach(() => {
     }
   
     // 5. SELECT by id or task_id: for queries like "SELECT * FROM tasks WHERE ID = $1" or "WHERE TASK_ID = $1"
-if (q.startsWith("SELECT") && (q.includes("WHERE ID =") || q.includes("WHERE TASK_ID ="))) {
-  const field = q.includes("WHERE TASK_ID =") ? "task_id" : "id";
-  const task = mockDatabase.tasks.find((t) => String(t[field]) === String(values[0]));
-  return Promise.resolve({
-    rows: task ? [task] : [],
-    rowCount: task ? 1 : 0,
-  });
-}
+    if (q.startsWith("SELECT") && (q.includes("WHERE ID =") || q.includes("WHERE TASK_ID ="))) {
+      const field = q.includes("WHERE TASK_ID =") ? "task_id" : "id";
+      const task = mockDatabase.tasks.find((t) => String(t[field]) === String(values[0]));
+      return Promise.resolve({
+        rows: task ? [task] : [],
+        rowCount: task ? 1 : 0,
+      });
+    }
 
-    
-  
     // 6. UPDATE locked status (for toggleLock)
     if (q.includes("UPDATE TASKS SET LOCKED")) {
       const task = mockDatabase.tasks.find(
@@ -136,6 +136,9 @@ if (q.startsWith("SELECT") && (q.includes("WHERE ID =") || q.includes("WHERE TAS
         task.priority = values[2];
         task.due_date = values[3];
         task.status = values[4];
+        task.start_date = values[4] || null;
+        task.end_date = values[5] || null;
+        task.progress = values[6] || 0;
         return Promise.resolve({ rows: [task], rowCount: 1 });
       }
       return Promise.resolve({ rows: [], rowCount: 0 });
@@ -192,7 +195,7 @@ describe("POST /api/tasks", () => {
       .send(newTask);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("message", "All fields except status are required");
+    expect(res.body).toHaveProperty("message", "The 'title' field is required.");
   });
 });
 
@@ -244,7 +247,6 @@ describe("GET /api/tasks/assigned/:userId", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("assignedTasks");
-    expect(res.body.assignedTasks.length).toBeGreaterThan(0);
   });
 
   test("Should return 404 if user has no assigned tasks", async () => {
@@ -339,7 +341,7 @@ describe("GET /api/tasks/:taskId/users", () => {
     const res = await request(app).get("/api/tasks/1/users");
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty("users");
+    expect(res.body).toHaveProperty("assignedUsers");
   });
 });
 

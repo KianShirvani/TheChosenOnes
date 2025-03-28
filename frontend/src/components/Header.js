@@ -8,19 +8,24 @@ import { NotificationContext } from './NotificationContext';
 
 const Header = () => {
     const navigate = useNavigate();  
-    const isLoggedIn = localStorage.getItem("userToken"); // Check if userToken exists from login
-
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const isLoggedIn = !!token && token !== "logged_out";
     // Get notification data from context
     const { notification } = useContext(NotificationContext);
-
+    
     const handleChatClick = () => {
         if (isLoggedIn) {
             navigate("/chat"); // Send to chat if logged in
         } else {
-            navigate("/signup"); // Redirect to sign-up if not logged in
+            navigate("/login"); // Redirect to sign-up if not logged in
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem("token"); // remove authentication once logged out
+        navigate("/login");
+      };
     const handleTasksClick = () => {
         navigate("/tasks"); // Navigate to My Tasks page
     };
@@ -54,6 +59,15 @@ const Header = () => {
                         My Tasks
                     </button>
                 )}
+                {isLoggedIn && role  === "admin" && (
+          <button
+            className="btn adminButton"
+            onClick={() => navigate("/admindashboard")}
+            style={{ marginRight: "15px" }}
+          >
+            Admin Dashboard
+          </button>
+        )}
 
                 {/* Chat icon directing users to the /chat page if logged in, otherwise to sign up */}
                 <FaComments 
@@ -62,11 +76,7 @@ const Header = () => {
                     style={{ cursor: "pointer", fontSize: "1.2rem", marginRight: "15px" }} 
                 />
 
-                <div className="search-container">
-                    <input type="text" placeholder="Search..." className="search-input" />
-                    <FaSearch className="search-icon" />
-                </div>
-                
+               
 
                 {/* Updated notification icon with color from notification and click handler */}
                 <FaBell 
@@ -80,10 +90,16 @@ const Header = () => {
                     }} 
                 />
 
-                <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
-                <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
-            </div>
-        </header>
+{!isLoggedIn ? (
+                    <>
+                        <button className="btn sign-in" onClick={() => navigate("/login")}>Log In</button>
+                        <button className="btn sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
+                    </>
+                ) : (
+                    <button className="btn logout" onClick={handleLogout}>Log Out</button>
+                )}
+      </div>
+    </header>
     );
 };
 

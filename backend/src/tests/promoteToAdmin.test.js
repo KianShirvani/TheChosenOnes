@@ -28,7 +28,7 @@ let mockClient;
 
 beforeEach(() => {
     // Setup mock implementation for pg client queries
-    mockClient = new (require('pg').Client)(); // Mock Client instance
+    mockClient = require("../database/db"); // Mock Client instance
     mockClient.query.mockReset(); // Reset before each query
 
     // Mock database query to check if user exists

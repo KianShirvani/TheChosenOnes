@@ -6,7 +6,7 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
   const [editedTask, setEditedTask] = useState(task);
 
   const handleEdit = () => {
-    onEditTask(status, task.id, editedTask);
+    onEditTask(status, task.task_id, editedTask);
     setIsEditing(false);
     setIsOpen(false);
   };
@@ -23,9 +23,11 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
               <input type="text" value={editedTask.title} onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })} />
               <textarea value={editedTask.description} onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })} />
               <select value={editedTask.priority} onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value })}>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+              <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+           <option value="Critical">Critical</option>
+           <option value="Urgent">Urgent</option>
               </select>
               <input type="date" value={editedTask.date} onChange={(e) => setEditedTask({ ...editedTask, date: e.target.value })} />
               <button onClick={handleEdit} style={styles.saveButton}>Save</button>
@@ -33,7 +35,7 @@ const TaskMenu = ({ task, status, onDeleteTask, onEditTask }) => {
           ) : (
             <>
               <button onClick={() => setIsEditing(true)} style={styles.option}>Edit</button>
-              <button onClick={() => onDeleteTask(status, task.id)} style={styles.deleteButton}>Delete</button>
+              <button onClick={() => onDeleteTask(status, task.task_id)} style={styles.deleteButton}>Delete</button>
             </>
           )}
         </div>

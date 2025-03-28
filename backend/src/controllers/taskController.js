@@ -1,18 +1,6 @@
 // dependencies
-const { Client } = require("pg");
 const moment = require('moment');
-
-// set up connection to the database
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false
-});
-
-// to prevent connecting to the database during tests
-if (process.env.NODE_ENV !== "test") {
-  client.connect();
-}
-
+const client = require('../database/db');
 
 // Get all tasks
 const getTasks = async (req, res) => {
@@ -36,14 +24,34 @@ const createTask = async (req, res) => {
   try {
     const { kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
 
-    if (!title || !description || !progress || !due_date || !start_date || !end_date ) {
-      console.log("Missing required fields:", req.body);
-      return res.status(400).json({ message: "All fields except status are required" });
+    if (!title) {
+      console.log("Missing required field: title", req.body);
+      return res.status(400).json({ message: "The 'title' field is required." });
     }
-
+    if (!description) {
+      console.log("Missing required field: description", req.body);
+      return res.status(400).json({ message: "The 'description' field is required." });
+    }
+    if (!due_date) {
+      console.log("Missing required field: due_date", req.body);
+      return res.status(400).json({ message: "The 'due_date' field is required." });
+    }
+    if (!start_date) {
+      console.log("Missing required field: start_date", req.body);
+      return res.status(400).json({ message: "The 'start_date' field is required." });
+    }
+    if (!end_date) {
+      console.log("Missing required field: end_date", req.body);
+      return res.status(400).json({ message: "The 'end_date' field is required." });
+    }
+    
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
     const result = await client.query(
-      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *",
-      [kanban_id, user_id, title, description, priority, moment(due_date).format('YYYY-MM-DD'), status]
+      "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false) RETURNING *",
+      [kanban_id, user_id, title, description, parsedPriority, moment(due_date).format('YYYY-MM-DD'), moment(start_date).format('YYYY-MM-DD'), moment(end_date).format('YYYY-MM-DD'), progress || 0, status]
     );
 
     if (!result || !result.rows || result.rows.length === 0) {
@@ -66,7 +74,7 @@ const toggleLock = async (req, res) => {
     const { taskId } = req.params; 
 
     // Check if task exists
-    const taskCheck = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+    const taskCheck = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
     if (taskCheck.rowCount === 0) {
       return res.status(404).json({ message: "Task not found" });
     }
@@ -74,7 +82,7 @@ const toggleLock = async (req, res) => {
     const newLockStatus = !taskCheck.rows[0].locked;
 
     const updatedTask = await client.query(
-      "UPDATE tasks SET locked = $1 WHERE id = $2 RETURNING *",
+      "UPDATE tasks SET locked = $1 WHERE task_id = $2 RETURNING *",
       [newLockStatus, taskId]
     );
 
@@ -89,10 +97,10 @@ const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["todo", "inProgress", "done"];
+    const columnOrder = ["to do", "In Progress", "done"];
 
     // Use the proper field name and variable (id instead of task_id)
-    const taskResult = await client.query("SELECT * FROM tasks WHERE id = $1", [taskId]);
+    const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
     if (taskResult.rowCount === 0) {
       return res.status(404).json({ message: "Task not found" });
     }
@@ -101,6 +109,7 @@ const moveTask = async (req, res) => {
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be moved" });
     }
+    
 
     const currentIndex = columnOrder.indexOf(task.status);
     const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
@@ -110,7 +119,7 @@ const moveTask = async (req, res) => {
     }
 
     const updatedTask = await client.query(
-      "UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *",
+      "UPDATE tasks SET status = $1 WHERE task_id = $2 RETURNING *",
       [columnOrder[newIndex], taskId]
     );
 
@@ -125,38 +134,64 @@ const moveTask = async (req, res) => {
 // Update a task
 const updateTask = async (req, res) => {
   try {
-    const { title, description, priority, due_date, start_date, end_date, progress, status } = req.body;
+    const { title, description, priority, due_date, start_date, end_date, progress, status, assignedUsers } = req.body;
     const { taskId } = req.params;
+
+    // Validate task ID
     if (!taskId || isNaN(taskId)) {
-      console.error(`❌ Invalid Task ID: ${taskId}`);
+      console.error(`Invalid Task ID: ${taskId}`);
       return res.status(400).json({ message: "Invalid or missing Task ID" });
     }
-    const taskCheck = await client.query("SELECT locked FROM tasks WHERE id = $1", [taskId]);
 
-
-    // Fix: Prevent accessing 'locked' on undefined rows
-    if (!taskCheck || taskCheck.rowCount === 0 || !taskCheck.rows[0]) {  
+    // Check if the task exists
+    const taskCheck = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
+    
+    if (taskCheck.rowCount === 0) {
       console.error(`Task with ID ${taskId} not found.`);
       return res.status(404).json({ message: "Task not found" });
     }
 
     const task = taskCheck.rows[0];
 
+    // Check if task is locked
     if (task.locked) {
       return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
 
+    // Parse priority
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
+
+    // Update task details
     const result = await client.query(
-      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE id=$9 RETURNING *",
-      [title, description, priority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
+      "UPDATE tasks SET title=$1, description=$2, priority=$3, due_date=$4, start_date=$5, end_date=$6, progress=$7, status=$8 WHERE task_id=$9 RETURNING *",
+      [title, description, parsedPriority, due_date || null, start_date || null, end_date || null, progress, status, taskId]
     );
 
     if (!result || result.rowCount === 0) {
       return res.status(500).json({ message: "Failed to update task" });
     }
 
-    console.log(`Task ${taskId} updated.`);
+    // If there are assigned users, update the task_users table
+    if (assignedUsers && Array.isArray(assignedUsers)) {
+      // First, remove any users currently assigned to the task
+      await client.query("DELETE FROM task_users WHERE task_id = $1", [taskId]);
+
+      // Now, add the new assigned users
+      const userPromises = assignedUsers.map((userId) =>
+        client.query("INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)", [taskId, userId])
+      );
+      
+      // Wait for all insert operations to complete
+      await Promise.all(userPromises);
+    }
+
+    // Return the updated task
+    console.log(`Task ${taskId} updated successfully.`);
     res.status(200).json({ message: "Task updated successfully", task: result.rows[0] });
+
   } catch (error) {
     console.error("Error in updateTask:", error);
     res.status(500).json({ message: "Server error", error });
@@ -164,17 +199,32 @@ const updateTask = async (req, res) => {
 };
 
 
+
+
 // Get assigned tasks for a specific user
 const getAssignedTasks = async (req, res) => {
   try {
     const { userId } = req.params;
-    const result = await client.query("SELECT * FROM tasks WHERE user_id = $1", [userId]);
 
-    if (result.rowCount === 0) {
+    // Query task_users table to get task IDs for the given user
+    const taskUserResult = await client.query("SELECT task_id FROM task_users WHERE user_id = $1", [userId]);
+
+    if (taskUserResult.rowCount === 0) {
       return res.status(404).json({ message: "No assigned tasks found for this user." });
     }
 
-    res.status(200).json({ assignedTasks: result.rows });
+    // Extract task_ids from the result
+    const taskIds = taskUserResult.rows.map(row => row.task_id);
+
+    // Now fetch the tasks from the tasks table using the task_ids
+    const taskResult = await client.query("SELECT * FROM tasks WHERE id = ANY($1::int[])", [taskIds]);
+
+    if (taskResult.rowCount === 0) {
+      return res.status(200).json({ assignedTasks: [] }); // Return an empty array for assignedTasks
+    }
+
+    // Return the assigned tasks
+    res.status(200).json({ assignedTasks: taskResult.rows });
   } catch (error) {
     console.error("Error in getAssignedTasks:", error);
     res.status(500).json({ message: "Server error", error });
@@ -185,7 +235,7 @@ const getAssignedTasks = async (req, res) => {
 // Update assigned task
 const updateAssignedTask = async (req, res) => {
   const { taskId } = req.params;
-  const { title, description, priority, due_date, status } = req.body;
+  const { title, description, priority, due_date, status, assignedUsers } = req.body;
 
   try {
     const result = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
@@ -200,13 +250,54 @@ const updateAssignedTask = async (req, res) => {
       return res.status(403).json({ message: "Task is locked and cannot be updated." });
     }
 
+    const parsedPriority = priority !== undefined ? parseInt(priority, 10) : 2;
+    if (priority !== undefined && isNaN(parsedPriority)) {
+      return res.status(400).json({ message: "Priority must be a valid integer" });
+    }
+
+    // Update task details
     const updatedTask = await client.query(
       "UPDATE tasks SET title = $1, description = $2, priority = $3, due_date = $4, status = $5 WHERE task_id = $6 RETURNING *",
-      [title, description, priority, due_date, status, taskId]
+      [title, description, parsedPriority, due_date, status, taskId]
     );
-    
-  
-  
+
+    // Now update the task_users table with the assigned users
+    if (assignedUsers && Array.isArray(assignedUsers)) {
+      // Get the current list of user IDs assigned to this task
+      const currentAssignedUsersResult = await client.query(
+        "SELECT user_id FROM task_users WHERE task_id = $1", [taskId]
+      );
+      const currentAssignedUsers = currentAssignedUsersResult.rows.map(row => row.user_id);
+
+      // Users to add (present in assignedUsers but not in currentAssignedUsers)
+      const usersToAdd = assignedUsers.filter(userId => !currentAssignedUsers.includes(userId));
+
+      // Users to remove (present in currentAssignedUsers but not in assignedUsers)
+      const usersToRemove = currentAssignedUsers.filter(userId => !assignedUsers.includes(userId));
+
+      // Add new users to task_users table
+      if (usersToAdd.length > 0) {
+        const addPromises = usersToAdd.map(userId => {
+          return client.query(
+            "INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)",
+            [taskId, userId]
+          );
+        });
+        await Promise.all(addPromises);
+      }
+
+      // Remove users no longer assigned from task_users table
+      if (usersToRemove.length > 0) {
+        const removePromises = usersToRemove.map(userId => {
+          return client.query(
+            "DELETE FROM task_users WHERE task_id = $1 AND user_id = $2",
+            [taskId, userId]
+          );
+        });
+        await Promise.all(removePromises);
+      }
+    }
+
     res.status(200).json({ message: "Task updated successfully", task: updatedTask.rows[0] });
   } catch (error) {
     console.error("Error in updateAssignedTask:", error);
@@ -220,7 +311,7 @@ const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
 
-    const result = await client.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [taskId]);
+    const result = await client.query("DELETE FROM tasks WHERE task_id = $1 RETURNING *", [taskId]);
 
     if (result.rowCount === 0) {  //  Fix: return 404 if no task was deleted
       console.log(`Task with ID ${taskId} not found.`);
@@ -240,19 +331,56 @@ const deleteTask = async (req, res) => {
 const assignUsersToTask = async (req, res) => {
   const { taskId } = req.params;
   const { userIds } = req.body;
+
+  // Check if userIds is a non-empty array
   if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
     return res.status(400).json({ message: "User IDs must be a non-empty array" });
   }
-  // For now, simply return a success response.
-  return res.status(201).json({ message: "Users assigned to task successfully" });
+
+  try {
+    // Insert each userId-taskId pair into the task_users table
+    const insertPromises = userIds.map(userId => {
+      return client.query(
+        "INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)",
+        [taskId, userId]
+      );
+    });
+
+    // Wait for all insertions to complete
+    await Promise.all(insertPromises);
+
+    // Return success message
+    return res.status(201).json({ message: "Users assigned to task successfully" });
+  } catch (error) {
+    console.error("Error assigning users to task:", error);
+    return res.status(500).json({ message: "Server error", error });
+  }
 };
 
 
 // Get users assigned to a task
 const getUsersForTask = async (req, res) => {
   const { taskId } = req.params;
-  // Return a dummy list of users for testing purposes.
-  return res.status(200).json({ users: [{ id: 1, name: "User One" }, { id: 2, name: "User Two" }] });
+  try {
+    // Query the database to get users assigned to the given task
+    const result = await client.query(
+      `SELECT users.user_id FROM users JOIN task_users ON users.user_id = task_users.user_id WHERE task_users.task_id = $1`, 
+      [taskId]
+    );
+
+    // If users are found, return them in the response
+    if (result.rows.length > 0) {
+      return res.status(200).json({ assignedUsers: result.rows });
+    } else {
+      // If no users are found, return an empty array or an appropriate message
+      // return res.status(404).json({ message: "No users assigned to this task" });
+      return res.status(200).json({ assignedUsers: [] });
+    }
+  } catch (error) {
+    // Handle any errors that occur during the query
+    console.error("Error fetching users for task:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
@@ -324,4 +452,3 @@ module.exports = {
   removeUsersFromTask,
   getFilteredTasks
 };
-

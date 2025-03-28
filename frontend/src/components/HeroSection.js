@@ -8,9 +8,6 @@ const HeroSection = () => {
      
       <img src="/hero-image.png" alt="Hero" style={styles.image} />
       <br></br>
-      <button style={styles.button} onClick={() => alert("Sign Up Clicked")}>
-        Get Started
-      </button>
 
      
     </section>
