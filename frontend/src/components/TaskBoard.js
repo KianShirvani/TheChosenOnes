@@ -151,7 +151,40 @@ useEffect(() => {
 
   // Modified handleSaveTask to also handle assigned users for new tasks.
   const handleSaveTask = async (taskData) => {
-    console.log("Raw taskData before sending:", taskData); 
+    const showToast = (message) => {
+      if (window.Toastify) {
+        window.Toastify({
+          text: message,
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#ff6b6b",
+        }).showToast();
+      }
+    };
+  
+    if (!taskData.title?.trim()) {
+      showToast("no title");
+      return;
+    }
+    if (!taskData.description?.trim()) {
+      showToast("no description");
+      return;
+    }
+    if (!taskData.startDate) {
+      showToast("no start date");
+      return;
+    }
+    if (!taskData.dueDate) {
+      showToast("no due date");
+      return;
+    }
+    if (taskData.progress === 0 || taskData.progress === "0") {
+      showToast("no progress bar");
+      return;
+    }
+
+  
   
     if (!taskData.title?.trim() || !taskData.description?.trim() || !taskData.priority || !taskData.dueDate) {
       console.error("Missing fields:", taskData);
