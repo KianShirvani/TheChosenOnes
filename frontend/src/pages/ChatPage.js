@@ -11,10 +11,6 @@ import "../css/ChatPage.css";
 import { getDoc,setDoc } from "firebase/firestore";
 
 
-
-
-
-
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState(() => {
     const savedChat = localStorage.getItem("selectedChat");
@@ -30,10 +26,43 @@ export default function ChatPage() {
     const savedGroups = localStorage.getItem("groupChats");
     return savedGroups ? JSON.parse(savedGroups) : [];
   });
+  const [deletedChats, setDeletedChats] = useState(() => {
+    const savedDeletedChats = localStorage.getItem("deletedChats");
+    return savedDeletedChats ? JSON.parse(savedDeletedChats) : [];
+  });
+  const [chatNames, setChatNames] = useState(() => {
+    const savedChatNames = localStorage.getItem("chatNames");
+    return savedChatNames ? JSON.parse(savedChatNames) : {};
+  });
   const [groupName, setGroupName] = useState("");
   const fileInputRef = useRef(null);
   const [editingGroupName, setEditingGroupName] = useState(false);
   const [users, setUsers] = useState([]);
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
+  
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true;
+  
+    script.onload = () => {
+      console.log("Toastify.js loaded successfully");
+    };
+    script.onerror = () => {
+      console.error("Failed to load Toastify.js");
+    };
+  
+    document.body.appendChild(script);
+  
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -49,6 +78,7 @@ export default function ChatPage() {
             name: user.display_name 
           }));
         setUsers(userList);
+        
       } catch (error) {
         console.error("get user fail:", error);
       }
@@ -56,7 +86,9 @@ export default function ChatPage() {
     fetchUsers();
   }, [userId]);
   
-
+  useEffect(() => {
+    localStorage.setItem("deletedChats", JSON.stringify(deletedChats));
+  }, [deletedChats]);
   useEffect(() => {
     const q = query(collection(db, "groupChats"), orderBy("id"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -74,6 +106,11 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {  
+    if (!selectedChat || !selectedChat.id) {
+      setMessages([]); 
+      return;
+    }
+  
     const q = query(
       collection(db, "messages"),
       where("chatId", "==", selectedChat.id),
@@ -93,7 +130,6 @@ export default function ChatPage() {
   
     return () => unsubscribe();
   }, [selectedChat]);
-  
   
   
   const sendMessage = async (imageUrl = "") => {
@@ -171,6 +207,21 @@ export default function ChatPage() {
   
   
   const createGroupChat = async () => {
+    if (selectedGroupUsers.length < 2) {
+      if (window.Toastify) {
+        window.Toastify({
+          text: "At least choose 2 persons to create group",
+          duration: 6000, 
+          gravity: "bottom", 
+          position: "center",
+          backgroundColor: "#F62424", 
+          stopOnFocus: true, 
+        }).showToast();
+      } else {
+        alert("At least choose 2 persons to create a group");
+      }
+      return;
+    }
   
     const groupId = `group-${uuidv4()}`;
     const group = {
@@ -190,65 +241,90 @@ export default function ChatPage() {
     }
   };
 
-  const updateGroupName = async (newName) => {
-    if (!selectedChat || !selectedChat.id || !newName.trim()) return;
+  const updateChatName = async (chatId, newName) => {
+    if (!chatId || !newName.trim()) return;
   
     try {
-    
-      const groupQuery = query(collection(db, "groupChats"), where("id", "==", selectedChat.id));
-      const querySnapshot = await getDocs(groupQuery);
+      if (selectedChat?.participants?.length > 2) {
+        const groupQuery = query(collection(db, "groupChats"), where("id", "==", chatId));
+        const querySnapshot = await getDocs(groupQuery);
   
-      if (!querySnapshot.empty) {
-        const groupDoc = querySnapshot.docs[0].ref; 
-        await updateDoc(groupDoc, { name: newName }); 
+        if (!querySnapshot.empty) {
+          const groupDoc = querySnapshot.docs[0].ref;
+          await updateDoc(groupDoc, { name: newName });
   
-
-        setGroupChats((prevGroups) =>
-          prevGroups.map((group) =>
-            group.id === selectedChat.id ? { ...group, name: newName } : group
-          )
-        );
+          setGroupChats((prevGroups) =>
+            prevGroups.map((group) =>
+              group.id === chatId ? { ...group, name: newName } : group
+            )
+          );
   
-      
+          setSelectedChat((prevChat) => ({
+            ...prevChat,
+            name: newName,
+          }));
+        } else {
+          console.error("can not find group");
+        }
+      } else {
+        const updatedChatNames = { ...chatNames, [chatId]: newName };
+        setChatNames(updatedChatNames);
+        localStorage.setItem("chatNames", JSON.stringify(updatedChatNames));
+  
         setSelectedChat((prevChat) => ({
           ...prevChat,
           name: newName,
         }));
-  
-        console.log(newName);
-      } else {
-        console.error("can not find");
       }
+      console.log("rename:", newName);
     } catch (error) {
-      console.error( error);
+      console.error("fail to rename", error);
     }
   };
-  const handleDeleteGroup = async (groupId) => {
+  const handleDeleteChat = async (chatId) => {
     try {
-      const groupQuery = query(collection(db, "groupChats"), where("id", "==", groupId));
-      const querySnapshot = await getDocs(groupQuery);
+      const messagesQuery = query(
+        collection(db, "messages"),
+        where("chatId", "==", chatId)
+      );
+      const messagesSnapshot = await getDocs(messagesQuery);
+      const deleteMessagePromises = messagesSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deleteMessagePromises);
+      console.log("delete message successfully:", chatId);
   
-      if (!querySnapshot.empty) {
-        const groupDoc = querySnapshot.docs[0].ref;
-        await deleteDoc(groupDoc);
-
-        setGroupChats((prevGroups) => prevGroups.filter(group => group.id !== groupId));
+      if (selectedChat?.participants?.length > 2) {
+        const groupQuery = query(collection(db, "groupChats"), where("id", "==", chatId));
+        const querySnapshot = await getDocs(groupQuery);
   
-        if (selectedChat?.id === groupId) {
-          setSelectedChat(null);
-          localStorage.removeItem("selectedChat");
+        if (!querySnapshot.empty) {
+          const groupDoc = querySnapshot.docs[0].ref;
+          await deleteDoc(groupDoc);
+          setGroupChats((prevGroups) => prevGroups.filter(group => group.id !== chatId));
+          console.log("delete group successfully:", chatId);
+        } else {
+          console.error("can not find group", chatId);
         }
       } else {
-        console.error("can not find group:", groupId);
+        setDeletedChats((prev) => [...prev, chatId]);
+        const updatedChatNames = { ...chatNames };
+        delete updatedChatNames[chatId];
+        setChatNames(updatedChatNames);
+        localStorage.setItem("chatNames", JSON.stringify(updatedChatNames));
+      }
+  
+      if (selectedChat?.id === chatId) {
+        setSelectedChat(null);
+        localStorage.removeItem("selectedChat");
       }
     } catch (error) {
-      console.error("fail to delete groups:", error);
+      console.error("can not delete chat:", error);
     }
   };
   
   
   const handleSelectChat = (chat) => {
-  
     if (!chat) {
       setSelectedChat(null);
       localStorage.removeItem("selectedChat");
@@ -258,7 +334,11 @@ export default function ChatPage() {
     let newSelectedChat;
     if (typeof chat === "string" || typeof chat === "number") {
       const chatId = String(chat);
-      newSelectedChat = { id: chatId, participants: [userId, chatId] };
+      newSelectedChat = { 
+        id: chatId, 
+        participants: [userId, chatId],
+        name: chatNames[chatId] || undefined
+      };
     } else if (chat && typeof chat === "object" && chat.id && chat.participants) {
       newSelectedChat = chat;
     } else {
@@ -266,7 +346,7 @@ export default function ChatPage() {
       localStorage.removeItem("selectedChat");
       return;
     }
-
+  
     setSelectedChat(newSelectedChat);
     localStorage.setItem("selectedChat", JSON.stringify(newSelectedChat));
   };
@@ -283,32 +363,26 @@ export default function ChatPage() {
 
 {creatingGroup && (
   <div className="group-selection">
-    <input
-      type="text"
-      className="group-name-input"
-      placeholder="Enter group name"
-      value={groupName}
-      onChange={(e) => setGroupName(e.target.value)}
-    />
-   {users.map((user) => (
-  <label key={user.id} className="group-user">
-    <input
-      type="checkbox"
-      value={user.id}
-      checked={selectedGroupUsers.includes(user.id)}
-      onChange={(e) => {
-        const selected = e.target.checked
-          ? [...selectedGroupUsers, user.id]
-          : selectedGroupUsers.filter((u) => u !== user.id);
-        setSelectedGroupUsers(selected);
-      }}
-    />
-    {user.name}
-  </label>
-))}
-    <button className="confirm-group-button" onClick={() => {
-      createGroupChat();
-    }}>
+    {users.map((user) => (
+      <label key={user.id} className="group-user">
+        <input
+          type="checkbox"
+          value={user.id}
+          checked={selectedGroupUsers.includes(user.id)}
+          onChange={(e) => {
+            const selected = e.target.checked
+              ? [...selectedGroupUsers, user.id]
+              : selectedGroupUsers.filter((u) => u !== user.id);
+            setSelectedGroupUsers(selected);
+          }}
+        />
+        {user.name}
+      </label>
+    ))}
+    <button
+      className="confirm-group-button"
+      onClick={() => createGroupChat()}
+    >
       Confirm
     </button>
   </div>
@@ -316,17 +390,16 @@ export default function ChatPage() {
 
 
 <div className="chat-users">
-  {users.map((user) => (
-    <button 
-      key={user.id} 
-      onClick={() => {
-        handleSelectChat(user.id);
-      }} 
-      className="chat-user-button"
-    >
-      {user.name}
-    </button>
-  ))}
+  {users
+    .map((user) => (
+      <button
+        key={user.id}
+        onClick={() => handleSelectChat(user.id)}
+        className="chat-user-button"
+      >
+        {chatNames[user.id] || user.name}
+      </button>
+    ))}
 </div>
 
 <div className="chat-groups">
@@ -358,12 +431,18 @@ export default function ChatPage() {
               .map(id => users.find(user => user.id === id)?.name || id)
               .join(", ")
           }`)
-    : `Chat with ${users.find(user => user.id === selectedChat.id)?.name || selectedChat.id}`}
+    : (chatNames[selectedChat.id] || `Chat with ${
+        users.find(user => user.id === selectedChat.participants.find(id => id !== userId))?.name || "Unknown"
+      }`)}
+  <button onClick={() => setEditingGroupName(true)}>Rename</button>
   {selectedChat?.participants?.length > 2 && (
-    <>
-      <button onClick={() => setEditingGroupName(true)}>Rename</button>
-      <button onClick={() => handleDeleteGroup(selectedChat.id)}>Delete</button>
-    </>
+    <button
+      onClick={() => {
+        handleDeleteChat(selectedChat.id);
+      }}
+    >
+      Delete
+    </button>
   )}
 </div>
     {editingGroupName && (
@@ -374,14 +453,15 @@ export default function ChatPage() {
       onChange={(e) => setGroupName(e.target.value)}
       placeholder="Enter new group name"
     />
-    <button
-      onClick={() => {
-        updateGroupName(groupName); 
-        setEditingGroupName(false); 
-      }}
-    >
-      Save
-    </button>
+  <button
+  onClick={() => {
+    updateChatName(selectedChat.id, groupName);
+    setEditingGroupName(false);
+    setGroupName(""); 
+  }}
+>
+  Save
+</button>
   </div>
 )}
 
