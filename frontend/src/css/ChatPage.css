@@ -71,7 +71,7 @@ button {
 }
 
 .group-name-input {
-    width: 100%;
+    width: 90%;
     padding: 8px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
@@ -329,4 +329,20 @@ button {
   .edit-group-name input:focus {
     background-color: white;
     border: 1px solid #25d366; 
+  }
+  .search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; 
+    gap: 8px; 
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: navy;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  .search-bar svg {
+    font-size: 16px;
+    color: white;
   }
