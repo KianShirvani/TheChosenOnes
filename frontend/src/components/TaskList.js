@@ -21,7 +21,22 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
     4: "Critical",
     5: "Urgent"
   };
-
+  const priorityColors = {
+    1: "green",     // Low
+    2: "blue",      // Medium
+    3: "orange",    // High
+    4: "purple",   // Critical
+    5: "red",       // Urgent
+  };
+  
+  const priorityLabels = {
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Critical",
+    5: "Urgent",
+  };
+  
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -164,12 +179,24 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
         </select>
       )}
 
-      {tasks.map((task) => (
-        <div key={task.task_id} style={styles.task}>
-          <strong>{task.title}</strong>
-          <p>{task.description}</p>
-          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
-          <p><strong>Due Date:</strong> {task.dueDate}</p>
+{tasks.map((task) => {
+  const color = priorityColors[task.priority] || "#999";
+  const label = priorityLabels[task.priority] || task.priority;
+
+  return (
+    <div
+      key={task.task_id}
+      style={{
+        ...styles.task,
+        borderLeft: `6px solid ${color}`,
+      }}
+    >
+      <strong>{task.title}</strong>
+      <p>{task.description}</p>
+      <p style={{ color, fontWeight: "bold" }}>
+        Priority: {label}
+      </p>
+      <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.actions}>
             <button onClick={() => onEditTask(task)} style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} >✏️</button>
@@ -182,9 +209,10 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
             <button onClick={() => onDeleteTask(task.task_id)}  style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} >🗑</button>
           </div>
         </div>
-      ))}
-    </div>
-  );
+      );
+    })}
+  </div>
+);
 };
 
 const styles = {

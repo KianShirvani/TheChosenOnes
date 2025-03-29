@@ -38,6 +38,15 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     "Critical": "Critical",
     "Urgent": "Urgent"
   };
+
+  const priorityColors = {
+    Low: "green",
+    Medium: "blue",
+    High: "orange",
+    Critical: "purple",
+    Urgent: "red"
+  };
+  
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -112,11 +121,25 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
         )}
       </div>
 
-      {tasks.map((task) => (
-        <div key={task.task_id} style={styles.task} data-testid="task-card">
+      {tasks.map((task) => {
+  const label = priorityLabelMap[task.priority] || task.priority;
+  const color = priorityColors[label] || "#999";
+
+  return (
+    <div
+      key={task.task_id}
+      style={{
+        ...styles.task,
+        borderLeft: `6px solid ${color}`,
+      }}
+      data-testid="task-card"
+    >
+
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
+          <p style={{ color, fontWeight: "bold" }}>
+          Priority: {label}
+          </p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.progressBar} data-testid="progress-bar">
@@ -192,11 +215,11 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 
           </div>
         </div>
-      ))}
-    </div>
-  );
+     );
+    })}
+  </div>
+);
 };
-
 const styles = {
   list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", marginBottom: "20px" },
   task: { background: "#fff", padding: "15px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },

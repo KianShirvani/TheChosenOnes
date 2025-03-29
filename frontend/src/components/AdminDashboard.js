@@ -286,7 +286,7 @@ const AdminDashboard = () => {
 
   const handleUpdateTask = async (updatedTask) => {
     console.log("Updated Task Before Sending:", updatedTask);
-  
+    const taskId = updatedTask.task_id || updatedTask.id;
     try {
       const priorityMap = {
         "Low": 1,
@@ -297,6 +297,7 @@ const AdminDashboard = () => {
       };
       const taskToSend = {
         ...updatedTask,
+        task_id: taskId,
         priority: priorityMap[updatedTask.priority] || updatedTask.priority,
         dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
           startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",

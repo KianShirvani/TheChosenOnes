@@ -4,7 +4,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
   const formatDate = (date) => (date ? new Date(date).toISOString().split("T")[0] : "");
 
   const [taskData, setTaskData] = useState({
-    id: task.task_id || task.id || null,
+    task_id: task.task_id || task.id || null,
     kanbanId: task.kanban_id ?? null,
     userId: task.user_id ?? null,
     title: task.title || "",
@@ -20,7 +20,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
 
   useEffect(() => {
     setTaskData({
-      id: task.task_id || task.id || null,
+      task_id: task.task_id || task.id || null,
       kanbanId: task.kanban_id ?? null,
       userId: task.user_id ?? null,
       title: task.title || "",
@@ -33,7 +33,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
       progress: task.progress || 0,
       status: task.status || "to do",
     });
-  }, [task]);
+  }, [task.task_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +55,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
     };
 
     const finalData = {
-      id: taskData.id,
+      task_id: taskData.task_id,
       kanban_id: taskData.kanbanId ?? 1,
       user_id: taskData.userId ?? 1,
       title: taskData.title,
