@@ -17,6 +17,30 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
     userId: null,
   });
 
+useEffect(() => {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+  document.head.appendChild(link);
+
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+  document.body.appendChild(script);
+}, []);
+
+const showToast = (message) => {
+  if (window.Toastify) {
+    window.Toastify({
+      text: message,
+      duration: 6000, 
+        gravity: "bottom", 
+        position: "center",
+      backgroundColor: "#F62424",
+    }).showToast();
+  }
+};
+
+
   useEffect(() => {
     if (task) {
       // Set initial task data
@@ -170,9 +194,40 @@ const AddTask = ({ task, onSaveTask, onClose, availableUsers }) => {
         </div>
 
         <div style={styles.buttonContainer}>
-          <button onClick={() => onSaveTask(taskData)} style={styles.saveButton}>
-            {task ? "Update Task" : "Add Task"}
-          </button>
+        <button
+onClick={() => {
+  if (!taskData.title.trim()) {
+    showToast("Missing title");
+    return;
+  }
+  if (!taskData.description.trim()) {
+    showToast("Missing description");
+    return;
+  }
+  if (!taskData.startDate) {
+    showToast("Missing start date");
+    return;
+  }
+  if (!taskData.endDate) {
+    showToast("Missing end date");
+    return;
+  }
+  if (!taskData.dueDate) {
+    showToast("Missing due date");
+    return;
+  }
+  if (taskData.progress === 0) {
+    showToast("Missing progress bar");
+    return;
+  }
+
+  onSaveTask(taskData);
+}}
+style={styles.saveButton}
+>
+{task ? "Update Task" : "Add Task"}
+</button>
+
           <button onClick={onClose} style={styles.closeButton}>
             Close
           </button>
