@@ -1,113 +1,186 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
+const styles = {
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start", 
+        marginTop: "3rem",
+        marginBottom: "3rem",
+        padding: "1rem",
+      },
+  title: {
+    fontSize: "1.8rem",
+    fontWeight: "bold",
+    marginBottom: "1rem",
+  },
+  form: {
+    width: "100%",
+    maxWidth: "20rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  label: {
+    position: "relative",
+    display: "block",
+    width: "100%",
+  },
+  spanLabel: {
+    position: "absolute",
+    left: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#000",
+    fontSize: "16px",
+    transition: "all 0.3s ease",
+    pointerEvents: "none",
+  },
+  floatingLabel: {
+    position: "absolute",
+    left: "10px",
+    top: "-10px",
+    fontSize: "12px",
+    color: "#7000da",
+    transition: "all 0.3s ease",
+    pointerEvents: "none",
+  },
+  input: {
+    width: "95%",
+    padding: "0.5rem",
+    background: "transparent",
+    border: "none",
+    borderRadius: 0,
+    borderBottom: "2px solid #7000da",
+    transition: "all 0.3s ease-in-out",
+    outline: "none",
+  },
+  textarea: {
+    width: "100%",
+    padding: "0.5rem",
+    background: "#fff",
+    border: "2px solid #7000da",
+    borderRadius: "0.5rem",
+    resize: "vertical",
+    outline: "none",
+  },
+  button: {
+    width: "100%",
+    backgroundColor: "#7000da",
+    color: "white",
+    marginTop: "10px",
+    padding: "0.75rem",
+    border: "none",
+    borderRadius: "0.5rem",
+    cursor: "pointer",
+    transition: "0.3s",
+    boxShadow: "0 0 10px rgba(112, 0, 218, 1)",
+  },
+  message: {
+    marginTop: "1rem",
+    textAlign: "center",
+    fontSize: "0.9rem",
+    color: "#7000da",
+  },
+};
 
 const Contact = () => {
   const [result, setResult] = useState("")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const onSubmit = async (event) => {
     event.preventDefault()
-    setResult("Sending....")
-    const formData = new FormData(event.target)
-    formData.append("access_key", "9a695561-b193-47e6-8edf-d242838aa8de");
+    setResult("Sending...")
+    const payload = new FormData()
+    Object.entries(formData).forEach(([key, value]) => {
+      payload.append(key, value)
+    })
+    payload.append("access_key", "9a695561-b193-47e6-8edf-d242838aa8de")
 
     const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
-      body: formData
+      body: payload,
     })
 
     const data = await response.json()
 
     if (data.success) {
-      setResult("Form Submitted Successfully")
-      event.target.reset()
+      setResult("Form submitted successfully!")
+      setFormData({ name: "", email: "", message: "" })
     } else {
-      console.log("Error", data)
-      setResult(data.message)
+      setResult(data.message || "Something went wrong.")
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-      className='w-full px-[12%] py-10 scroll-mt-20'
-    >
-      <motion.h4
-        initial={{ opacity: 0, y: -20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className='text-center mb-2 text-lg'
-      >
-        Connect with us
-      </motion.h4>
-      <motion.h2
-        initial={{ opacity: 0, y: -20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className='text-center text-5xl font-bold text-purple-700'
-      >
-        Get in Touch
-      </motion.h2>
-      <motion.p
+        <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
-        className='text-center max-w-2xl mx-auto mt-5 mb-12'
-      >
-        We'd love to hear from you!
-      </motion.p>
-
-      <motion.form
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.9 }}
-        onSubmit={onSubmit}
-        className='max-w-2xl mx-auto'
-      >
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-10 mb-8'>
-          <motion.input
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
-            type='text'
-            placeholder='Your Name'
-            required
-            className='p-3 outline-none border border-gray-300 rounded-md bg-white'
-            name='name'
-          />
-          <motion.input
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 1.2 }}
-            type='email'
-            placeholder='Your Email'
-            required
-            className='p-3 outline-none border border-gray-300 rounded-md bg-white'
-            name='email'
-          />
-        </div>
-        <motion.textarea
-          initial={{ opacity: 0, y: 100 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.1 }}
-          rows='6'
-          placeholder='Your Message'
-          required
-          className='w-full p-4 outline-none border border-gray-300 rounded-md bg-white mb-6'
-          name='message'
-        />
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
-          type='submit'
-          className='py-3 px-8 bg-purple-700 text-white rounded-full mx-auto block hover:bg-purple-800 transition-colors'
+        transition={{ duration: 1 }}
+        viewport={{ once: true }}
+        style={styles.container}
         >
-          Submit Now
-        </motion.button>
-        <p className='mt-4 text-center'>{result}</p>
-      </motion.form>
+
+      <h2 style={styles.title}>Contact Us</h2>
+      <form onSubmit={onSubmit} style={styles.form}>
+        {/* Name Input */}
+        <label style={styles.label}>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            placeholder=""
+            style={styles.input}
+          />
+          <span style={formData.name ? styles.floatingLabel : styles.spanLabel}>
+            Your Name
+          </span>
+        </label>
+
+        {/* Email Input */}
+        <label style={styles.label}>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder=""
+            style={styles.input}
+          />
+          <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>
+            Your Email
+          </span>
+        </label>
+
+        {/* Message */}
+        <label style={styles.label}>
+          <textarea
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            rows="5"
+            placeholder="Your Message"
+            style={styles.textarea}
+          />
+        </label>
+
+        <button type="submit" style={styles.button}>Submit Now</button>
+        <p style={styles.message}>{result}</p>
+      </form>
     </motion.div>
   )
 }
