@@ -594,7 +594,7 @@ const AdminDashboard = () => {
           onClick={() => navigate("/adminManagement")}
           className="admin-management-button"
           style={{
-            background: "green",
+            background: "#7000da",
             color: "white",
             border: "none",
             padding: "10px 20px",
@@ -610,7 +610,7 @@ const AdminDashboard = () => {
           onClick={() => setIsAddModalOpen(true)}
           className="add-task-button"
           style={{
-            background: "#007bff",
+            background: "#7000da",
             color: "white",
             border: "none",
             padding: "10px 20px",
