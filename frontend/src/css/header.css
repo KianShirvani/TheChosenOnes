@@ -68,17 +68,17 @@
 }
 
 .sign-in:hover {
-    background-color: #61dafb;
+    background-color: white;
     color: black;
 }
 
 .sign-up {
-    background-color: #61dafb;
+    background-color: #b288ff;
     color: black;
 }
 
 .sign-up:hover {
-    background-color: #4fa3d1;
+    background-color: #e0d4ff;
 }
 
 .icon {
