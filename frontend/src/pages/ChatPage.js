@@ -66,7 +66,7 @@ export default function ChatPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:5003/api/users", {
+        const response = await fetch("http://localhost:5000/api/users", {
           method: "GET",
           credentials: "include",
         });
