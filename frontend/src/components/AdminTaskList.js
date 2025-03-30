@@ -221,7 +221,7 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 );
 };
 const styles = {
-  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", marginBottom: "20px" },
+  list: { minHeight: "100%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", display: "flex", flexDirection: "column", },
   task: { background: "#fff", padding: "15px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
   actions: { display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
