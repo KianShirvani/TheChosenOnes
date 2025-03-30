@@ -10,7 +10,7 @@ const testimonials = [
 
   return (
     <section style={styles.container}>
-      <h2>What Our Users Say</h2>
+      <h2 style={{ color: 'white' }}>What Our Users Say</h2>
      <div style={styles.testimonials}>
       {
         testimonials.map((testimonial, index) => (
@@ -29,7 +29,7 @@ const styles = {
   container: {
     textAlign: "center",
     padding: "50px 20px",
-    background: "#e3f2fd",
+    background: "#7000da",
   },
   quote: {
     fontStyle: "italic",

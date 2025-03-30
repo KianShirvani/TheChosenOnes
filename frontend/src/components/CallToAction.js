@@ -4,7 +4,7 @@ const CallToAction = () => {
   const navigate = useNavigate();
   return (
     <section style={styles.container}>
-      <h2>Ready to Boost Your Productivity?</h2>
+      <h2 style={{ color: 'white' }}>Ready to Boost Your Productivity?</h2>
       <button style={styles.button} onClick={() => navigate("/signup")}>
        Get started
       </button>
@@ -16,7 +16,7 @@ const styles = {
   container: {
     textAlign: "center",
     padding: "50px 20px",
-    background: "#ffcc00",
+    background: "#7000da",
   },
   button: {
     padding: "12px 24px",
