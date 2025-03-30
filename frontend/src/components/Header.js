@@ -42,9 +42,36 @@ const Header = () => {
             <div className="header-left"> 
                 <a onClick={() => navigate("/#")} className="header-logo" style={{ cursor: "pointer" }}>Collabium</a>
                 <nav className="navbar">
-                    <a onClick={() => navigate("/#")} href="#">Home</a>
-                    <a onClick={() => navigate("/#")} href="#">About us</a>
-                    <a onClick={() => navigate("/#")} href="#">Contact us</a>
+                    <a
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const section = document.getElementById("features");
+                        if (section) section.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    >
+                    Home
+                    </a>
+                    <a
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const section = document.getElementById("features");
+                        if (section) section.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    >
+                    About us
+                    </a>
+                    <a
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const section = document.getElementById("contact");
+                        if (section) section.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    >
+                    Contact us
+                    </a>
                 </nav>
             </div>
 

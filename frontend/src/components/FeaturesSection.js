@@ -2,7 +2,7 @@ import React from "react";
 
 const FeaturesSection = () => {
   return (
-    <section style={styles.container}>
+    <section id="features" style={styles.container}>
       <h2>Why Choose Us?</h2>
       <div style={styles.grid}>
         <div style={styles.card}>
