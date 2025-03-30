@@ -75,8 +75,8 @@ const insertData = async () => {
       if (taskExists.rows.length === 0) {
         const sampleTasks = [
           // Tasks in "To Do" Column
-          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "To Do", priority: 3, progress: 10,start_date:"2025-12-05" ,end_date:"2025-12-20" },
-          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "To Do", priority: 2 , progress: 20,start_date:"2025-12-07" ,end_date:"2025-12-21" },
+          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "todo", priority: 3, progress: 10,start_date:"2025-12-05" ,end_date:"2025-12-20" },
+          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "todo", priority: 2 , progress: 20,start_date:"2025-12-07" ,end_date:"2025-12-21" },
 
           // Tasks in "In Progress" Column
           { title: "Task 3", description: "Developing backend", due_date: "2025-12-20", status: "In Progress", priority: 4, progress: 40 ,start_date:"2025-11-23" ,end_date:"2025-12-20"},
