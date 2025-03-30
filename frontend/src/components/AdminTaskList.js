@@ -17,14 +17,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   };
 
   const colors = {
-    Default: "#e0e0e0",
-    Red: "red",
-    Green: "green",
-    Yellow: "yellow",
-    Purple: "purple",
-    Black: "black",
-    White: "white",
-    Grey: "grey",
+    Default: "rgba(224, 224, 224, 0.7)",
+    Red: "rgba(255, 0, 0, 0.7)",
+    Green: "rgba(0, 128, 0, 0.7)",
+    Yellow: "rgba(255, 255, 0, 0.7)",
+    Purple: "rgba(128, 0, 128, 0.7)",
+    Black: "rgba(0, 0, 0, 0.7)",
+    White: "rgba(255, 255, 255, 0.7)",
+    Grey: "rgba(128, 128, 128, 0.7)"
   };
 
   const getSelectedColorName = () => {
