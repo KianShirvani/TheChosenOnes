@@ -582,8 +582,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div style={{ width: "100%", textAlign: "left", marginBottom: "10px", paddingLeft: "20px" }}>
-        <h3>Welcome, {username}</h3>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}>
+    <h3>Welcome, {username}</h3>
       </div>
       <h1 className="dashboard-title">Admin Dashboard</h1>
 
