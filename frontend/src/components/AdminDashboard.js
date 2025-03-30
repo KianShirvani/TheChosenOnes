@@ -60,9 +60,9 @@ const AdminDashboard = () => {
     return new Date(isoDate).toISOString().split("T")[0];
   };
   const formatStatus = (status) => {
-    if (!status) return "to do"; 
+    if (!status) return "todo"; 
     const formatted = status.toLowerCase().trim();
-    if (formatted === "to do") return "to do";
+    if (formatted === "todo") return "todo";
     if (formatted === "in progress") return "in progress";
     if (formatted === "done") return "done";
     return formatted;
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
       const filteredTasks = {
         todo: tasks.filter(task => {
           const status = task.status.toLowerCase();
-          return status === "todo" || status.includes("to do");
+          return status === "todo" || status.includes("todo");
         }),
         inProgress: tasks.filter(task => {
           const status = task.status.toLowerCase();
@@ -220,7 +220,7 @@ const AdminDashboard = () => {
           done: prevTasks.done.filter(t => t.task_id !== task.task_id),
         };
   
-        if (updatedTask.status.toLowerCase() === "to do") {
+        if (updatedTask.status.toLowerCase() === "todo") {
           newTasks.todo.push(formattedTask);
         } else if (updatedTask.status.toLowerCase() === "in progress") {
           newTasks.inProgress.push(formattedTask);
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
           endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
           status: formatStatus(updatedTask.status),
         };
-        const newStatusKey = updatedTask.status.toLowerCase().includes("to do") ? "todo" :
+        const newStatusKey = updatedTask.status.toLowerCase().includes("todo") ? "todo" :
                              updatedTask.status.toLowerCase().includes("in progress") ? "inProgress" :
                              "done";
   
@@ -582,8 +582,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div style={{ width: "100%", textAlign: "left", marginBottom: "10px", paddingLeft: "20px" }}>
-        <h3>Welcome, {username}</h3>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}>
+    <h3>Welcome, {username}</h3>
       </div>
       <h1 className="dashboard-title">Admin Dashboard</h1>
 

@@ -72,9 +72,9 @@ useEffect(() => {
     return date.toISOString().split("T")[0]; 
   };
   const formatStatus = (status) => {
-    if (!status) return "to do"; 
+    if (!status) return "todo"; 
     const formatted = status.toLowerCase().trim();
-    if (formatted === "to do") return "to do";
+    if (formatted === "todo") return "todo";
     if (formatted === "in progress") return "in progress";
     if (formatted === "done") return "done";
     return formatted;
@@ -101,7 +101,7 @@ useEffect(() => {
       const filteredTasks = {
         todo: tasks.filter(task => {
           const status = task.status.toLowerCase();
-          return status === "todo" || status === "to do";
+          return status === "todo" || status === "todo";
         }),
         inProgress: tasks.filter(task => {
           const status = task.status.toLowerCase();
@@ -261,7 +261,7 @@ useEffect(() => {
         status: taskData.status || "todo",
       };
       
-      const statusKey = updatedTask.status.toLowerCase() === "todo" || updatedTask.status.toLowerCase() === "to do" ? "todo" :
+      const statusKey = updatedTask.status.toLowerCase() === "todo" || updatedTask.status.toLowerCase() === "todo" ? "todo" :
       updatedTask.status.toLowerCase() === "inprogress" || updatedTask.status.toLowerCase() === "in progress" ? "inProgress" :
       "done";
 
@@ -453,7 +453,7 @@ useEffect(() => {
           endDate: formatDate(updatedTask.end_date),
           progress: updatedTask.progress || 0,
         };
-        if (formattedTask.status.toLowerCase() === "to do") newTasks.todo.push(formattedTask);
+        if (formattedTask.status.toLowerCase() === "todo") newTasks.todo.push(formattedTask);
         else if (formattedTask.status.toLowerCase() === "in progress") newTasks.inProgress.push(formattedTask);
         else if (formattedTask.status.toLowerCase() === "done") newTasks.done.push(formattedTask);
         return newTasks;
@@ -522,17 +522,20 @@ useEffect(() => {
 
   return (
     <div style={styles.container}>
-      <div style={{ width: "100%", maxWidth: "800px", textAlign: "left", marginBottom: "10px" }}>
-        <h3>Welcome, {username}</h3>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}>
+    <h3>Welcome, {username}</h3>
       </div>
-      <h2>Task Board</h2>
+      <h1>Task Board</h1>
+      <div style={styles.addButtonWrapper}>
+
+      <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
+      </div>
       <SearchBar filters={filters} setFilters={setFilters} />
+
+      {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
       <div style={styles.buttonContainer}>
    
-        <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
       </div>
-      {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
-
       <div style={styles.board}>
         <TaskList
           title="To-Do"
@@ -580,7 +583,8 @@ const styles = {
   board: { display: "flex", justifyContent: "space-around", padding: "20px", background: "#f4f5f7" },
   buttonContainer: { position: "absolute", right: "20px", top: "20px", display: "flex", gap: "10px" },
   adminButton: { padding: "10px 20px", fontSize: "16px", background: "green", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" },
-  addButton: { padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" }
+  addButton: { padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", },
+  addButtonWrapper: {display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px",}
 };
 
 export default TaskBoard;
