@@ -584,7 +584,7 @@ const styles = {
   board: { display: "flex", justifyContent: "space-around", padding: "20px", background: "#f4f5f7" },
   buttonContainer: { position: "absolute", right: "20px", top: "20px", display: "flex", gap: "10px" },
   adminButton: { padding: "10px 20px", fontSize: "16px", background: "green", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" },
-  addButton: { padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", },
+  addButton: { padding: "10px 20px", fontSize: "16px", background: "#7000da", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", },
   addButtonWrapper: {display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px",}
 };
 

@@ -321,13 +321,28 @@ const AdminManagement = () => {
                                         </td>
                                         <td style={styles.td}>{user.is_admin ? "Admin" : "User"}</td>
                                         <td style={{ ...styles.td, ...styles.actionTd }}>
-                                            {user.user_id !== currentUserId && user.is_admin && (
-                                                <Button onClick={() => demoteAdmin(user.user_id)}>Demote</Button>
+                                        {user.user_id !== currentUserId && user.is_admin && (
+                                            <Button
+                                                onClick={() => demoteAdmin(user.user_id)}
+                                                style={{ backgroundColor: "#7000da", color: "white" }}
+                                            >
+                                                Demote
+                                            </Button>
                                             )}
                                             {user.user_id !== currentUserId && !user.is_admin && (
-                                                <Button onClick={() => promoteToAdmin(user.user_id)}>Promote</Button>
+                                            <Button
+                                                onClick={() => promoteToAdmin(user.user_id)}
+                                                style={{ backgroundColor: "#7000da", color: "white" }}
+                                            >
+                                                Promote
+                                            </Button>
                                             )}
-                                            <Button onClick={() => deleteUser(user.user_id)}>Delete</Button>
+                                            <Button
+                                            onClick={() => deleteUser(user.user_id)}
+                                            style={{ backgroundColor: "#dc3545", color: "white" }} // red tone like Bootstrap
+                                            >
+                                            Delete
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}
