@@ -18,7 +18,7 @@ const styles = {
   hero: {
     textAlign: "center",
     padding: "50px 20px",
-    background: "linear-gradient(to bottom, #001F3F, #003366, #00509E, #87CEEB, white)", 
+    background: "linear-gradient(to bottom, #7000da, #8d3dfd, #b288ff, #e0d4ff, white)",
     color: "white",
   },
   button: {
