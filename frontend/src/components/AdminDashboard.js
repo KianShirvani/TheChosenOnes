@@ -389,6 +389,7 @@ const AdminDashboard = () => {
       end_date: newTask.endDate,       
       progress: Number(newTask.progress), 
       user_id: newTask.userId,
+      assignedUsers: newTask.assignedUsers || [],
       };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
