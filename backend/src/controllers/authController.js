@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = jsonWebToken.sign(
-      { user_id: user.user_id, role: role },
+      { user_id: user.user_id, role: role, username: user.display_name },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
