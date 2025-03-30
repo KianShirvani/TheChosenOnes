@@ -11,12 +11,24 @@ const getTasks = async (req, res) => {
       return res.status(404).json({ message: "No tasks found." });
     }
 
-    res.status(200).json({ tasks: result.rows });
+    const tasks = await Promise.all(
+      result.rows.map(async (task) => {
+        const userRes = await client.query(
+          "SELECT user_id FROM task_users WHERE task_id = $1",
+          [task.task_id]
+        );
+        const assignedUsers = userRes.rows.map((row) => row.user_id);
+        return { ...task, assignedUsers };
+      })
+    );
+
+    res.status(200).json({ tasks });
   } catch (error) {
     console.error("Error in getTasks:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 // Create a new task
