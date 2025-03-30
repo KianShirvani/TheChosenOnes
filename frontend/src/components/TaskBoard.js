@@ -23,6 +23,7 @@ const TaskBoard = () => {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
+    document.title = "My Tasks - Collabium";
     link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
     document.head.appendChild(link);
 
