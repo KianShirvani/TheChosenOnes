@@ -97,7 +97,8 @@ const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["to do", "In Progress", "done"];
+    const columnOrder = ["todo", "in progress", "done"];
+
 
     // Use the proper field name and variable (id instead of task_id)
     const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);

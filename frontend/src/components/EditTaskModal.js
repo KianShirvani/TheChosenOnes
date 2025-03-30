@@ -15,7 +15,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
     startDate: formatDate(task.start_date),
     endDate: formatDate(task.end_date),
     progress: task.progress || 0,
-    status: task.status || "to do",
+    status: task.status || "todo",
   });
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
       startDate: formatDate(task.start_date),
       endDate: formatDate(task.end_date),
       progress: task.progress || 0,
-      status: task.status || "to do",
+      status: task.status || "todo",
     });
   }, [task.task_id]);
 
@@ -119,7 +119,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
 
           <label>Move to:</label>
           <select name="status" value={taskData.status} onChange={handleChange} style={styles.input}>
-            <option value="to do">To-Do</option>
+            <option value="todo">To-Do</option>
             <option value="in progress">In Progress</option>
             <option value="done">Done</option>
           </select>

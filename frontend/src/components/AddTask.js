@@ -149,7 +149,7 @@ const showToast = (message) => {
             style={styles.input}
           >
             <option value="todo">To-Do</option>
-            <option value="inProgress">In Progress</option>
+            <option value="in progress">In Progress</option>
             <option value="done">Done</option>
           </select>
 
