@@ -26,7 +26,7 @@ const MainPage = () => {
         initial={{ y: 30, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
+
       >
         <FeaturesSection />
       </motion.div>
@@ -35,7 +35,7 @@ const MainPage = () => {
         initial={{ y: 30, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
+
       >
         <Testimonials />
       </motion.div>
@@ -44,7 +44,7 @@ const MainPage = () => {
         initial={{ y: 30, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
+
       >
         <CallToAction />
       </motion.div>
@@ -53,7 +53,7 @@ const MainPage = () => {
         initial={{ y: 30, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
+
       >
         <Contact />
       </motion.div>
