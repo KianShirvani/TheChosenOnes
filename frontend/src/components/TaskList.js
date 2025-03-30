@@ -228,8 +228,7 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
 };
 
 const styles = {
-  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px" },
-  task: { background: "#fff", padding: "10px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
+  list: { flex: 1, display: "flex", flexDirection: "column", background: "#e0e0e0", padding: "15px", borderRadius: "10px", minHeight: "100%" },  task: { background: "#fff", padding: "10px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
   actions: { display: "flex", justifyContent: "center", gap: "50px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   delete: { background: "#dc3545", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
