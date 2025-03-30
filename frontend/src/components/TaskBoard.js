@@ -497,8 +497,34 @@ useEffect(() => {
     });
   };
 
+  // Helper function to extract username from JWT token
+  const getUsernameFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      return payload.username || payload.display_name || "User";
+    } catch (e) {
+      return "User";
+    }
+  };
+
+  // Get the current username from token
+  const username = getUsernameFromToken();
+
   return (
     <div style={styles.container}>
+      <div style={{ width: "100%", maxWidth: "800px", textAlign: "left", marginBottom: "10px" }}>
+        <h3>Welcome, {username}</h3>
+      </div>
       <h2>Task Board</h2>
       <SearchBar filters={filters} setFilters={setFilters} />
       <div style={styles.buttonContainer}>

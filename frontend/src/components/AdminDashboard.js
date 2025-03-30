@@ -557,8 +557,34 @@ const AdminDashboard = () => {
     setColorDropdowns(prev => ({ ...prev, [status]: false }));
   };
 
+  // Helper function to extract username from JWT token
+  const getUsernameFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      return payload.username || payload.display_name || "User";
+    } catch (e) {
+      return "User";
+    }
+  };
+
+  // Get the current username from token
+  const username = getUsernameFromToken();
+
   return (
     <div className="admin-dashboard">
+      <div style={{ width: "100%", textAlign: "left", marginBottom: "10px", paddingLeft: "20px" }}>
+        <h3>Welcome, {username}</h3>
+      </div>
       <h1 className="dashboard-title">Admin Dashboard</h1>
 
       <div className="add-task-container" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}>
