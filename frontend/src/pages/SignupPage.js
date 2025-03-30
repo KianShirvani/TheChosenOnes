@@ -19,6 +19,7 @@ const SignupPage = () => {
 
   // dynamically load Toastify CSS + JS from CDN at runtime, no install required
     useEffect(() => {
+      document.title = "Create an Account - Collabium";
       const link = document.createElement("link");
       link.rel = "stylesheet";
       link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";

@@ -50,6 +50,7 @@ const AdminDashboard = () => {
   }, []); // for persisting TaskList color (bug fix)
 
   useEffect(() => {
+    document.title = "Admin Dashboard - Collabium";
     fetchTasks();
     fetchAvailableUsers(); // Fetch users from database
   }, []);

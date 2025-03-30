@@ -10,7 +10,7 @@ const AdminManagement = () => {
 
     useEffect(() => {
         fetchUsers();
-
+        document.title = "Admin Management - Collabium";
         // Dynamically load Toastify-js at run time
         const link = document.createElement("link");
         link.rel = "stylesheet";

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -7,6 +7,10 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
+
+   useEffect(() => {
+    document.title = "Reset Password - Collabium";
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();

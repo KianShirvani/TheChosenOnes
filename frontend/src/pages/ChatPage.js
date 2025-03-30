@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [editingGroupName, setEditingGroupName] = useState(false);
   const [users, setUsers] = useState([]);
   useEffect(() => {
+    document.title = "Chat - Collabium";
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
