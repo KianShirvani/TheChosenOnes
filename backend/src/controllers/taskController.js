@@ -66,6 +66,17 @@ const createTask = async (req, res) => {
       [kanban_id, user_id, title, description, parsedPriority, moment(due_date).format('YYYY-MM-DD'), moment(start_date).format('YYYY-MM-DD'), moment(end_date).format('YYYY-MM-DD'), progress || 0, status]
     );
 
+          const taskId = result.rows[0].task_id;
+      const { assignedUsers } = req.body;
+
+      if (assignedUsers && Array.isArray(assignedUsers)) {
+        const userPromises = assignedUsers.map((userId) =>
+          client.query("INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)", [taskId, userId])
+        );
+        await Promise.all(userPromises);
+      }
+
+
     if (!result || !result.rows || result.rows.length === 0) {
       console.error("Error: Task was not created.");
       return res.status(500).json({ message: "Task creation failed" });
