@@ -8,7 +8,7 @@ const getTasks = async (req, res) => {
     const result = await client.query("SELECT * FROM tasks");
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: "No tasks found." });
+      return res.status(200).json({ tasks: [] });
     }
 
     const tasks = await Promise.all(
@@ -28,7 +28,6 @@ const getTasks = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 
 // Create a new task
