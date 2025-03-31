@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { motion } from "framer-motion";
+
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -113,84 +115,55 @@ const SignupPage = () => {
   
 
   return (
-    <>
-      <div style={styles.container}>
-        <h2 style={styles.title}>Create Account</h2>
-        <form noValidate style={styles.form} onSubmit={handleSubmit}> {/* noValidate turn off the form alert to use Toastify-js */}
+    <motion.div
+      style={styles.container}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <motion.h2
+        style={styles.title}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        Create Account
+      </motion.h2>
+
+      <motion.form
+        noValidate
+        style={styles.form}
+        onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <label style={styles.label}>
+          <Input type="text" name="username" value={formData.username} onChange={handleChange} style={styles.input} required />
+          <span style={formData.username ? styles.floatingLabel : styles.spanLabel}>Username</span>
+        </label>
+
+        <div style={styles.row}>
           <label style={styles.label}>
-            <Input
-              type="text"
-              name="username"
-              placeholder=""
-              value={formData.username}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
-            <span style={formData.username ? styles.floatingLabel : styles.spanLabel}>
-                Username
-              </span>
+            <Input type="text" name="firstName" value={formData.firstName} onChange={handleChange} style={styles.input} required />
+            <span style={formData.firstName ? styles.floatingLabel : styles.spanLabel}>First name</span>
           </label>
-          <div style={styles.row}>
-            <label style={styles.label}>
-              <Input
-                type="text"
-                name="firstName"
-                placeholder=""
-                value={formData.firstName}
-                onChange={handleChange}
-                style={styles.input}
-                required
-              />
-              <span style={formData.firstName ? styles.floatingLabel : styles.spanLabel}>
-                First name
-              </span>
-            </label>
-            <label style={styles.label}>
-              <Input
-                type="text"
-                name="lastName"
-                placeholder=""
-                value={formData.lastName}
-                onChange={handleChange}
-                style={styles.input}
-                required
-              />
-              <span style={formData.lastName ? styles.floatingLabel : styles.spanLabel}>
-                Last name
-              </span>
-            </label>
-          </div>
-          <div style={styles.row}>
-            <label style={styles.label}>
-              <Input
-                type="email"
-                name="email"
-                placeholder=""
-                value={formData.email}
-                onChange={handleChange}
-                style={styles.input}
-                required
-              />
-              <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>
-                Email
-              </span>
-            </label>
-            <label style={styles.label}>
-              <Input
-                type="tel"
-                name="phoneNum"
-                placeholder=""
-                value={formData.phoneNum}
-                onChange={handleChange}
-                style={styles.input}
-                required
-              />
-              <span style={formData.phoneNum ? styles.floatingLabel : styles.spanLabel}>
-                Phone number
-              </span>
-            </label>
-          </div>
+          <label style={styles.label}>
+            <Input type="text" name="lastName" value={formData.lastName} onChange={handleChange} style={styles.input} required />
+            <span style={formData.lastName ? styles.floatingLabel : styles.spanLabel}>Last name</span>
+          </label>
+        </div>
+
+        <div style={styles.row}>
+          <label style={styles.label}>
+            <Input type="email" name="email" value={formData.email} onChange={handleChange} style={styles.input} required />
+            <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>Email</span>
+          </label>
+          <label style={styles.label}>
+            <Input type="tel" name="phoneNum" value={formData.phoneNum} onChange={handleChange} style={styles.input} required />
+            <span style={formData.phoneNum ? styles.floatingLabel : styles.spanLabel}>Phone number</span>
+          </label>
+        </div>
           <select
             className="country-select"
             name="country" 
@@ -218,44 +191,28 @@ const SignupPage = () => {
             <option value="United States">United States</option>
           </select>
           <label style={styles.label}>
-            <Input
-              type="password"
-              name="password"
-              placeholder=""
-              value={formData.password}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
-            <span style={formData.password ? styles.floatingLabel : styles.spanLabel}>
-              Password
-            </span>
-          </label>
-          <label style={styles.label}>
-            <Input
-              type="password"
-              name="confirmPassword"
-              placeholder=""
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              style={styles.input}
-              required
-            />
-            <span style={formData.confirmPassword ? styles.floatingLabel : styles.spanLabel}>
-              Confirm password
-            </span>
-          </label>
-          
-          
-          <Button type="submit" style={styles.button}>
-            Sign Up
-          </Button>
-        </form>
-        <p style={styles.link}>
-          Already have an account? <span onClick={() => navigate("/login")} style={styles.loginLink}>Login here</span>
-        </p>
-      </div>
-    </>
+          <Input type="password" name="password" value={formData.password} onChange={handleChange} style={styles.input} required />
+          <span style={formData.password ? styles.floatingLabel : styles.spanLabel}>Password</span>
+        </label>
+
+        <label style={styles.label}>
+          <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} style={styles.input} required />
+          <span style={formData.confirmPassword ? styles.floatingLabel : styles.spanLabel}>Confirm password</span>
+        </label>
+
+        <Button type="submit" style={styles.button}>Sign Up</Button>
+      </motion.form>
+
+      <motion.p
+        style={styles.link}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        Already have an account?{" "}
+        <span onClick={() => navigate("/login")} style={styles.loginLink}>Login here</span>
+      </motion.p>
+    </motion.div>
   );
 };
 
