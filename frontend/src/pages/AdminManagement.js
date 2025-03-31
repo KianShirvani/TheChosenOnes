@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
-
+import { motion } from "framer-motion";
 const AdminManagement = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
@@ -194,212 +194,231 @@ const AdminManagement = () => {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.heading}>Admin Management</h1>
-    
-            {users.length > 0 ? (
-                <>
-                    <div style={styles.scrollContainer}>
-                        <table style={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Username</th>
-                                    <th style={styles.th}>First Name</th>
-                                    <th style={styles.th}>Last Name</th>
-                                    <th style={styles.th}>Email</th>
-                                    <th style={styles.th}>Role</th>
-                                    <th style={{ ...styles.th, minWidth: "200px" }}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.user_id}>
-                                        <td style={styles.td}>{user.display_name}</td>
-                                        <td style={styles.td}>
-                                            <input
-                                                type="text"
-                                                value={editingUsers[user.user_id]?.first_name ?? user.first_name}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    setEditingUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            first_name: value,
-                                                        },
-                                                    }));
-                                                    setEditedUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            first_name: value,
-                                                        },
-                                                    }));
-                                                }}
-                                                onBlur={() => {
-                                                    if (!editingUsers[user.user_id]?.first_name?.trim()) {
-                                                        setEditingUsers((prev) => ({
-                                                            ...prev,
-                                                            [user.user_id]: {
-                                                                ...prev[user.user_id],
-                                                                first_name: user.first_name,
-                                                            },
-                                                        }));
-                                                    }
-                                                }}
-                                                style={styles.inputField}
-                                            />
-                                        </td>
-                                        <td style={styles.td}>
-                                            <input
-                                                type="text"
-                                                value={editingUsers[user.user_id]?.last_name ?? user.last_name}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    setEditingUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            last_name: value,
-                                                        },
-                                                    }));
-                                                    setEditedUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            last_name: value,
-                                                        },
-                                                    }));
-                                                }}
-                                                onBlur={() => {
-                                                    if (!editingUsers[user.user_id]?.last_name?.trim()) {
-                                                        setEditingUsers((prev) => ({
-                                                            ...prev,
-                                                            [user.user_id]: {
-                                                                ...prev[user.user_id],
-                                                                last_name: user.last_name,
-                                                            },
-                                                        }));
-                                                    }
-                                                }}
-                                                style={styles.inputField}
-                                            />
-                                        </td>
-                                        <td style={styles.td}>
-                                            <input
-                                                type="email"
-                                                value={editingUsers[user.user_id]?.email ?? user.email}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    setEditingUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            email: value,
-                                                        },
-                                                    }));
-                                                    setEditedUsers((prev) => ({
-                                                        ...prev,
-                                                        [user.user_id]: {
-                                                            ...prev[user.user_id],
-                                                            email: value,
-                                                        },
-                                                    }));
-                                                }}
-                                                onBlur={() => {
-                                                    if (!editingUsers[user.user_id]?.email?.trim()) {
-                                                        setEditingUsers((prev) => ({
-                                                            ...prev,
-                                                            [user.user_id]: {
-                                                                ...prev[user.user_id],
-                                                                email: user.email,
-                                                            },
-                                                        }));
-                                                    }
-                                                }}
-                                                style={styles.inputField}
-                                            />
-                                        </td>
-                                        <td style={styles.td}>{user.is_admin ? "Admin" : "User"}</td>
-                                        <td style={{ ...styles.td, ...styles.actionTd }}>
-                                        {user.user_id !== currentUserId && user.is_admin && (
-                                            <Button
-                                                onClick={() => demoteAdmin(user.user_id)}
-                                                style={{ backgroundColor: "#7000da", color: "white" }}
-                                            >
-                                                Demote
-                                            </Button>
-                                            )}
-                                            {user.user_id !== currentUserId && !user.is_admin && (
-                                            <Button
-                                                onClick={() => promoteToAdmin(user.user_id)}
-                                                style={{ backgroundColor: "#7000da", color: "white" }}
-                                            >
-                                                Promote
-                                            </Button>
-                                            )}
-                                            <Button
-                                            onClick={() => deleteUser(user.user_id)}
-                                            style={{ backgroundColor: "#dc3545", color: "white" }} // red tone like Bootstrap
-                                            >
-                                            Delete
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-    
-                    <div style={styles.buttonGroup}>
-                        <Button
-                            style={styles.actionButton}
-                            onClick={async () => {
-                                for (const userId of Object.keys(editedUsers)) {
-                                    const changes = editedUsers[userId];
-                                    if (
-                                        changes &&
-                                        (changes.first_name?.trim() || changes.last_name?.trim() || changes.email?.trim())
-                                    ) {
-                                        await updateUser(
-                                            userId,
-                                            changes.first_name?.trim() ||
-                                                users.find(u => u.user_id === parseInt(userId))?.first_name,
-                                            changes.last_name?.trim() ||
-                                                users.find(u => u.user_id === parseInt(userId))?.last_name,
-                                            changes.email?.trim() ||
-                                                users.find(u => u.user_id === parseInt(userId))?.email
-                                        );
-                                    }
-                                }
-                                setEditedUsers({});
-                                setEditingUsers({});
-    
-                                if (window.Toastify) {
-                                    window.Toastify({
-                                        text: "Update Successful!",
-                                        duration: 6000,
-                                        gravity: "top",
-                                        position: "center",
-                                        style: { background: "#4caf50" },
-                                    }).showToast();
-                                }
+          <motion.h1
+            style={styles.heading}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            Admin Management
+          </motion.h1>
+      
+          {users.length > 0 ? (
+            <>
+              <motion.div
+                style={styles.scrollContainer}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Username</th>
+                      <th style={styles.th}>First Name</th>
+                      <th style={styles.th}>Last Name</th>
+                      <th style={styles.th}>Email</th>
+                      <th style={styles.th}>Role</th>
+                      <th style={{ ...styles.th, minWidth: "200px" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.user_id}>
+                        <td style={styles.td}>{user.display_name}</td>
+                        <td style={styles.td}>
+                          <input
+                            type="text"
+                            value={editingUsers[user.user_id]?.first_name ?? user.first_name}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditingUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  first_name: value,
+                                },
+                              }));
+                              setEditedUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  first_name: value,
+                                },
+                              }));
                             }}
-                            disabled={Object.keys(editedUsers).length === 0}
-                        >
-                            Update
-                        </Button>
-                        <Button style={styles.actionButton} onClick={() => navigate('/tasks')}>
-                            Go to Dashboard
-                        </Button>
-                    </div>
-                </>
-            ) : (
-                <p style={styles.noUsersMessage}>
-                    There are no users to manage right now! Add them to your team to get started.
-                </p>
-            )}
+                            onBlur={() => {
+                              if (!editingUsers[user.user_id]?.first_name?.trim()) {
+                                setEditingUsers((prev) => ({
+                                  ...prev,
+                                  [user.user_id]: {
+                                    ...prev[user.user_id],
+                                    first_name: user.first_name,
+                                  },
+                                }));
+                              }
+                            }}
+                            style={styles.inputField}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            type="text"
+                            value={editingUsers[user.user_id]?.last_name ?? user.last_name}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditingUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  last_name: value,
+                                },
+                              }));
+                              setEditedUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  last_name: value,
+                                },
+                              }));
+                            }}
+                            onBlur={() => {
+                              if (!editingUsers[user.user_id]?.last_name?.trim()) {
+                                setEditingUsers((prev) => ({
+                                  ...prev,
+                                  [user.user_id]: {
+                                    ...prev[user.user_id],
+                                    last_name: user.last_name,
+                                  },
+                                }));
+                              }
+                            }}
+                            style={styles.inputField}
+                          />
+                        </td>
+                        <td style={styles.td}>
+                          <input
+                            type="email"
+                            value={editingUsers[user.user_id]?.email ?? user.email}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditingUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  email: value,
+                                },
+                              }));
+                              setEditedUsers((prev) => ({
+                                ...prev,
+                                [user.user_id]: {
+                                  ...prev[user.user_id],
+                                  email: value,
+                                },
+                              }));
+                            }}
+                            onBlur={() => {
+                              if (!editingUsers[user.user_id]?.email?.trim()) {
+                                setEditingUsers((prev) => ({
+                                  ...prev,
+                                  [user.user_id]: {
+                                    ...prev[user.user_id],
+                                    email: user.email,
+                                  },
+                                }));
+                              }
+                            }}
+                            style={styles.inputField}
+                          />
+                        </td>
+                        <td style={styles.td}>{user.is_admin ? "Admin" : "User"}</td>
+                        <td style={{ ...styles.td, ...styles.actionTd }}>
+                          {user.user_id !== currentUserId && user.is_admin && (
+                            <Button
+                              onClick={() => demoteAdmin(user.user_id)}
+                              style={{ backgroundColor: "#7000da", color: "white" }}
+                            >
+                              Demote
+                            </Button>
+                          )}
+                          {user.user_id !== currentUserId && !user.is_admin && (
+                            <Button
+                              onClick={() => promoteToAdmin(user.user_id)}
+                              style={{ backgroundColor: "#7000da", color: "white" }}
+                            >
+                              Promote
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() => deleteUser(user.user_id)}
+                            style={{ backgroundColor: "#dc3545", color: "white" }}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </motion.div>
+      
+              <motion.div
+                style={styles.buttonGroup}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <Button
+                  style={styles.actionButton}
+                  onClick={async () => {
+                    for (const userId of Object.keys(editedUsers)) {
+                      const changes = editedUsers[userId];
+                      if (
+                        changes &&
+                        (changes.first_name?.trim() || changes.last_name?.trim() || changes.email?.trim())
+                      ) {
+                        await updateUser(
+                          userId,
+                          changes.first_name?.trim() || users.find(u => u.user_id === parseInt(userId))?.first_name,
+                          changes.last_name?.trim() || users.find(u => u.user_id === parseInt(userId))?.last_name,
+                          changes.email?.trim() || users.find(u => u.user_id === parseInt(userId))?.email
+                        );
+                      }
+                    }
+                    setEditedUsers({});
+                    setEditingUsers({});
+      
+                    if (window.Toastify) {
+                      window.Toastify({
+                        text: "Update Successful!",
+                        duration: 6000,
+                        gravity: "top",
+                        position: "center",
+                        style: { background: "#4caf50" },
+                      }).showToast();
+                    }
+                  }}
+                  disabled={Object.keys(editedUsers).length === 0}
+                >
+                  Update
+                </Button>
+                <Button style={styles.actionButton} onClick={() => navigate("/tasks")}>
+                  Go to Dashboard
+                </Button>
+              </motion.div>
+            </>
+          ) : (
+            <motion.p
+              style={styles.noUsersMessage}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              There are no users to manage right now! Add them to your team to get started.
+            </motion.p>
+          )}
         </div>
-    );            
+      );   
 };
 
 const styles = {
