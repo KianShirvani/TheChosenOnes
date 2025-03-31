@@ -40,9 +40,13 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
     setTaskData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAssignedUsersChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map((opt) => opt.value);
-    setTaskData((prev) => ({ ...prev, assignedUsers: selected }));
+  const handleAssignedUsersChange = (userId) => {
+    setTaskData((prev) => {
+      const assignedUsers = prev.assignedUsers.includes(userId)
+        ? prev.assignedUsers.filter((id) => id !== userId)
+        : [...prev.assignedUsers, userId];
+      return { ...prev, assignedUsers };
+    });
   };
 
   const handleSave = () => {
@@ -93,20 +97,23 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
             style={styles.input}
           />
 
-          <label>Assign Users:</label>
-          <select
-            multiple
-            name="assignedUsers"
-            value={taskData.assignedUsers}
-            onChange={handleAssignedUsersChange}
-            style={styles.input}
-          >
+<label>Assign Users:</label>
+         
+          <div style={styles.checkboxContainer}>
             {availableUsers.map((user) => (
-              <option key={user.user_id || user.id} value={user.user_id || user.id}>
-                {user.display_name || `${user.first_name} ${user.last_name}`}
-              </option>
+              <div key={user.user_id || user.id} style={styles.checkboxItem}>
+                <input
+                  type="checkbox"
+                  id={`user-${user.user_id || user.id}`}
+                  checked={taskData.assignedUsers.includes(user.user_id || user.id)}
+                  onChange={() => handleAssignedUsersChange(user.user_id || user.id)}
+                />
+                <label htmlFor={`user-${user.user_id || user.id}`}>
+                  {user.display_name || `${user.first_name} ${user.last_name}`}
+                </label>
+              </div>
             ))}
-          </select>
+          </div>
 
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
@@ -168,6 +175,12 @@ const styles = {
     alignItems: "center",
     boxSizing: "border-box",
     overflowX: "hidden",
+  },
+  checkboxItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start", 
+    margin: "5px 0",
   },
   content: {
     width: "100%",
