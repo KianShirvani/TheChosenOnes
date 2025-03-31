@@ -7,11 +7,11 @@ It is dedicated to building and enhancing various features for both frontend and
 
 | Kanban Column     | Number of Issues |
 |-------------------|------------------|
-| **Backlog**       | 20               |
-| **Sprint Backlog**| 0                |
+| **Backlog**       | 18               |
+| **Sprint Backlog**| 3                |
 | **In Progress**   | 0               |
 | **In Review**     | 0                |
-| **Done**          | 145               |
+| **Done**          | 146               |
 
 - Development for the frontend UI is complete  
 - Backend functionality and database development are complete
@@ -135,20 +135,15 @@ Right click it and select "Compose up" from the available options
 
 ### Unresolved Bugs
 
-| Bug Description         | Issue # |
-|-------------------------|---------|
-| placeholder             | #       |
-| placeholder             | #       |
-| placeholder             | #       |
+| Issue # | Bug Description |
+|---------|-----------------|
+| 245     | Change from selection list to checkboxes for assign user in adminDashboard |
+| 283     | Userid is not being entered into the tasks table when user creates a task |
+| 287     | Add Search by ID # in the search bar on admin and regular dashboard |
 
 
 ### Fixed Before Final Submission
-
-Issue numbers:  
-152, 176, 188, 210, 214, 226, 234, 228, 225, 216, 230, 232, 219, 220, 209, 229, 248, 251
-
-Remaining:  
-1
+142, 152, 165, 176, 188, 209, 210, 214, 216, 219, 220, 222, 223, 226, 228, 229, 230, 232, 233, 234, 242, 248, 253, 255, 258, 262, 272, 273
 
 ## Test Coverage
 
