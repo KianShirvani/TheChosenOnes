@@ -3,11 +3,12 @@ import DateFilter from './DateFilter';
 import UserFilter from './UserFilter';
 import PriorityFilter from './PriorityFilter';
 import StatusFilter from './StatusFilter';
+import TaskIDFilter from './TaskIDFilter';
 import '../css/SearchBar.css';
 
 const SearchBar = ({ filters = {}, setFilters = () => {} }) => {
   const resetFilters = () => {
-    setFilters({ date: "", users: [], priorities: [], status: [] });
+    setFilters({ date: "", users: [], priorities: [], status: [], taskId: "" });
   };
 
 
@@ -28,6 +29,10 @@ const SearchBar = ({ filters = {}, setFilters = () => {} }) => {
       <StatusFilter 
         status={filters.status} 
         setStatus={(status) => setFilters(prev => ({ ...prev, status }))}
+      />
+      <TaskIDFilter 
+        taskId={filters.taskId} 
+        setTaskId={(taskId) => setFilters(prev => ({ ...prev, taskId }))}
       />
       <button onClick={resetFilters} className="clear-button">Clear Filtering</button>
     </div>
