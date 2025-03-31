@@ -58,7 +58,7 @@ const styles = {
     outline: "none",
   },
   textarea: {
-    width: "100%",
+    width: "94%",
     padding: "0.5rem",
     background: "#fff",
     border: "2px solid #7000da",
