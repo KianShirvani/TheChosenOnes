@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users(
     email VARCHAR(40) UNIQUE,
     phone_num VARCHAR(40),
     country VARCHAR(40),
-    display_name VARCHAR(20),
+    display_name VARCHAR(20) UNIQUE,
     password VARCHAR(100) NOT NULL
 );
 
