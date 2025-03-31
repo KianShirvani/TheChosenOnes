@@ -2,7 +2,8 @@ import React from "react"; // keep imports at the top
 
 const HeroSection = () => {
   return (
-    <section style={styles.hero}>
+    
+    <section id="hero" style={styles.hero}>
       <h1>Welcome to Collabium</h1>
       <p>The ultimate platform for collaborative task management.</p>
      

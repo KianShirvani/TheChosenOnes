@@ -58,7 +58,7 @@ const Header = () => {
             <div className="header-left"> 
                 <a onClick={() => navigate("/#")} className="header-logo" style={{ cursor: "pointer" }}>Collabium</a>
                 <nav className="navbar">
-                <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>Home</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("hero"); }}>Home</a>
                 <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>About us</a>
                 <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }}>Contact us</a>
 
