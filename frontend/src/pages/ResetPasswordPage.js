@@ -53,9 +53,9 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    justifyContent: "center",
     minHeight: "70vh",
     padding: "1rem",
-    marginTop: "100px"
   },
   title: {
     fontSize: "1.8rem",
