@@ -76,6 +76,7 @@ const markAsRead = async (notificationId) => {
     };
     const handleLogout = () => {
         localStorage.removeItem("token"); // remove authentication once logged out
+        setNotifications([]); //clear notifications after logout
         navigate("/login");
     };
     const handleTasksClick = () => {
