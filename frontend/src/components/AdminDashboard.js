@@ -23,6 +23,7 @@ const AdminDashboard = () => {
     users: [],
     priorities: [],
     status: [],
+    taskId: "",
   });
 
   const [taskStats, setTaskStats] = useState({
@@ -531,7 +532,8 @@ const AdminDashboard = () => {
         ) &&
         (filters.priorities.length === 0 || filters.priorities.includes(String(taskPriorityValue)) /* 修复：将 taskPriorityValue 转换为字符串 */) &&
         (filters.status.length === 0 ||
-          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
+          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status))) &&
+          (filters.taskId === "" || String(task.task_id) === filters.taskId)
       );
     });
   };

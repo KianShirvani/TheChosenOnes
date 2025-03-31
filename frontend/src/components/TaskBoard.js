@@ -21,6 +21,7 @@ const TaskBoard = () => {
     users: [],
     priorities: [],
     status: [],
+    taskId: "",
   });
   useEffect(() => {
     const link = document.createElement("link");
@@ -495,7 +496,8 @@ useEffect(() => {
         ) &&
         (filters.priorities.length === 0 || filters.priorities.includes(String(task.priority))) &&
         (filters.status.length === 0 ||
-          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
+          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status))) &&
+          (filters.taskId === "" || String(task.task_id) === filters.taskId)
       );
     });
   };
