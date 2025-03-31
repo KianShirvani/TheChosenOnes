@@ -6,6 +6,10 @@ import { FaBell, FaSearch, FaComments } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { NotificationContext } from './NotificationContext'; 
 
+
+
+  
+
 const Header = () => {
     const navigate = useNavigate();  
     const token = localStorage.getItem("token");
@@ -21,7 +25,19 @@ const Header = () => {
             navigate("/login"); // Redirect to sign-up if not logged in
         }
     };
-
+   
+        const scrollToSection = (sectionId) => {
+            if (window.location.pathname !== "/") {
+            navigate("/", { replace: false });
+            setTimeout(() => {
+                const section = document.getElementById(sectionId);
+                if (section) section.scrollIntoView({ behavior: "smooth" });
+            }, 300); // small delay to let homepage load
+            } else {
+            const section = document.getElementById(sectionId);
+            if (section) section.scrollIntoView({ behavior: "smooth" });
+            }
+        };
     const handleLogout = () => {
         localStorage.removeItem("token"); // remove authentication once logged out
         navigate("/login");
@@ -42,9 +58,10 @@ const Header = () => {
             <div className="header-left"> 
                 <a onClick={() => navigate("/#")} className="header-logo" style={{ cursor: "pointer" }}>Collabium</a>
                 <nav className="navbar">
-                    <a onClick={() => navigate("/#")} href="#">Home</a>
-                    <a onClick={() => navigate("/#")} href="#">About us</a>
-                    <a onClick={() => navigate("/#")} href="#">Contact us</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("hero"); }}>Home</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>About us</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }}>Contact us</a>
+
                 </nav>
             </div>
 

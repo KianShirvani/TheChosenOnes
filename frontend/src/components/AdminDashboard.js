@@ -6,6 +6,7 @@ import EditTaskModal from "../components/EditTaskModal";
 import AddTask from "../components/AddTask";
 import "../css/AdminDashboard.css";
 import { NotificationContext } from "../components/NotificationContext";
+import { motion } from "framer-motion";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ const AdminDashboard = () => {
   }, []); // for persisting TaskList color (bug fix)
 
   useEffect(() => {
+    document.title = "Admin Dashboard - Collabium";
     fetchTasks();
     fetchAvailableUsers(); // Fetch users from database
   }, []);
@@ -582,46 +584,44 @@ const AdminDashboard = () => {
   const username = getUsernameFromToken();
 
   return (
-    <div className="admin-dashboard">
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}>
-    <h3>Welcome, {username}</h3>
-      </div>
-      <h1 className="dashboard-title">Admin Dashboard</h1>
-
-      <div className="add-task-container" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}>
-        <button
+    <div style={styles.container}>
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}
+      >
+        <h3>Welcome, {username}</h3>
+      </motion.div>
+  
+      <h1>Admin Dashboard</h1>
+  
+      <div style={styles.addButtonWrapper}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           onClick={() => navigate("/adminManagement")}
-          className="admin-management-button"
-          style={{
-            background: "green",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+          style={styles.addButton}
         >
           Admin Management
-        </button>
-
-        <button
+        </motion.button>
+  
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           onClick={() => setIsAddModalOpen(true)}
-          className="add-task-button"
-          style={{
-            background: "#007bff",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+          style={styles.addButton}
         >
           + Add Task
-        </button>
+        </motion.button>
       </div>
-
+  
       <div className="dashboard-stats">
         <div className="stat-card"><h3>To-Do</h3><p>{taskStats.todo}</p></div>
         <div className="stat-card"><h3>In Progress</h3><p>{taskStats.inProgress}</p></div>
@@ -629,32 +629,106 @@ const AdminDashboard = () => {
         <div className="stat-card"><h3>Completion Rate</h3><p>{taskStats.completedRate}%</p></div>
         <div className="stat-card"><h3>Upcoming Due</h3><p>{taskStats.upcomingDue}</p></div>
       </div>
-
-      <SearchBar filters={filters} setFilters={setFilters} />
-
-      <div className="task-board">
-        {Object.keys(tasks).map((status) => (
-          <AdminTaskList
-            key={status}
-            title={status}
-            tasks={applyFilters(tasks[status])} // Apply the Task Filter to tasks.
-            onMoveTask={handleMoveTask}
-            onEditTask={handleEditTask}
-            onDeleteTask={handleDeleteTask}
-            onToggleLock={handleToggleLock}
-            // Notification: If needed, you can pass handleAddUserToTask and handleRemoveUserFromTask as props here.
-            onAddUser={handleAddUserToTask} // Notification:
-            onRemoveUser={handleRemoveUserFromTask} // Notification:
-            selectedColor={taskListColors[status]}
-            onAssignColor={(color) => handleAssignColor(status, color)}
-          />
-        ))}
-      </div>
-
-      {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} availableUsers={availableUsers} />}
-      {isEditModalOpen && ( <EditTaskModal task={editingTask} onClose={() => 
-      setIsEditModalOpen(false)} onSave={handleUpdateTask} availableUsers={availableUsers} /> )}    </div>
+  
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <SearchBar filters={filters} setFilters={setFilters} />
+      </motion.div>
+  
+      {isAddModalOpen && (
+        <AddTask
+          onSaveTask={handleAddTask}
+          onClose={() => setIsAddModalOpen(false)}
+          availableUsers={availableUsers}
+        />
+      )}
+  
+      {isEditModalOpen && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleUpdateTask}
+          availableUsers={availableUsers}
+        />
+      )}
+  
+      <motion.div
+        style={styles.board}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <AdminTaskList
+          title="To-Do"
+          tasks={applyFilters(tasks.todo)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.todo}
+          onAssignColor={(color) => handleAssignColor("todo", color)}
+        />
+  
+        <AdminTaskList
+          title="In Progress"
+          tasks={applyFilters(tasks.inProgress)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.inProgress}
+          onAssignColor={(color) => handleAssignColor("inProgress", color)}
+        />
+  
+        <AdminTaskList
+          title="Done"
+          tasks={applyFilters(tasks.done)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.done}
+          onAssignColor={(color) => handleAssignColor("done", color)}
+        />
+      </motion.div>
+    </div>
   );
+  
 };
 
 export default AdminDashboard;
+const styles = {
+  container: { textAlign: "center", padding: "20px", position: "relative" },
+  board: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "20px",
+    padding: "20px",
+    background: "#f4f5f7",
+    alignItems: "stretch",
+  },
+  addButtonWrapper: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+    marginBottom: "20px",
+  },
+  addButton: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    background: "#7000da",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+};

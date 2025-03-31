@@ -4,6 +4,8 @@ import AddTask from "./AddTask";
 import SearchBar from "./SearchBar";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "./NotificationContext";
+import { motion } from "framer-motion";
+
 
 const TaskBoard = () => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const TaskBoard = () => {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
+    document.title = "My Tasks - Collabium";
     link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
     document.head.appendChild(link);
 
@@ -522,68 +525,97 @@ useEffect(() => {
 
   return (
     <div style={styles.container}>
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}>
-    <h3>Welcome, {username}</h3>
-      </div>
+        <motion.div
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}
+    >
+      <h3>Welcome, {username}</h3>
+    </motion.div>
+
       <h1>Task Board</h1>
       <div style={styles.addButtonWrapper}>
 
-      <button onClick={() => {  setEditingTask(null);  setIsModalOpen(true);}} style={styles.addButton}>+ Add Task</button>
+          <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      onClick={() => { setEditingTask(null); setIsModalOpen(true); }}
+      style={styles.addButton}
+    >
+      + Add Task
+    </motion.button>
       </div>
+      <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
+    >
       <SearchBar filters={filters} setFilters={setFilters} />
+    </motion.div>
 
-      {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
+    {isModalOpen && <AddTask task={editingTask} onSaveTask={handleSaveTask} onClose={() => setIsModalOpen(false)} availableUsers={availableUsers} />}
       <div style={styles.buttonContainer}>
    
       </div>
-      <div style={styles.board}>
-        <TaskList
-          title="To-Do"
-          tasks={applyFilters(tasks.todo)} // Apply Filter changes on the TaskList
-          onEditTask={handleEditTask}
-          onDeleteTask={handleDeleteTask}
-          onMoveTask={fetchTasks}
-          selectedColor={taskListColors.todo}
-          onAssignColor={(color) => handleAssignColor("todo", color)}
-          availableUsers={availableUsers}
-          onAddUser={handleAddUserToTask}
-          onRemoveUser={handleRemoveUserFromTask}
-        />
-        <TaskList
-          title="In Progress"
-          tasks={applyFilters(tasks.inProgress)}  // Apply Filter changes on the TaskList
-          onEditTask={handleEditTask}
-          onDeleteTask={handleDeleteTask}
-          onMoveTask={fetchTasks}
-          selectedColor={taskListColors.inProgress}
-          onAssignColor={(color) => handleAssignColor("inProgress", color)}
-          availableUsers={availableUsers}
-          onAddUser={handleAddUserToTask}
-          onRemoveUser={handleRemoveUserFromTask}
-        />
-        <TaskList
-          title="Done"
-          tasks={applyFilters(tasks.done)}  // Apply Filter changes on the TaskList
-          onEditTask={handleEditTask}
-          onDeleteTask={handleDeleteTask}
-          onMoveTask={fetchTasks}
-          selectedColor={taskListColors.done}
-          onAssignColor={(color) => handleAssignColor("done", color)}
-          availableUsers={availableUsers}
-          onAddUser={handleAddUserToTask}
-          onRemoveUser={handleRemoveUserFromTask}
-        />
+      <motion.div
+  style={styles.board}
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+>
+  <TaskList
+    title="To-Do"
+    tasks={applyFilters(tasks.todo)}
+    onEditTask={handleEditTask}
+    onDeleteTask={handleDeleteTask}
+    onMoveTask={fetchTasks}
+    selectedColor={taskListColors.todo}
+    onAssignColor={(color) => handleAssignColor("todo", color)}
+    availableUsers={availableUsers}
+    onAddUser={handleAddUserToTask}
+    onRemoveUser={handleRemoveUserFromTask}
+  />
+
+  <TaskList
+    title="In Progress"
+    tasks={applyFilters(tasks.inProgress)}
+    onEditTask={handleEditTask}
+    onDeleteTask={handleDeleteTask}
+    onMoveTask={fetchTasks}
+    selectedColor={taskListColors.inProgress}
+    onAssignColor={(color) => handleAssignColor("inProgress", color)}
+    availableUsers={availableUsers}
+    onAddUser={handleAddUserToTask}
+    onRemoveUser={handleRemoveUserFromTask}
+  />
+
+  <TaskList
+    title="Done"
+    tasks={applyFilters(tasks.done)}
+    onEditTask={handleEditTask}
+    onDeleteTask={handleDeleteTask}
+    onMoveTask={fetchTasks}
+    selectedColor={taskListColors.done}
+    onAssignColor={(color) => handleAssignColor("done", color)}
+    availableUsers={availableUsers}
+    onAddUser={handleAddUserToTask}
+    onRemoveUser={handleRemoveUserFromTask}
+  />
+</motion.div>
       </div>
-    </div>
   );
 };
 
 const styles = {
   container: { textAlign: "center", padding: "20px", position: "relative" },
-  board: { display: "flex", justifyContent: "space-around", padding: "20px", background: "#f4f5f7" },
+  board: { display: "flex", justifyContent: "space-around", alignItems: "stretch",  gap: "20px", padding: "20px", background: "#f4f5f7" },
   buttonContainer: { position: "absolute", right: "20px", top: "20px", display: "flex", gap: "10px" },
   adminButton: { padding: "10px 20px", fontSize: "16px", background: "green", color: "white", border: "none", cursor: "pointer", borderRadius: "5px" },
-  addButton: { padding: "10px 20px", fontSize: "16px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", },
+  addButton: { padding: "10px 20px", fontSize: "16px", background: "#7000da", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", },
   addButtonWrapper: {display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px",}
 };
 

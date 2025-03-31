@@ -120,6 +120,44 @@ const requestPasswordReset = async (req, res) => {
   }
 };
 
+const registerUser = async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNum,
+    country,
+    displayName,
+    password,
+    confirmPassword,
+  } = req.body;
+
+  try {
+    // check if email already exists
+    const existingUser = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Email already registered. Please log in." });
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // insert new user
+    const result = await client.query(
+      "INSERT INTO users (first_name, last_name, email, phone_num, country, display_name, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [firstName, lastName, email, phoneNum, country, displayName, hashedPassword]
+    );
+
+    const newUser = result.rows[0];
+    return res.status(201).json({ message: "User registered successfully", user: newUser });
+
+  } catch (error) {
+    console.error("Error registering user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 

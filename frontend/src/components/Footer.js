@@ -27,7 +27,7 @@ const Footer = () => {
         <p>English</p>
         <p>Privacy Policy</p>
         <p>Terms</p>
-        <p>Copyright © 2024 TheChosenOnes</p>
+        <p>Copyright © 2025 TheChosenOnes</p>
       </div>
     </footer>
   );
