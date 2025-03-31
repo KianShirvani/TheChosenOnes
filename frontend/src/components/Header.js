@@ -45,13 +45,21 @@ const handleNotificationClick = () => {
 };
 
 const markAsRead = async (notificationId) => {
-    await fetch(`${process.env.REACT_APP_API_URL}/api/notifications/${notificationId}/read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        credentials: "include"
-    });
+    try {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/notifications/${notificationId}/read`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            credentials: "include"
+        });
 
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        setNotifications(prev =>
+            prev.map(n =>
+                n.id === notificationId ? { ...n, read: true } : n
+            )
+        );
+    } catch (err) {
+        console.error("Failed to mark as read", err);
+    }
 };
 
     const scrollToSection = (sectionId) => {
@@ -124,21 +132,22 @@ const markAsRead = async (notificationId) => {
                     style={{ cursor: "pointer", fontSize: "1.2rem", marginRight: "15px", color: notification.color }}
                     />
 
-                    {showDropdown && (
-                    <div className="notification-dropdown">
-                        {notifications.length === 0 ? (
-                        <p>No new notifications</p>
-                        ) : (
+                {showDropdown && (
+                <div className="notification-dropdown">
+                    {notifications.length === 0 ? (
+                    <p style={{ margin: 0, color: "#666" }}>No new notifications</p>
+                    ) : (
                         notifications.map(n => (
-                            <div key={n.id} className="notification-item">
-                            <span>{n.message}</span>
-                            <button onClick={() => markAsRead(n.id)}>✓</button>
+                            <div key={n.id} className={`notification-item ${n.read ? 'read' : 'unread'}`}>
+                              <span>{n.message}</span>
+                              {!n.read && (
+                                <button onClick={() => markAsRead(n.id)}>✓</button>
+                              )}
                             </div>
-                        ))
-                        )}
-                    </div>
+                          ))
                     )}
-
+                </div>
+                )}
 
                 {!isLoggedIn ? (
                     <>
