@@ -369,6 +369,17 @@ const assignUsersToTask = async (req, res) => {
       );
     });
 
+    //insert into notification table
+    const notifyPromises = userIds.map(userId =>
+      client.query(
+        "INSERT INTO notifications (user_id, message) VALUES ($1, $2)",
+        [userId, `You've been assigned to Task ID: ${taskId}`]
+      )
+    );
+    await Promise.all([...insertPromises, ...notifyPromises]);
+    
+    
+
     // Wait for all insertions to complete
     await Promise.all(insertPromises);
 
