@@ -215,6 +215,8 @@ useEffect(() => {
       progress: taskData.progress || 0,
       status: taskData.status || "todo",
       assignedUsers: taskData.assignedUsers || [],
+      // Fix bug: Set user_id to the first assigned user if available, otherwise null
+      user_id: taskData.assignedUsers && taskData.assignedUsers.length > 0 ? taskData.assignedUsers[0] : taskData.user_id,
     };
   
     console.log("Final data sent to backend:", formattedTaskData); 

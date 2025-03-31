@@ -393,6 +393,8 @@ const AdminDashboard = () => {
       progress: Number(newTask.progress), 
       user_id: newTask.userId,
       assignedUsers: newTask.assignedUsers || [],
+      // Fix bug: new task user_id not in tasks table
+      user_id: newTask.assignedUsers && newTask.assignedUsers.length > 0 ? newTask.assignedUsers[0] : newTask.userId,
       };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
