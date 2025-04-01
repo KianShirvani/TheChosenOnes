@@ -30,13 +30,28 @@ const Header = () => {
     
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_URL}/api/notifications`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        const fetchNotifications = () => {
+          const currentToken = localStorage.getItem("token");
+          if (!currentToken) {
+            setNotifications([]);
+            return;
+          }
+      
+          fetch(`${process.env.REACT_APP_API_URL}/api/notifications`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
             credentials: "include",
-        })
+          })
             .then(res => res.json())
-            .then(data => setNotifications(data.notifications || []));
-    }, []);
+            .then(data => setNotifications(data.notifications || []))
+            .catch(err => console.error("Failed to fetch notifications", err));
+        };
+      
+        fetchNotifications(); // fetch once immediately
+      
+        const interval = setInterval(fetchNotifications, 1000); // fetch every 10 seconds
+      
+        return () => clearInterval(interval); // clean up interval on unmount
+      }, []);      
 
     const [showDropdown, setShowDropdown] = useState(false);
 
