@@ -11,6 +11,8 @@ import AdminManagement from "./pages/AdminManagement";
 import ChatPage from "./pages/ChatPage";
 import axios from "axios";
 import { NotificationProvider } from "./components/NotificationContext";
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const ProtectedRoute = ({ element, adminOnly }) => {
   const token = localStorage.getItem("token");
@@ -50,6 +52,8 @@ function App() {
             element={<ProtectedRoute element={<AdminManagement />} adminOnly />}
           />
           <Route path="/chat" element={<ProtectedRoute element={<ChatPage />} />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         </Routes>
         <Footer />
       </NotificationProvider>

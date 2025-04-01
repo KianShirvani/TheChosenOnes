@@ -6,6 +6,7 @@ import EditTaskModal from "../components/EditTaskModal";
 import AddTask from "../components/AddTask";
 import "../css/AdminDashboard.css";
 import { NotificationContext } from "../components/NotificationContext";
+import { motion } from "framer-motion";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
     users: [],
     priorities: [],
     status: [],
+    taskId: "",
   });
 
   const [taskStats, setTaskStats] = useState({
@@ -50,6 +52,7 @@ const AdminDashboard = () => {
   }, []); // for persisting TaskList color (bug fix)
 
   useEffect(() => {
+    document.title = "Admin Dashboard - Collabium";
     fetchTasks();
     fetchAvailableUsers(); // Fetch users from database
   }, []);
@@ -60,9 +63,9 @@ const AdminDashboard = () => {
     return new Date(isoDate).toISOString().split("T")[0];
   };
   const formatStatus = (status) => {
-    if (!status) return "to do"; 
+    if (!status) return "todo"; 
     const formatted = status.toLowerCase().trim();
-    if (formatted === "to do") return "to do";
+    if (formatted === "todo") return "todo";
     if (formatted === "in progress") return "in progress";
     if (formatted === "done") return "done";
     return formatted;
@@ -98,7 +101,7 @@ const AdminDashboard = () => {
       const filteredTasks = {
         todo: tasks.filter(task => {
           const status = task.status.toLowerCase();
-          return status === "todo" || status.includes("to do");
+          return status === "todo" || status.includes("todo");
         }),
         inProgress: tasks.filter(task => {
           const status = task.status.toLowerCase();
@@ -220,7 +223,7 @@ const AdminDashboard = () => {
           done: prevTasks.done.filter(t => t.task_id !== task.task_id),
         };
   
-        if (updatedTask.status.toLowerCase() === "to do") {
+        if (updatedTask.status.toLowerCase() === "todo") {
           newTasks.todo.push(formattedTask);
         } else if (updatedTask.status.toLowerCase() === "in progress") {
           newTasks.inProgress.push(formattedTask);
@@ -286,7 +289,7 @@ const AdminDashboard = () => {
 
   const handleUpdateTask = async (updatedTask) => {
     console.log("Updated Task Before Sending:", updatedTask);
-  
+    const taskId = updatedTask.task_id || updatedTask.id;
     try {
       const priorityMap = {
         "Low": 1,
@@ -297,6 +300,7 @@ const AdminDashboard = () => {
       };
       const taskToSend = {
         ...updatedTask,
+        task_id: taskId,
         priority: priorityMap[updatedTask.priority] || updatedTask.priority,
         dueDate: updatedTask.due_date ? new Date(updatedTask.due_date).toISOString().split("T")[0] : "N/A",
           startDate: updatedTask.start_date ? new Date(updatedTask.start_date).toISOString().split("T")[0] : "N/A",
@@ -334,7 +338,7 @@ const AdminDashboard = () => {
           endDate: updatedTask.end_date ? new Date(updatedTask.end_date).toISOString().split("T")[0] : "N/A",
           status: formatStatus(updatedTask.status),
         };
-        const newStatusKey = updatedTask.status.toLowerCase().includes("to do") ? "todo" :
+        const newStatusKey = updatedTask.status.toLowerCase().includes("todo") ? "todo" :
                              updatedTask.status.toLowerCase().includes("in progress") ? "inProgress" :
                              "done";
   
@@ -388,6 +392,9 @@ const AdminDashboard = () => {
       end_date: newTask.endDate,       
       progress: Number(newTask.progress), 
       user_id: newTask.userId,
+      assignedUsers: newTask.assignedUsers || [],
+      // Fix bug: new task user_id not in tasks table
+      user_id: newTask.assignedUsers && newTask.assignedUsers.length > 0 ? newTask.assignedUsers[0] : newTask.userId,
       };
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks`, {
         method: "POST",
@@ -527,7 +534,8 @@ const AdminDashboard = () => {
         ) &&
         (filters.priorities.length === 0 || filters.priorities.includes(String(taskPriorityValue)) /* 修复：将 taskPriorityValue 转换为字符串 */) &&
         (filters.status.length === 0 ||
-          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status)))
+          filters.status.some(f => normalizeStatus(f) === normalizeStatus(task.status))) &&
+          (filters.taskId === "" || String(task.task_id) === filters.taskId)
       );
     });
   };
@@ -556,44 +564,68 @@ const AdminDashboard = () => {
     setColorDropdowns(prev => ({ ...prev, [status]: false }));
   };
 
-  return (
-    <div className="admin-dashboard">
-      <h1 className="dashboard-title">Admin Dashboard</h1>
+  // Helper function to extract username from JWT token
+  const getUsernameFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      return payload.username || payload.display_name || "User";
+    } catch (e) {
+      return "User";
+    }
+  };
 
-      <div className="add-task-container" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}>
-        <button
+  // Get the current username from token
+  const username = getUsernameFromToken();
+
+  return (
+    <div style={styles.container}>
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "2vh", fontSize: "24px", marginTop: "10px" }}
+      >
+        <h3>Welcome, {username}</h3>
+      </motion.div>
+  
+      <h1>Admin Dashboard</h1>
+  
+      <div style={styles.addButtonWrapper}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           onClick={() => navigate("/adminManagement")}
-          className="admin-management-button"
-          style={{
-            background: "green",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+          style={styles.addButton}
         >
           Admin Management
-        </button>
-
-        <button
+        </motion.button>
+  
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           onClick={() => setIsAddModalOpen(true)}
-          className="add-task-button"
-          style={{
-            background: "#007bff",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+          style={styles.addButton}
         >
           + Add Task
-        </button>
+        </motion.button>
       </div>
-
+  
       <div className="dashboard-stats">
         <div className="stat-card"><h3>To-Do</h3><p>{taskStats.todo}</p></div>
         <div className="stat-card"><h3>In Progress</h3><p>{taskStats.inProgress}</p></div>
@@ -601,32 +633,106 @@ const AdminDashboard = () => {
         <div className="stat-card"><h3>Completion Rate</h3><p>{taskStats.completedRate}%</p></div>
         <div className="stat-card"><h3>Upcoming Due</h3><p>{taskStats.upcomingDue}</p></div>
       </div>
-
-      <SearchBar filters={filters} setFilters={setFilters} />
-
-      <div className="task-board">
-        {Object.keys(tasks).map((status) => (
-          <AdminTaskList
-            key={status}
-            title={status}
-            tasks={applyFilters(tasks[status])} // Apply the Task Filter to tasks.
-            onMoveTask={handleMoveTask}
-            onEditTask={handleEditTask}
-            onDeleteTask={handleDeleteTask}
-            onToggleLock={handleToggleLock}
-            // Notification: If needed, you can pass handleAddUserToTask and handleRemoveUserFromTask as props here.
-            onAddUser={handleAddUserToTask} // Notification:
-            onRemoveUser={handleRemoveUserFromTask} // Notification:
-            selectedColor={taskListColors[status]}
-            onAssignColor={(color) => handleAssignColor(status, color)}
-          />
-        ))}
-      </div>
-
-      {isAddModalOpen && <AddTask onSaveTask={handleAddTask} onClose={() => setIsAddModalOpen(false)} availableUsers={availableUsers} />}
-      {isEditModalOpen && ( <EditTaskModal task={editingTask} onClose={() => 
-      setIsEditModalOpen(false)} onSave={handleUpdateTask} availableUsers={availableUsers} /> )}    </div>
+  
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <SearchBar filters={filters} setFilters={setFilters} />
+      </motion.div>
+  
+      {isAddModalOpen && (
+        <AddTask
+          onSaveTask={handleAddTask}
+          onClose={() => setIsAddModalOpen(false)}
+          availableUsers={availableUsers}
+        />
+      )}
+  
+      {isEditModalOpen && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleUpdateTask}
+          availableUsers={availableUsers}
+        />
+      )}
+  
+      <motion.div
+        style={styles.board}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <AdminTaskList
+          title="To-Do"
+          tasks={applyFilters(tasks.todo)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.todo}
+          onAssignColor={(color) => handleAssignColor("todo", color)}
+        />
+  
+        <AdminTaskList
+          title="In Progress"
+          tasks={applyFilters(tasks.inProgress)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.inProgress}
+          onAssignColor={(color) => handleAssignColor("inProgress", color)}
+        />
+  
+        <AdminTaskList
+          title="Done"
+          tasks={applyFilters(tasks.done)}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleLock={handleToggleLock}
+          onAddUser={handleAddUserToTask}
+          onRemoveUser={handleRemoveUserFromTask}
+          selectedColor={taskListColors.done}
+          onAssignColor={(color) => handleAssignColor("done", color)}
+        />
+      </motion.div>
+    </div>
   );
+  
 };
 
 export default AdminDashboard;
+const styles = {
+  container: { textAlign: "center", padding: "20px", position: "relative" },
+  board: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "20px",
+    padding: "20px",
+    background: "#f4f5f7",
+    alignItems: "stretch",
+  },
+  addButtonWrapper: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+    marginBottom: "20px",
+  },
+  addButton: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    background: "#7000da",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+};

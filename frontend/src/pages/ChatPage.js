@@ -11,76 +11,136 @@ import "../css/ChatPage.css";
 import { getDoc,setDoc } from "firebase/firestore";
 
 
-
-const users = ["Rheiley", "Liz", "Ivy", "Kian", "Nade"];
-
 export default function ChatPage() {
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChat, setSelectedChat] = useState(() => {
+    const savedChat = localStorage.getItem("selectedChat");
+    return savedChat ? JSON.parse(savedChat) : null;
+  });
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [userId, setUserId] = useState(localStorage.getItem("userId") || uuidv4());
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
   const [creatingGroup, setCreatingGroup] = useState(false);
-  const [groupChats, setGroupChats] = useState([]);
+  const [groupChats, setGroupChats] = useState(() => {
+    const savedGroups = localStorage.getItem("groupChats");
+    return savedGroups ? JSON.parse(savedGroups) : [];
+  });
+  const [deletedChats, setDeletedChats] = useState(() => {
+    const savedDeletedChats = localStorage.getItem("deletedChats");
+    return savedDeletedChats ? JSON.parse(savedDeletedChats) : [];
+  });
+  const [chatNames, setChatNames] = useState(() => {
+    const savedChatNames = localStorage.getItem("chatNames");
+    return savedChatNames ? JSON.parse(savedChatNames) : {};
+  });
   const [groupName, setGroupName] = useState("");
   const fileInputRef = useRef(null);
   const [editingGroupName, setEditingGroupName] = useState(false);
-
-
+  const [users, setUsers] = useState([]);
   useEffect(() => {
-    localStorage.setItem("userId", userId);
+    document.title = "Chat - Collabium";
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
+    document.head.appendChild(link);
   
-    const clearDatabase = async () => {
-      try {
-        const messagesRef = collection(db, "messages");
-        const querySnapshot = await getDocs(messagesRef);
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+    script.async = true;
   
-        querySnapshot.forEach(async (docSnapshot) => {
-          await deleteDoc(doc(db, "messages", docSnapshot.id));
-        });
-
-      } catch (error) {
-      }
+    script.onload = () => {
+      console.log("Toastify.js loaded successfully");
+    };
+    script.onerror = () => {
+      console.error("Failed to load Toastify.js");
     };
   
-    clearDatabase();
-  }, [userId]);
+    document.body.appendChild(script);
   
+    return () => {
+      document.head.removeChild(link);
+      document.body.removeChild(script);
+    };
+  }, []);
 
   useEffect(() => {
-    if (!selectedChat) return;
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/users", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await response.json();
+        const userList = data.users
+          .filter(user => user.user_id !== userId)
+          .map(user => ({ 
+            id: String(user.user_id), 
+            name: user.display_name 
+          }));
+        setUsers(userList);
+        
+      } catch (error) {
+        console.error("get user fail:", error);
+      }
+    };
+    fetchUsers();
+  }, [userId]);
   
-    console.log("Fetching messages for:", selectedChat.id);
+  useEffect(() => {
+    localStorage.setItem("deletedChats", JSON.stringify(deletedChats));
+  }, [deletedChats]);
+  useEffect(() => {
+    const q = query(collection(db, "groupChats"), orderBy("id"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedGroups = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setGroupChats(loadedGroups);
+      localStorage.setItem("groupChats", JSON.stringify(loadedGroups)); 
+    }, (error) => {
+      console.error("fail to load groups:", error);
+    });
+  
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {  
+    if (!selectedChat || !selectedChat.id) {
+      setMessages([]); 
+      return;
+    }
   
     const q = query(
       collection(db, "messages"),
-      where("chatId", "==", selectedChat.id),  
+      where("chatId", "==", selectedChat.id),
       orderBy("timestamp", "asc")
     );
-  
-
   
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMessages = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-  
       console.log("New messages received:", newMessages);
-      setMessages(newMessages); 
+      setMessages(newMessages);
+    }, (error) => {
+      console.error("error when listening message:", error);
     });
   
     return () => unsubscribe();
   }, [selectedChat]);
   
   
-  
   const sendMessage = async (imageUrl = "") => {
     if (!newMessage.trim() && !imageUrl) return;
   
-    const messageId = uuidv4(); 
+    if (!selectedChat || !selectedChat.id) {
+      return;
+    }
   
+    const messageId = uuidv4();
     const newMsg = {
       id: messageId,
       text: newMessage.trim(),
@@ -92,21 +152,17 @@ export default function ChatPage() {
       likedBy: [],
       isGroupChat: selectedChat?.participants?.length > 2,
     };
-  
-
     setMessages((prevMessages) => [...prevMessages, newMsg]);
   
     try {
-  
       await setDoc(doc(db, "messages", messageId), newMsg);
-      console.log("Message successfully sent!");
+      console.log("save message successfully ，messageId:", messageId);
     } catch (error) {
-      console.error(" Error sending message:", error);
+      console.error("fail to save message:", error);
     }
   
-    setNewMessage(""); 
+    setNewMessage("");
   };
-  
 
   const handleLike = async (msgId) => {
     console.log("Like button clicked for message:", msgId); 
@@ -153,6 +209,18 @@ export default function ChatPage() {
   
   const createGroupChat = async () => {
     if (selectedGroupUsers.length < 2) {
+      if (window.Toastify) {
+        window.Toastify({
+          text: "At least choose 2 persons to create group",
+          duration: 6000, 
+          gravity: "bottom", 
+          position: "center",
+          backgroundColor: "#F62424", 
+          stopOnFocus: true, 
+        }).showToast();
+      } else {
+        alert("At least choose 2 persons to create a group");
+      }
       return;
     }
   
@@ -164,67 +232,125 @@ export default function ChatPage() {
     };
   
     try {
-      await addDoc(collection(db, "groupChats"), group); 
-      setGroupChats((prevGroups) => [...prevGroups, group]); 
-      setSelectedChat(group); 
-  
+      await addDoc(collection(db, "groupChats"), group);
+      setSelectedChat(group);
       setGroupName("");
       setSelectedGroupUsers([]);
       setCreatingGroup(false);
     } catch (error) {
-      console.error( error);
+      console.error("fail to create group:", error);
     }
   };
 
-  const updateGroupName = async (newName) => {
-    if (!selectedChat || !selectedChat.id || !newName.trim()) return;
+  const updateChatName = async (chatId, newName) => {
+    if (!chatId || !newName.trim()) return;
   
     try {
-    
-      const groupQuery = query(collection(db, "groupChats"), where("id", "==", selectedChat.id));
-      const querySnapshot = await getDocs(groupQuery);
+      if (selectedChat?.participants?.length > 2) {
+        const groupQuery = query(collection(db, "groupChats"), where("id", "==", chatId));
+        const querySnapshot = await getDocs(groupQuery);
   
-      if (!querySnapshot.empty) {
-        const groupDoc = querySnapshot.docs[0].ref; 
-        await updateDoc(groupDoc, { name: newName }); 
+        if (!querySnapshot.empty) {
+          const groupDoc = querySnapshot.docs[0].ref;
+          await updateDoc(groupDoc, { name: newName });
   
-
-        setGroupChats((prevGroups) =>
-          prevGroups.map((group) =>
-            group.id === selectedChat.id ? { ...group, name: newName } : group
-          )
-        );
+          setGroupChats((prevGroups) =>
+            prevGroups.map((group) =>
+              group.id === chatId ? { ...group, name: newName } : group
+            )
+          );
   
-      
+          setSelectedChat((prevChat) => ({
+            ...prevChat,
+            name: newName,
+          }));
+        } else {
+          console.error("can not find group");
+        }
+      } else {
+        const updatedChatNames = { ...chatNames, [chatId]: newName };
+        setChatNames(updatedChatNames);
+        localStorage.setItem("chatNames", JSON.stringify(updatedChatNames));
+  
         setSelectedChat((prevChat) => ({
           ...prevChat,
           name: newName,
         }));
+      }
+      console.log("rename:", newName);
+    } catch (error) {
+      console.error("fail to rename", error);
+    }
+  };
+  const handleDeleteChat = async (chatId) => {
+    try {
+      const messagesQuery = query(
+        collection(db, "messages"),
+        where("chatId", "==", chatId)
+      );
+      const messagesSnapshot = await getDocs(messagesQuery);
+      const deleteMessagePromises = messagesSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deleteMessagePromises);
+      console.log("delete message successfully:", chatId);
   
-        console.log(newName);
+      if (selectedChat?.participants?.length > 2) {
+        const groupQuery = query(collection(db, "groupChats"), where("id", "==", chatId));
+        const querySnapshot = await getDocs(groupQuery);
+  
+        if (!querySnapshot.empty) {
+          const groupDoc = querySnapshot.docs[0].ref;
+          await deleteDoc(groupDoc);
+          setGroupChats((prevGroups) => prevGroups.filter(group => group.id !== chatId));
+          console.log("delete group successfully:", chatId);
+        } else {
+          console.error("can not find group", chatId);
+        }
       } else {
-        console.error("can not find");
+        setDeletedChats((prev) => [...prev, chatId]);
+        const updatedChatNames = { ...chatNames };
+        delete updatedChatNames[chatId];
+        setChatNames(updatedChatNames);
+        localStorage.setItem("chatNames", JSON.stringify(updatedChatNames));
+      }
+  
+      if (selectedChat?.id === chatId) {
+        setSelectedChat(null);
+        localStorage.removeItem("selectedChat");
       }
     } catch (error) {
-      console.error( error);
+      console.error("can not delete chat:", error);
     }
   };
   
   
-  
-
   const handleSelectChat = (chat) => {
-    if (!chat) return;
-  
-    console.log("Chat selected:", chat.id);
-  
-    if (typeof chat === "string") {
-      setSelectedChat({ id: chat, participants: [userId, chat] });
-    } else {
-      setSelectedChat(chat);
+    if (!chat) {
+      setSelectedChat(null);
+      localStorage.removeItem("selectedChat");
+      return;
     }
-  };
   
+    let newSelectedChat;
+    if (typeof chat === "string" || typeof chat === "number") {
+      const chatId = String(chat);
+      newSelectedChat = { 
+        id: chatId, 
+        participants: [userId, chatId],
+        name: chatNames[chatId] || undefined
+      };
+    } else if (chat && typeof chat === "object" && chat.id && chat.participants) {
+      newSelectedChat = chat;
+    } else {
+      setSelectedChat(null);
+      localStorage.removeItem("selectedChat");
+      return;
+    }
+  
+    setSelectedChat(newSelectedChat);
+    localStorage.setItem("selectedChat", JSON.stringify(newSelectedChat));
+  };
 
   return (
     <div className="chat-container">
@@ -238,64 +364,88 @@ export default function ChatPage() {
 
 {creatingGroup && (
   <div className="group-selection">
-    <input
-      type="text"
-      className="group-name-input"
-      placeholder="Enter group name"
-      value={groupName}
-      onChange={(e) => setGroupName(e.target.value)}
-    />
     {users.map((user) => (
-      <label key={user} className="group-user">
+      <label key={user.id} className="group-user">
         <input
           type="checkbox"
-          value={user}
-          checked={selectedGroupUsers.includes(user)}
+          value={user.id}
+          checked={selectedGroupUsers.includes(user.id)}
           onChange={(e) => {
             const selected = e.target.checked
-              ? [...selectedGroupUsers, user]
-              : selectedGroupUsers.filter((u) => u !== user);
+              ? [...selectedGroupUsers, user.id]
+              : selectedGroupUsers.filter((u) => u !== user.id);
             setSelectedGroupUsers(selected);
           }}
         />
-        {user}
+        {user.name}
       </label>
     ))}
-    <button className="confirm-group-button" onClick={() => {
-      createGroupChat();
-    }}>
+    <button
+      className="confirm-group-button"
+      onClick={() => createGroupChat()}
+    >
       Confirm
     </button>
   </div>
 )}
 
 
-        <div className="chat-users">
-          {users.map((user) => (
-            <button key={user} onClick={() => handleSelectChat(user)} className="chat-user-button">
-              {user}
-            </button>
-          ))}
-        </div>
+<div className="chat-users">
+  {users
+    .map((user) => (
+      <button
+        key={user.id}
+        onClick={() => handleSelectChat(user.id)}
+        className="chat-user-button"
+      >
+        {chatNames[user.id] || user.name}
+      </button>
+    ))}
+</div>
 
-        <div className="chat-groups">
-          {groupChats.map((group) => (
-            <button key={group.id} onClick={() => handleSelectChat(group)} className="chat-user-button">
-              {group.name}
-            </button>
-          ))}
-        </div>
+<div className="chat-groups">
+  {groupChats.map((group) => (
+    <button key={group.id} onClick={() => handleSelectChat(group)} className="chat-user-button">
+      {group.name && group.name !== "New Group"
+        ? group.name
+        : `Group with ${
+            group.participants
+              .filter(id => id !== userId) 
+              .map(id => users.find(user => user.id === id)?.name || id) 
+              .join(", ")
+          }`}
+    </button>
+  ))}
+</div>
       </div>
 
       <div className="chat-main">
         {selectedChat ? (
           <>
-            <div className="chat-header">
-  {selectedChat?.name || `Chat with ${selectedChat.id}`}
+<div className="chat-header">
+  {selectedChat?.participants?.length > 2
+    ? (selectedChat.name && selectedChat.name !== "New Group"
+        ? selectedChat.name
+        : `Group with ${
+            selectedChat.participants
+              .filter(id => id !== userId)
+              .map(id => users.find(user => user.id === id)?.name || id)
+              .join(", ")
+          }`)
+    : (chatNames[selectedChat.id] || `Chat with ${
+        users.find(user => user.id === selectedChat.participants.find(id => id !== userId))?.name || "Unknown"
+      }`)}
+  <button onClick={() => setEditingGroupName(true)}>Rename</button>
   {selectedChat?.participants?.length > 2 && (
-    <button onClick={() => setEditingGroupName(true)}>Rename</button>
+    <button
+      onClick={() => {
+        handleDeleteChat(selectedChat.id);
+      }}
+    >
+      Delete
+    </button>
   )}
-    </div>
+</div>
     {editingGroupName && (
   <div className="edit-group-name">
     <input
@@ -304,14 +454,15 @@ export default function ChatPage() {
       onChange={(e) => setGroupName(e.target.value)}
       placeholder="Enter new group name"
     />
-    <button
-      onClick={() => {
-        updateGroupName(groupName); 
-        setEditingGroupName(false); 
-      }}
-    >
-      Save
-    </button>
+  <button
+  onClick={() => {
+    updateChatName(selectedChat.id, groupName);
+    setEditingGroupName(false);
+    setGroupName(""); 
+  }}
+>
+  Save
+</button>
   </div>
 )}
 

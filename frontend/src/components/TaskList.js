@@ -5,15 +5,16 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
   const [showDropdown, setShowDropdown] = useState(false);
 
   const colors = {
-    Default: "#e0e0e0",
-    Red: "red",
-    Green: "green",
-    Yellow: "yellow",
-    Purple: "purple",
-    Black: "black",
-    White: "white",
-    Grey: "grey"
+    Default: "rgba(224, 224, 224, 0.7)",
+    Red: "rgba(255, 0, 0, 0.7)",
+    Green: "rgba(0, 128, 0, 0.7)",
+    Yellow: "rgba(255, 255, 0, 0.7)",
+    Purple: "rgba(128, 0, 128, 0.7)",
+    Black: "rgba(0, 0, 0, 0.7)",
+    White: "rgba(255, 255, 255, 0.7)",
+    Grey: "rgba(128, 128, 128, 0.7)"
   };
+  
   const priorityLabelMap = {
     1: "Low",
     2: "Medium",
@@ -21,7 +22,22 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
     4: "Critical",
     5: "Urgent"
   };
-
+  const priorityColors = {
+    1: "green",     // Low
+    2: "blue",      // Medium
+    3: "orange",    // High
+    4: "purple",   // Critical
+    5: "red",       // Urgent
+  };
+  
+  const priorityLabels = {
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Critical",
+    5: "Urgent",
+  };
+  
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -164,12 +180,48 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
         </select>
       )}
 
-      {tasks.map((task) => (
-        <div key={task.task_id} style={styles.task}>
-          <strong>{task.title}</strong>
-          <p>{task.description}</p>
-          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
-          <p><strong>Due Date:</strong> {task.dueDate}</p>
+{tasks.map((task) => {
+  const color = priorityColors[task.priority] || "#999";
+  const label = priorityLabels[task.priority] || task.priority;
+
+  return (
+    <div
+      key={task.task_id}
+      style={{
+        ...styles.task,
+        borderLeft: `6px solid ${color}`,
+      }}
+    >
+      <strong>{task.title}</strong>
+      <p>{task.description}</p>
+          {task.assignedUsers?.length > 0 && (
+      <p><strong>Assigned To:</strong> {
+        task.assignedUsers
+          .map(userId => {
+            const user = availableUsers.find(u => u.id === userId || u.user_id === userId);
+            return user ? (user.display_name || `${user.first_name} ${user.last_name}`) : "Unknown";
+          })
+          .join(", ")
+      }</p>
+    )}
+
+      <p style={{ color, fontWeight: "bold" }}>
+        Priority: {label}
+      </p>
+      <p><strong>Due Date:</strong> {task.dueDate}</p>
+            <span
+        style={{
+          position: "absolute",
+          bottom: "8px",
+          left: "10px",
+          fontSize: "11px",
+          color: "black"
+        }}
+      >
+        ID: #{task.task_id}
+      </span>
+
+
 
           <div style={styles.actions}>
             <button onClick={() => onEditTask(task)} style={task.locked ? { ...styles.edit, opacity: 0.5 } : styles.edit} >✏️</button>
@@ -182,14 +234,15 @@ const TaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, selected
             <button onClick={() => onDeleteTask(task.task_id)}  style={task.locked ? { ...styles.delete, opacity: 0.5 } : styles.delete} >🗑</button>
           </div>
         </div>
-      ))}
-    </div>
-  );
+      );
+    })}
+  </div>
+);
 };
 
 const styles = {
-  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px" },
-  task: { background: "#fff", padding: "10px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
+  list: { flex: 1, display: "flex", flexDirection: "column", background: "#e0e0e0", padding: "15px", borderRadius: "10px", minHeight: "100%" },  
+  task: { background: "#fff", padding: "10px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)", position: "relative"  },
   actions: { display: "flex", justifyContent: "center", gap: "50px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },
   delete: { background: "#dc3545", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },

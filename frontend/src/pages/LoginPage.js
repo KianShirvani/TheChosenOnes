@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { motion } from "framer-motion";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LoginPage = () => {
 
   // dynamically load Toastify CSS + JS from CDN at runtime, no install required
   useEffect(() => {
+    document.title = "Login - Collabium";
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css";
@@ -78,47 +80,89 @@ const LoginPage = () => {
     }
   };
 
-  return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Login</h2>
-      <form noValidate style={styles.form} onSubmit={handleSubmit}> {/* use noValiddate to turn off form alert */}
-        <label style={styles.label}>
-          <Input
-            type="email"
-            name="email"
-            placeholder=""
-            value={formData.email}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>
-            Email
-          </span>
-        </label>
-        <label style={styles.label}>
-          <Input
-            type="password"
-            name="password"
-            placeholder=""
-            value={formData.password}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <span style={formData.password ? styles.floatingLabel : styles.spanLabel}>
-            Password
-          </span>
-        </label>
-        <Button type="submit" style={styles.button}>
+
+    return (
+      <motion.div
+        style={styles.container}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.h2
+          style={styles.title}
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
           Login
-        </Button>
-      </form>
-      <p style={styles.link}>
-        Don't have an account? <span onClick={() => navigate("/signup")} style={styles.signupLink}>Sign up here</span>
-      </p>
-    </div>
-  );
+        </motion.h2>
+
+        <motion.form
+          noValidate
+          style={styles.form}
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <label style={styles.label}>
+            <Input
+              type="email"
+              name="email"
+              placeholder=""
+              value={formData.email}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <span style={formData.email ? styles.floatingLabel : styles.spanLabel}>
+              Email
+            </span>
+          </label>
+          <label style={styles.label}>
+            <Input
+              type="password"
+              name="password"
+              placeholder=""
+              value={formData.password}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <span style={formData.password ? styles.floatingLabel : styles.spanLabel}>
+              Password
+            </span>
+          </label>
+          <Button type="submit" style={styles.button}>
+            Login
+          </Button>
+        </motion.form>
+
+        <motion.p
+          style={styles.link}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          Don't have an account?{" "}
+          <span onClick={() => navigate("/signup")} style={styles.signupLink}>
+            Sign up here
+          </span>
+        </motion.p>
+
+        <motion.p
+          style={styles.link}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <span onClick={() => navigate("/forgot-password")} style={styles.signupLink}>
+            Forgot password
+          </span>
+        </motion.p>
+      </motion.div>
+    );
+
 };
 
 const styles = {

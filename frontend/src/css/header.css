@@ -68,17 +68,17 @@
 }
 
 .sign-in:hover {
-    background-color: #61dafb;
+    background-color: white;
     color: black;
 }
 
 .sign-up {
-    background-color: #61dafb;
+    background-color: #b288ff;
     color: black;
 }
 
 .sign-up:hover {
-    background-color: #4fa3d1;
+    background-color: #e0d4ff;
 }
 
 .icon {
@@ -89,6 +89,62 @@
 .notification-icon:hover {
     color: #61dafb;
 }
+.notification-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 20px;
+    width: 300px;
+    background-color: white;
+    color: black;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 10px;
+    z-index: 999;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  
+  .notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+    color: black; 
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .notification-item:hover {
+    background: #f9f9f9;
+  }
+  
+  .notification-item.unread {
+    background-color: #eef3ff; 
+    font-weight: 500;
+  }
+  
+  .notification-item.read {
+    background-color: white;
+    font-weight: 400;
+    color: #555;
+  }
+  
+  .notification-item span {
+    flex-grow: 1;
+    margin-right: 8px;
+  }
+  
+  .notification-item button {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
 
 @media (max-width: 768px) {
     .navbar {
@@ -111,4 +167,5 @@
     .search-input {
         width: 100%;
     }
+    
 }

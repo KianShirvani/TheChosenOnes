@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users(
     email VARCHAR(40) UNIQUE,
     phone_num VARCHAR(40),
     country VARCHAR(40),
-    display_name VARCHAR(20),
+    display_name VARCHAR(20) UNIQUE,
     password VARCHAR(100) NOT NULL
 );
 
@@ -56,4 +56,12 @@ CREATE TABLE IF NOT EXISTS task_users (
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
         ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

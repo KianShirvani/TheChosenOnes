@@ -17,14 +17,14 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
   };
 
   const colors = {
-    Default: "#e0e0e0",
-    Red: "red",
-    Green: "green",
-    Yellow: "yellow",
-    Purple: "purple",
-    Black: "black",
-    White: "white",
-    Grey: "grey",
+    Default: "rgba(224, 224, 224, 0.7)",
+    Red: "rgba(255, 0, 0, 0.7)",
+    Green: "rgba(0, 128, 0, 0.7)",
+    Yellow: "rgba(255, 255, 0, 0.7)",
+    Purple: "rgba(128, 0, 128, 0.7)",
+    Black: "rgba(0, 0, 0, 0.7)",
+    White: "rgba(255, 255, 255, 0.7)",
+    Grey: "rgba(128, 128, 128, 0.7)"
   };
 
   const getSelectedColorName = () => {
@@ -38,6 +38,15 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
     "Critical": "Critical",
     "Urgent": "Urgent"
   };
+
+  const priorityColors = {
+    Low: "green",
+    Medium: "blue",
+    High: "orange",
+    Critical: "purple",
+    Urgent: "red"
+  };
+  
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -112,11 +121,25 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
         )}
       </div>
 
-      {tasks.map((task) => (
-        <div key={task.task_id} style={styles.task} data-testid="task-card">
+      {tasks.map((task) => {
+  const label = priorityLabelMap[task.priority] || task.priority;
+  const color = priorityColors[label] || "#999";
+
+  return (
+    <div
+      key={task.task_id}
+      style={{
+        ...styles.task,
+        borderLeft: `6px solid ${color}`,
+      }}
+      data-testid="task-card"
+    >
+
           <strong>{task.title}</strong>
           <p>{task.description}</p>
-          <p><strong>Priority:</strong> {priorityLabelMap[task.priority]}</p>
+          <p style={{ color, fontWeight: "bold" }}>
+          Priority: {label}
+          </p>
           <p><strong>Due Date:</strong> {task.dueDate}</p>
 
           <div style={styles.progressBar} data-testid="progress-bar">
@@ -192,13 +215,13 @@ const AdminTaskList = ({ title, tasks, onEditTask, onDeleteTask, onMoveTask, onT
 
           </div>
         </div>
-      ))}
-    </div>
-  );
+     );
+    })}
+  </div>
+);
 };
-
 const styles = {
-  list: { width: "30%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", marginBottom: "20px" },
+  list: { minHeight: "100%", background: "#e0e0e0", padding: "15px", borderRadius: "10px", display: "flex", flexDirection: "column", },
   task: { background: "#fff", padding: "15px", margin: "10px 0", borderRadius: "5px", boxShadow: "0px 2px 4px rgba(0,0,0,0.2)" },
   actions: { display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" },
   edit: { background: "#007bff", color: "white", border: "none", padding: "10px 10px", cursor: "pointer", borderRadius: "5px" },

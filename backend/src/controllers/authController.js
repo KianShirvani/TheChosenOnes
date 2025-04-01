@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = jsonWebToken.sign(
-      { user_id: user.user_id, role: role },
+      { user_id: user.user_id, role: role, username: user.display_name },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -71,6 +71,11 @@ const loginUser = async (req, res) => {
 };
 
 const requestPasswordReset = async (req, res) => {
+  if (!process.env.MAILGUN_API_KEY) {
+    console.error('Missing Mailgun configuration in environment variables');
+    return res.status(500).json({ error: 'Internal server error: Mailgun not configured' });
+  }
+  
   const { email } = req.body;
 
   try {
@@ -95,12 +100,12 @@ const requestPasswordReset = async (req, res) => {
       subject: 'Password Reset',
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
       Please click on the following link, or paste this into your browser to complete the process:\n\n
-      http://${req.headers.host}/reset/${token}\n\n
+      http://${process.env.FRONTEND_URL}/reset-password/${token}\n\n
       If you did not request this, please ignore this email and your password will remain unchanged.\n`
     };
 
     // Send email
-    mg.messages.create(process.env.MAILGUN_DOMAIN, data)
+    await mg.messages.create(process.env.MAILGUN_DOMAIN, data)
       .then(body => {
         console.log(body);
         res.status(200).json({ message: 'Password reset email sent' });
@@ -114,6 +119,44 @@ const requestPasswordReset = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 };
+
+const registerUser = async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNum,
+    country,
+    displayName,
+    password,
+    confirmPassword,
+  } = req.body;
+
+  try {
+    // check if email already exists
+    const existingUser = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Email already registered. Please log in." });
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // insert new user
+    const result = await client.query(
+      "INSERT INTO users (first_name, last_name, email, phone_num, country, display_name, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [firstName, lastName, email, phoneNum, country, displayName, hashedPassword]
+    );
+
+    const newUser = result.rows[0];
+    return res.status(201).json({ message: "User registered successfully", user: newUser });
+
+  } catch (error) {
+    console.error("Error registering user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;

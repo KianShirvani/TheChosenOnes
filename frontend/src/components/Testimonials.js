@@ -3,14 +3,14 @@ import React from "react";
 const Testimonials = () => {
 
 const testimonials = [
-  {quote:"This platform has transformed the way our team collaborates!", author:"John Doe, Project Manager",},
-  {quote:"Using Collabium helped me to maximize the work efficiency in my workplace!", author:"Johny English, Team Lead",},
-  {quote:"Intuitive, fast and flexible, Collabium reshaped team-based task management", author:"Norman Osborn, CEO",}
+  {quote:"This platform has transformed the way our team collaborates!", author:"Ramon Lawrence",},
+  {quote:"Using Collabium helped me to maximize the work efficiency in my workplace!", author:"Abdallah Mohamed",},
+  {quote:"Intuitive, fast and flexible, Collabium reshaped team-based task management", author:"Yong Gao",}
 ];
 
   return (
     <section style={styles.container}>
-      <h2>What Our Users Say</h2>
+      <h2 style={{ color: 'white' }}>What Our Users Say</h2>
      <div style={styles.testimonials}>
       {
         testimonials.map((testimonial, index) => (
@@ -29,7 +29,7 @@ const styles = {
   container: {
     textAlign: "center",
     padding: "50px 20px",
-    background: "#e3f2fd",
+    background: "#7000da",
   },
   quote: {
     fontStyle: "italic",

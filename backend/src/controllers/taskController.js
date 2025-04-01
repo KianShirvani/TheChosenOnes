@@ -8,10 +8,21 @@ const getTasks = async (req, res) => {
     const result = await client.query("SELECT * FROM tasks");
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: "No tasks found." });
+      return res.status(200).json({ tasks: [] });
     }
 
-    res.status(200).json({ tasks: result.rows });
+    const tasks = await Promise.all(
+      result.rows.map(async (task) => {
+        const userRes = await client.query(
+          "SELECT user_id FROM task_users WHERE task_id = $1",
+          [task.task_id]
+        );
+        const assignedUsers = userRes.rows.map((row) => row.user_id);
+        return { ...task, assignedUsers };
+      })
+    );
+
+    res.status(200).json({ tasks });
   } catch (error) {
     console.error("Error in getTasks:", error);
     res.status(500).json({ message: "Server error", error });
@@ -53,6 +64,17 @@ const createTask = async (req, res) => {
       "INSERT INTO tasks (kanban_id, user_id, title, description, priority, due_date, start_date, end_date, progress, status, locked) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false) RETURNING *",
       [kanban_id, user_id, title, description, parsedPriority, moment(due_date).format('YYYY-MM-DD'), moment(start_date).format('YYYY-MM-DD'), moment(end_date).format('YYYY-MM-DD'), progress || 0, status]
     );
+
+          const taskId = result.rows[0].task_id;
+      const { assignedUsers } = req.body;
+
+      if (assignedUsers && Array.isArray(assignedUsers)) {
+        const userPromises = assignedUsers.map((userId) =>
+          client.query("INSERT INTO task_users (task_id, user_id) VALUES ($1, $2)", [taskId, userId])
+        );
+        await Promise.all(userPromises);
+      }
+
 
     if (!result || !result.rows || result.rows.length === 0) {
       console.error("Error: Task was not created.");
@@ -97,7 +119,8 @@ const moveTask = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { direction } = req.body;
-    const columnOrder = ["to do", "In Progress", "done"];
+    const columnOrder = ["todo", "in progress", "done"];
+
 
     // Use the proper field name and variable (id instead of task_id)
     const taskResult = await client.query("SELECT * FROM tasks WHERE task_id = $1", [taskId]);
@@ -345,6 +368,17 @@ const assignUsersToTask = async (req, res) => {
         [taskId, userId]
       );
     });
+
+    //insert into notification table
+    const notifyPromises = userIds.map(userId =>
+      client.query(
+        "INSERT INTO notifications (user_id, message) VALUES ($1, $2)",
+        [userId, `You've been assigned to Task ID: ${taskId}`]
+      )
+    );
+    await Promise.all([...insertPromises, ...notifyPromises]);
+    
+    
 
     // Wait for all insertions to complete
     await Promise.all(insertPromises);

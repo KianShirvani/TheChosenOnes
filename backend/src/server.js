@@ -13,7 +13,6 @@ const corsOptions = {
 
 const axios = require("axios");
 const client = require('./database/db');
-
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const insertData = async () => {
@@ -75,8 +74,8 @@ const insertData = async () => {
       if (taskExists.rows.length === 0) {
         const sampleTasks = [
           // Tasks in "To Do" Column
-          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "To Do", priority: 3, progress: 10,start_date:"2025-12-05" ,end_date:"2025-12-20" },
-          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "To Do", priority: 2 , progress: 20,start_date:"2025-12-07" ,end_date:"2025-12-21" },
+          { title: "Task 1", description: "Planning phase", due_date: "2025-12-31", status: "todo", priority: 3, progress: 10,start_date:"2025-12-05" ,end_date:"2025-12-20" },
+          { title: "Task 2", description: "Gathering resources", due_date: "2025-12-30", status: "todo", priority: 2 , progress: 20,start_date:"2025-12-07" ,end_date:"2025-12-21" },
 
           // Tasks in "In Progress" Column
           { title: "Task 3", description: "Developing backend", due_date: "2025-12-20", status: "In Progress", priority: 4, progress: 40 ,start_date:"2025-11-23" ,end_date:"2025-12-20"},
@@ -127,6 +126,7 @@ app.use("/auth", require("./routes/auth"));
 app.use("/register", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/messages", require("./routes/messageRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

@@ -4,7 +4,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
   const formatDate = (date) => (date ? new Date(date).toISOString().split("T")[0] : "");
 
   const [taskData, setTaskData] = useState({
-    id: task.task_id || task.id || null,
+    task_id: task.task_id || task.id || null,
     kanbanId: task.kanban_id ?? null,
     userId: task.user_id ?? null,
     title: task.title || "",
@@ -15,12 +15,12 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
     startDate: formatDate(task.start_date),
     endDate: formatDate(task.end_date),
     progress: task.progress || 0,
-    status: task.status || "to do",
+    status: task.status || "todo",
   });
 
   useEffect(() => {
     setTaskData({
-      id: task.task_id || task.id || null,
+      task_id: task.task_id || task.id || null,
       kanbanId: task.kanban_id ?? null,
       userId: task.user_id ?? null,
       title: task.title || "",
@@ -31,18 +31,22 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
       startDate: formatDate(task.start_date),
       endDate: formatDate(task.end_date),
       progress: task.progress || 0,
-      status: task.status || "to do",
+      status: task.status || "todo",
     });
-  }, [task]);
+  }, [task.task_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setTaskData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAssignedUsersChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map((opt) => opt.value);
-    setTaskData((prev) => ({ ...prev, assignedUsers: selected }));
+  const handleAssignedUsersChange = (userId) => {
+    setTaskData((prev) => {
+      const assignedUsers = prev.assignedUsers.includes(userId)
+        ? prev.assignedUsers.filter((id) => id !== userId)
+        : [...prev.assignedUsers, userId];
+      return { ...prev, assignedUsers };
+    });
   };
 
   const handleSave = () => {
@@ -55,7 +59,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
     };
 
     const finalData = {
-      id: taskData.id,
+      task_id: taskData.task_id,
       kanban_id: taskData.kanbanId ?? 1,
       user_id: taskData.userId ?? 1,
       title: taskData.title,
@@ -93,20 +97,23 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
             style={styles.input}
           />
 
-          <label>Assign Users:</label>
-          <select
-            multiple
-            name="assignedUsers"
-            value={taskData.assignedUsers}
-            onChange={handleAssignedUsersChange}
-            style={styles.input}
-          >
+<label>Assign Users:</label>
+         
+          <div style={styles.checkboxContainer}>
             {availableUsers.map((user) => (
-              <option key={user.user_id || user.id} value={user.user_id || user.id}>
-                {user.display_name || `${user.first_name} ${user.last_name}`}
-              </option>
+              <div key={user.user_id || user.id} style={styles.checkboxItem}>
+                <input
+                  type="checkbox"
+                  id={`user-${user.user_id || user.id}`}
+                  checked={taskData.assignedUsers.includes(user.user_id || user.id)}
+                  onChange={() => handleAssignedUsersChange(user.user_id || user.id)}
+                />
+                <label htmlFor={`user-${user.user_id || user.id}`}>
+                  {user.display_name || `${user.first_name} ${user.last_name}`}
+                </label>
+              </div>
             ))}
-          </select>
+          </div>
 
           <label>Priority:</label>
           <select name="priority" value={taskData.priority} onChange={handleChange} style={styles.input}>
@@ -119,7 +126,7 @@ const EditTaskModal = ({ task, onSave, onClose, availableUsers = [] }) => {
 
           <label>Move to:</label>
           <select name="status" value={taskData.status} onChange={handleChange} style={styles.input}>
-            <option value="to do">To-Do</option>
+            <option value="todo">To-Do</option>
             <option value="in progress">In Progress</option>
             <option value="done">Done</option>
           </select>
@@ -168,6 +175,12 @@ const styles = {
     alignItems: "center",
     boxSizing: "border-box",
     overflowX: "hidden",
+  },
+  checkboxItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start", 
+    margin: "5px 0",
   },
   content: {
     width: "100%",
