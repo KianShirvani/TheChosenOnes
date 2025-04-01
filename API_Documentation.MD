@@ -12,6 +12,8 @@ All API requests are made to:
 http://localhost:5000
 ```
 
+ **Note for Mac users:** If you're using macOS with Docker or running the backend via a different setup, the server may be running on port `5003`. Use `http://localhost:5003` instead if `5000` doesn't work.
+
 ---
 
 ## Table of Contents
