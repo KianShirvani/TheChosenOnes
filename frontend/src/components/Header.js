@@ -48,7 +48,7 @@ const Header = () => {
       
         fetchNotifications(); // fetch once immediately
       
-        const interval = setInterval(fetchNotifications, 1000); // fetch every 10 seconds
+        const interval = setInterval(fetchNotifications, 1000); // fetch every 1 seconds
       
         return () => clearInterval(interval); // clean up interval on unmount
       }, []);      
