@@ -7,11 +7,11 @@ It is dedicated to building and enhancing various features for both frontend and
 
 | Kanban Column     | Number of Issues |
 |-------------------|------------------|
-| **Backlog**       | 18               |
+| **Backlog**       | 17               |
 | **Sprint Backlog**| 0                |
 | **In Progress**   | 0                |
 | **In Review**     | 0                |
-| **Done**          | 149              |
+| **Done**          | 150              |
 
 - Development for the frontend UI is complete  
 - Backend functionality and database development are complete
