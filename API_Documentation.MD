@@ -291,4 +291,4 @@ Now you're authenticated and can access protected routes like `/api/tasks`, `/ap
 ---
 
 _Last updated: April 1, 2025_
-```
+
