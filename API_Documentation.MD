@@ -223,8 +223,6 @@ http://localhost:5000
 
 ---
 
-here’s your fixed and cleaned-up section with proper formatting, indentation, and the corrected base url (`http://localhost:5000`):
-
 
 ## Authentication & Roles
 
